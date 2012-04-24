@@ -2,37 +2,46 @@ define(["scripts/lib/enchant.js", "utils"], function(dummy, util){
 
 return enchant.Class.create({
     initialize : function(parse_tree, main){
+        this.buffer_size = 4096;
         this.context = (window.AudioContext) ? new AudioContext() : new webkitAudioContext();
         this.main = main;
-        this.env = new util.Enviroment();     //グローバルなシーケンサーの状態
+        this.env = {       //グローバルなシーケンサーの状態
+            for_worker : new util.Enviroment(),
+            for_playback : new util.Enviroment()
+        };
         this.cmd_manager = new util.CommandManager();
-        this.parse_tree = parse_tree;           //MMLコンパイラから受け取った曲の構文解析木
-        this.cur_ast_node = parse_tree;         //現在の着目しているASTのノード
-        this.cur_ast_node_start_frame = 0;      //現在のASTノードの再生を開始したサンプルフレーム数
-        this.buffers = new Array(16);
-        this.next_node_frame = 0;               //次のASTノードに入る時間をサンプルフレーム数で表したもの
-        this.secs_per_tick = this.env.getCurrentTempo() / 480.0;
-        this.node = this.context.createJavaScriptNode(4096, 2, 16);
+        this.cur_ast_node = {
+            for_playback : parse_tree,           //現在着目しているASTのノード（GUI用）
+            for_worker : parse_tree             //現在着目しているASTのノード（ワーカー用）
+        };
+        this.next_playing_buffer_count = 0;     //次に出力バッファーに流すべきデータのキュー内での位置
+        this.queue = [];                        //波形データのキュー。ワーカーで生成された後、使用されるまでここに保持される
+        this.frame_in_buf = 0;                  //現在のバッファー内のフレーム数
+        this.secs_per_frame = 1.0 / this.context.sampleRate;
+        this.node = this.context.createJavaScriptNode(this.buffer_size, 1, 1);
         this.actual_sample_rate = this.context.sampleRate;
         this.cur_frame = 0;             //現在の再生側の経過時間をサンプルフレーム数で表したもの
-        this.functions = [              //波形生成に使われる関数群
-            function(time, freq){       //引数には現在のノートが鳴り始めてからの経過時間(s)とそのノートが発生させるべき周波数が入ってくる
-                return Math.sin(freq * 2 * Math.PI * time);
-            }
-        ];
+        this.sound_producer = new Worker("scripts/sound_producer.js");   //バックグラウンドで波形生成を担当する
         
         var _self = this;
         this.node.onaudioprocess = function(e){
             var data = e.outputBuffer.getChannelData(0);
-            _self.process(data.length, data, e.outputBuffer.getChannelData(1));
+            _self.processAudioCallback(data.length, data, e.outputBuffer.getChannelData(1));
+        };
+        
+        this.sound_producer.onmessage = function(e){
+            var data = e.data;
+            _self.queue.push(data);
+            if(_self.queue.length >= 10){_self.node.connect(_self.context.destination);}   //ある程度キューにデータが溜まってから再生開始
+            _self.prepareToProcessNextNode(_self.getNextNode(_self.cur_ast_node.for_worker, true));
         };
         
         this.cmd_manager.registerAll([
-            {shorter_name : "o", longer_name : ["octave"], func : function(nodes){
-                _self.env.setOctave(nodes[0].value);
+            {shorter_name : "o", longer_name : ["octave"], func : function(args){
+                _self.env[args[2]].setOctave(args[0].value);
             }},
-            {shorter_name : null, longer_name : ["k.sign", "key_signature"], func : function(nodes){
-                _self.env.setCurrentKey([nodes[0].value.split(""), nodes[1].value.split("")]);
+            {shorter_name : null, longer_name : ["k.sign", "key_signature"], func : function(args){
+                _self.env[args[2]].setCurrentKey([args[0].value.split(""), args[1].value.split("")]);
             }},
             {shorter_name : "l", longer_name : null, func : function(/*args*/){
                 //_self.env.setCurrentDefaultLength(args[0]);
@@ -40,17 +49,14 @@ return enchant.Class.create({
             {shorter_name : "q", longer_name : null, func : function(/*args*/){
                 //_self.env.setGateTime(args[0]);
             }},
-            {shorter_name : "t", longer_name : ["tempo"], func : function(nodes){
-                _self.env.setTempo(nodes[0].value);
+            {shorter_name : "t", longer_name : ["tempo"], func : function(args){
+                _self.env[args[2]].setTempo(args[0].value);
             }}
         ]);
         
         //一番目のノートを演奏する準備をする
-        var first_node = this.getNextNode(this.cur_ast_node);
-        first_node.end_frame = this.convertMidiTicksToSampleFrame(first_node[0][1][0].value);
-        this.cur_ast_node = first_node;
-        this.buffers[0] = new Float32Array(4096);
-        this.node.connect(this.context.destination);
+        this.prepareToProcessNextNode(this.getNextNode(this.cur_ast_node.for_worker, false));
+        this.cur_ast_node.for_playback = this.getNextNode(this.cur_ast_node.for_playback, false);
     },
     
     indexOf : function(node, target_node){
@@ -61,7 +67,7 @@ return enchant.Class.create({
     },
     
     getNextNode : function(node, skip_child){
-        if(!skip_child && (node.cons === "params" || node.cons === "command")){return node;}
+        if(!skip_child && (node.cons === "params" || node.cons === "command" || node.cons === "chord")){return node;}
         if(!skip_child && node.length){return this.getNextNode(node[0], false);}
         
         if(!node.parent){return null;}
@@ -79,59 +85,65 @@ return enchant.Class.create({
     },
     
     convertMidiTicksToSampleFrame : function(ticks){
-        return(ticks * this.actual_sample_rate * 60.0 / (480.0 * 1.0 * this.env.getCurrentTempo()));
+        return(ticks * this.actual_sample_rate * 60.0 / (480.0 * 1.0 * this.env.for_worker.getCurrentTempo()));
     },
     
     prepareToProcessNextNode : function(node){
-        var next_node = this.getNextNode(node, true);
-        if(!next_node){
-            this.main.stop();
-            return null;
+        if(!node){             //全部のASTノードの処理が終わったので、波形生成スレッドを停止する
+            this.sound_producer.terminate();
+            return;
         }
-        if(next_node.cons === "command"){
-            this.cmd_manager.invoke(next_node[0].value, [next_node[1], next_node[2]]);
-            return this.prepareToProcessNextNode(next_node);
+        if(node.cons === "command"){
+            this.cmd_manager.invoke(node[0].value, [node[1], node[2], "for_worker"]);
+            return this.prepareToProcessNextNode(this.getNextNode(node, true));
         }
-        var last_end_frame = this.cur_ast_node.end_frame, first_freq = this.convertToFrequency(this.cur_ast_node[0][0][0].value);
-        this.cur_ast_node_start_frame = last_end_frame;
-        next_node.end_frame = this.cur_ast_node_start_frame + this.convertMidiTicksToSampleFrame(next_node[0][1][0].value);
-        var second_freq = this.convertToFrequency(next_node[0][0][0].value);
-        this.cur_ast_node = next_node;
-        var result = {"0" : first_freq};
-        result[this.cur_ast_node_start_frame] = second_freq;
-        return result;
+        
+        var start_frame = this.cur_ast_node.for_worker.end_frame + 1 || 0;
+        node.end_frame = start_frame +
+            this.convertMidiTicksToSampleFrame((node.cons == "chord") ? node[1][0].value : node[0][1][0].value);
+        var next_nodes = (node.cons == "chord") ? node[0].toArray() : [[node]];
+        var freqs = next_nodes.map(function(note){
+            return this.convertToFrequency(note[0][0][0][0].value);
+        }, this);
+        this.cur_ast_node.for_worker = node;
+        
+        this.sound_producer.postMessage({
+            freq_list : freqs, program_num : 0, note_len : node.end_frame - start_frame, secs_per_frame : this.secs_per_frame
+        });
     },
     
-    process : function(data_length, left_data, right_data){
-        var cur_sample_frame = this.cur_frame, len_sample = data_length;
-        var cur_diff_frame = cur_sample_frame - this.cur_ast_node_start_frame, secs_per_frame = 1.0 / this.context.sampleRate;
-        var func = this.functions[this.env.getProgramNumForTrack(0)], freq_list;
-        var end_time_at_cur_exec = cur_sample_frame + data_length;      //今回の処理が終わった時のサンプルフレーム数を導出する
-        if(end_time_at_cur_exec >= this.cur_ast_node.end_frame){
-            if(!(freq_list = this.prepareToProcessNextNode(this.cur_ast_node))){return;}
-        }else{
-            freq_list = {"0" : this.convertToFrequency(this.cur_ast_node[0][0][0].value)};
+    proceedToNextNode : function(node){
+        var next_node = this.getNextNode(node, true);
+        if(!next_node){             //曲の最後まで到達したので、再度の再生に備える
+            this.main.stop();
+            this.cur_ast_node.for_playback = this.parse_tree;
+            return false;
+        }
+        if(next_node.cons === "command"){   //画面表示用に"command"タイプのノードの処理をする
+            this.cmd_manager.invoke(next_node[0].value, [next_node[1], next_node[2], "for_playback"]);
+            return this.proceedToNextNode(next_node);
         }
         
-        if(this.buffers[0].length < len_sample){
-            this.buffers[0] = new Float32Array(len_sample);
-        }
-        var buf = this.buffers[0];
+        this.cur_ast_node.for_playback = next_node;
+        return true;
+    },
+    
+    processAudioCallback : function(data_length, left_data, right_data){
+        var playing_queue = this.queue[this.next_playing_buffer_count], index = this.frame_in_buf;
         
-        for(var i = 0, freq = freq_list["0"]; i < len_sample; ++i){    //出力バッファーに波形データをセットする
-            buf[i] = func((cur_diff_frame + i) * secs_per_frame, freq);
-            if(freq_list[i] !== undefined){freq = freq_list[i];}
-        }
-        
-        if(data_length){
-            var step = 1, index = 0;
-            for(var j = 0; j < data_length; ++j){
-                left_data[j] = buf[Math.floor(index)];
-                right_data[j] = buf[Math.floor(index)];
-                index += step;
+        for(var i = 0; i < data_length; ++i, ++index){    //出力バッファーに波形データをセットする
+            if(index >= playing_queue.length){
+                if(!this.proceedToNextNode(this.cur_ast_node.for_playback)){return;}    //曲の終端に到達したので、メソッドを抜ける
+                index = 0;
+                ++this.next_playing_buffer_count;
+                playing_queue = this.queue[this.next_playing_buffer_count];
             }
+            
+            left_data[i] = playing_queue[index];
+            right_data[i] = playing_queue[index];
         }
         
+        this.frame_in_buf = index;
         this.cur_frame += data_length;
     },
     

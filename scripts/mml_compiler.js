@@ -25,14 +25,16 @@ define(["scripts/lib/enchant.js", "lexer", "scripts/parser.js", "utils", "lib/tr
             with(parser){
                 parser.def({
                     mml: Seq(Repeat(Ref("line")), End()),
-                    line: Any(Repeat1(Ref("longer_command")), Repeat1(Any(Ref("shortened_command"), Ref("tie"), Ref("note")))),
+                    line: Any(Repeat1(Ref("longer_command")), Repeat1(Any(Ref("shortened_command"), Ref("tuplet"), Ref("chord"),
+                        Ref("tie"), Ref("note")))),
                     tie: Seq(Ref("note"), Repeat1(Token("&"), Ref("note"))),
+                    tuplet: Seq(Token("{"), Repeat1(Ref("note")), Token("}"), Maybe(Ref("note_length"))),
+                    chord: Seq(Any(Token('"'), Token("'")), Repeat1(Any(Ref("note"), Ref("shortened_command"))), Any(Token('"'), Token("'")),
+                        Maybe(Token("num"), Maybe(Token(","), Label("gate_time", Token("num"))))),
                     note: Seq(Ref("pitch"), Maybe(Ref("note_length")), Maybe(Token(","), Maybe(Label("gate_time", Ref("note_length"))),
                         Maybe(Token(","), Label("velocity", Seq(Maybe(Any(Token("+"), Token("-"))), Token("num")))))),
                     note_length: Seq(Maybe(Token("*")), Token("num"), Repeat(Token(".")), Repeat(Token("^"),
                         Maybe(Token("*")), Token("num"), Repeat(Token(".")))),
-                    chord: Seq(Any(Token('"'), Token("'")), Repeat1(Ref("note")), Any(Token('"'), Token("'"),
-                        Maybe(Token("note_length"), Maybe(Token("num"))))),
                     pitch: Seq(Token("note_name"), Maybe(Token("!")), Repeat(Any(Token("#"), Token("+"), Token("-")))),
                     shortened_command: Any(Seq(Maybe(Token("@")), Token("keywords"), Seq(Maybe(Token("*")), Token("num"), Repeat(Token("."))),
                         Maybe(Token(":"), Repeat(Token("num"), Maybe(Token(","))))), Any(Token("<"), Token(">"))),
@@ -60,6 +62,7 @@ define(["scripts/lib/enchant.js", "lexer", "scripts/parser.js", "utils", "lib/tr
                     var velocity_node = tree.cons("velocity", (m.g.velocity) ? [tree.string(m.g.velocity[0] ? "true" : "false"),
                         tree.num(m.g.velocity[1])] :
                         [tree.string("none")]);
+                    
                     return tree.cons((m.g.pitch[0].value === 0) ? "rest" : "note", [tree.cons("params", [tree.list([m[0],
                         tree.cons("length", m.g.note_length || [tree.num(_self.env.getCurrentDefaultLength())]),
                         tree.cons("gate_time", (m.g.gate_time) ? [tree.num(m.g.gate_time)] : [tree.string("none")]),
@@ -69,6 +72,7 @@ define(["scripts/lib/enchant.js", "lexer", "scripts/parser.js", "utils", "lib/tr
                     var length = 0, sequence = [["^", m[0], m[1], m[2]]].concat(m[3]).filter(function(obj){
                         return !!obj;
                     });
+                    
                     sequence.forEach(function(seq){
                         if(seq[1]){
                             length += parseInt(seq[2]);    //音長がtick指定だったのでそのまま加算
@@ -80,8 +84,40 @@ define(["scripts/lib/enchant.js", "lexer", "scripts/parser.js", "utils", "lib/tr
                     });
                     return [tree.num(length)];
                 },
-                chord: function(m){
+                tuplet: function(m){
+                    var notes = m[1], cur_default_len = _self.env.getCurrentDefaultLength();
+                    var len = m[3] && m[3][0].value || cur_default_len, len_per_note = len / notes.length;
                     
+                    notes.forEach(function(note){
+                        if(note[0][0][1][0].value != cur_default_len){
+                            throw SyntaxError("Illegal notation! You can't write a note length in a tuplet defnition!");
+                        }
+                        note[0][0][1][0].value = len_per_note;
+                    });
+                    return tree.cons("tuplet", [tree.list(notes), tree.cons("length", [tree.num(len)])]);
+                },
+                chord: function(m){
+                    if(m[0] !== m[2]){
+                        throw Error("Invalid operators! You have to use the same quotation mark on either side of a chord" +
+                            "and keep them balanced!");
+                    }
+                    var contents = m[1], len = -1, cur_default_len = _self.env.getCurrentDefaultLength(), notes = [];
+                    
+                    contents.forEach(function(note){   //和音の構成音の定義から和音の長さを指定したパラメーターがあるか調べる
+                        if(note.cons != "note"){return;}
+                        if(len == -1 && note[0][0][1][0].value != cur_default_len){
+                            len = note[0][0][1][0].value;
+                        }else if(len != -1 && note[0][0][1][0].value != cur_default_len){
+                            throw SyntaxError("Multiple definitions found! You can set the note length just once in a chord!" +
+                                "Remove one of the length definition or just use the postfix-style definition.");
+                        }
+                        notes.push(note);
+                    });
+                    if(len == -1){      //和音定義の中には長さ指定のパラメーターがなかったので、後置形式で指定されているか調べる
+                        len = m[3] && m[3][0] || cur_default_len;
+                    }
+                    return tree.cons("chord", [tree.list(notes), tree.cons("length", [tree.num(len)]), tree.cons("gate_time",
+                        [m.g.gate_time && tree.num(m.g.gate_time) || tree.string("none")])]);
                 },
                 pitch: function(m){     //音高をMIDIのNoteNum形式で求める
                     if(m[0] === 'r'){return tree.cons("pitch", [tree.num(0)]);}
