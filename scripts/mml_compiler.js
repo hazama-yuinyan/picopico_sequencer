@@ -36,8 +36,8 @@ define(["scripts/lib/enchant.js", "lexer", "scripts/parser.js", "utils", "lib/tr
                     note_length: Seq(Maybe(Token("*")), Token("num"), Repeat(Token(".")), Repeat(Token("^"),
                         Maybe(Token("*")), Token("num"), Repeat(Token(".")))),
                     pitch: Seq(Token("note_name"), Maybe(Token("!")), Repeat(Any(Token("#"), Token("+"), Token("-")))),
-                    shortened_command: Any(Seq(Maybe(Token("@")), Token("keywords"), Seq(Maybe(Token("*")), Token("num"), Repeat(Token("."))),
-                        Maybe(Token(":"), Repeat(Token("num"), Maybe(Token(","))))), Any(Token("<"), Token(">"))),
+                    shortened_command: Any(Seq(Maybe(Token("@")), Maybe(Token("keywords")), Seq(Maybe(Token("*")), Token("num"),
+                        Repeat(Token("."))), Maybe(Token(":"), Repeat(Token("num"), Maybe(Token(","))))), Any(Token("<"), Token(">"))),
                     longer_command: Seq(Token("["), Token("commands"), Ref("argument_list"), Token("]")),
                     argument_list: Any(Label("digit_args", Seq(Token("num"), Repeat(Token(","), Token("num")))),
                         Label("note_args", Seq(Any(Token("+"), Token("#"), Token("-")), Repeat1(Token("note_name")),
@@ -109,7 +109,7 @@ define(["scripts/lib/enchant.js", "lexer", "scripts/parser.js", "utils", "lib/tr
                             len = note[0][0][1][0].value;
                         }else if(len != -1 && note[0][0][1][0].value != cur_default_len){
                             throw SyntaxError("Multiple definitions found! You can set the note length just once in a chord!" +
-                                "Remove one of the length definition or just use the postfix-style definition.");
+                                "Remove one of the length definition or just use the postfix-style notation.");
                         }
                         notes.push(note);
                     });
@@ -130,14 +130,17 @@ define(["scripts/lib/enchant.js", "lexer", "scripts/parser.js", "utils", "lib/tr
                     return tree.cons("pitch", [tree.num(pitch_num)]);
                 },
                 shortened_command: function(m){
-                    if(typeof m[0] == "string"){
+                    if(typeof m[0] == "string"){    //"<",">"コマンドの処理
                         var next_octave = (m[0] === '<') ? _self.env.cur_default_octave + 1 : _self.env.cur_default_octave - 1;
                         _self.cmd_manager.invoke("o", [[null, next_octave]]);
                         return tree.cons("command", [tree.string("o"), tree.string(next_octave), tree.string("none")]);
                     }
-                    var args = m[0], optional_args = args[3];
-                    _self.cmd_manager.invoke(args[1], [args[2], args[3] && optional_args[1]]);
-                    return tree.cons("command", [tree.string(m.g.keywords), tree.string(m.g.num), tree.string(args[3] && optional_args[1] || "none")]);
+                    
+                    var args = m[0], optional_args = args[3];   //その他のコマンドの処理
+                    _self.cmd_manager.invoke((!m.g.keywords) ? "program_change" : args[1],
+                        [args[2], args[3] && optional_args[1], args[0] ? true : false]);
+                    return tree.cons("command", [tree.string(m.g.keywords || "program_change"), tree.string(args[2][1]),
+                        tree.string(args[3] && optional_args[1] || "none")]);
                 },
                 longer_command: function(m){
                     _self.cmd_manager.invoke(m[1], m.g.argument_list.array);
@@ -179,6 +182,9 @@ define(["scripts/lib/enchant.js", "lexer", "scripts/parser.js", "utils", "lib/tr
                 }},
                 {shorter_name : "t", longer_name : ["tempo"], func : function(/*args*/){
                     //_self.env.setTempo(args[0]);
+                }},
+                {shorter_name : null, longer_name : ["program_change"], func : function(args){
+                    _self.env.setProgramNumForTrack(0, args[0][1]);
                 }}
             ]);
             

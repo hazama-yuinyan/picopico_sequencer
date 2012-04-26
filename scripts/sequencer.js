@@ -10,8 +10,9 @@ return enchant.Class.create({
             for_playback : new util.Enviroment()
         };
         this.cmd_manager = new util.CommandManager();
+        this.parse_tree = parse_tree;           //構文解析木のルートノード
         this.cur_ast_node = {
-            for_playback : parse_tree,           //現在着目しているASTのノード（GUI用）
+            for_playback : parse_tree,          //現在着目しているASTのノード（GUI用）
             for_worker : parse_tree             //現在着目しているASTのノード（ワーカー用）
         };
         this.next_playing_buffer_count = 0;     //次に出力バッファーに流すべきデータのキュー内での位置
@@ -22,6 +23,7 @@ return enchant.Class.create({
         this.actual_sample_rate = this.context.sampleRate;
         this.cur_frame = 0;             //現在の再生側の経過時間をサンプルフレーム数で表したもの
         this.sound_producer = new Worker("scripts/sound_producer.js");   //バックグラウンドで波形生成を担当する
+        this.can_play = true;
         
         var _self = this;
         this.node.onaudioprocess = function(e){
@@ -51,12 +53,15 @@ return enchant.Class.create({
             }},
             {shorter_name : "t", longer_name : ["tempo"], func : function(args){
                 _self.env[args[2]].setTempo(args[0].value);
+            }},
+            {shorter_name : null, longer_name : ["program_change"], func : function(args){
+                _self.env[args[2]].setProgramNumForTrack(0, args[0].value);
             }}
         ]);
         
         //一番目のノートを演奏する準備をする
         this.prepareToProcessNextNode(this.getNextNode(this.cur_ast_node.for_worker, false));
-        this.cur_ast_node.for_playback = this.getNextNode(this.cur_ast_node.for_playback, false);
+        this.proceedToNextNode(this.getNextNode(this.cur_ast_node.for_playback, false));
     },
     
     indexOf : function(node, target_node){
@@ -70,7 +75,9 @@ return enchant.Class.create({
         if(!skip_child && (node.cons === "params" || node.cons === "command" || node.cons === "chord")){return node;}
         if(!skip_child && node.length){return this.getNextNode(node[0], false);}
         
-        if(!node.parent){return null;}
+        if(!node.parent){
+            return null;
+        }
         var index = this.indexOf(node.parent, node);
         if(index + 1 >= node.parent.length){
             return this.getNextNode(node.parent, true);
@@ -108,32 +115,36 @@ return enchant.Class.create({
         this.cur_ast_node.for_worker = node;
         
         this.sound_producer.postMessage({
-            freq_list : freqs, program_num : 0, note_len : node.end_frame - start_frame, secs_per_frame : this.secs_per_frame
+            freq_list : freqs, program_num : this.env.for_worker.getProgramNumForTrack(0), note_len : node.end_frame - start_frame,
+                secs_per_frame : this.secs_per_frame
         });
     },
     
     proceedToNextNode : function(node){
-        var next_node = this.getNextNode(node, true);
-        if(!next_node){             //曲の最後まで到達したので、再度の再生に備える
-            this.main.stop();
-            this.cur_ast_node.for_playback = this.parse_tree;
+        if(!node){             //曲の最後まで到達したので、再度の再生に備える
+            this.reinitialize();
+            this.can_play = false;
             return false;
         }
-        if(next_node.cons === "command"){   //画面表示用に"command"タイプのノードの処理をする
-            this.cmd_manager.invoke(next_node[0].value, [next_node[1], next_node[2], "for_playback"]);
-            return this.proceedToNextNode(next_node);
+        if(node.cons === "command"){   //画面表示用に"command"タイプのノードの処理をする
+            this.cmd_manager.invoke(node[0].value, [node[1], node[2], "for_playback"]);
+            return this.proceedToNextNode(this.getNextNode(node, true));
         }
         
-        this.cur_ast_node.for_playback = next_node;
+        this.cur_ast_node.for_playback = node;
         return true;
     },
     
     processAudioCallback : function(data_length, left_data, right_data){
+        if(!this.can_play){
+            this.main.stop();
+            return;
+        }
         var playing_queue = this.queue[this.next_playing_buffer_count], index = this.frame_in_buf;
         
         for(var i = 0; i < data_length; ++i, ++index){    //出力バッファーに波形データをセットする
             if(index >= playing_queue.length){
-                if(!this.proceedToNextNode(this.cur_ast_node.for_playback)){return;}    //曲の終端に到達したので、メソッドを抜ける
+                if(!this.proceedToNextNode(this.getNextNode(this.cur_ast_node.for_playback, true))){break;} //曲の終端に到達したので、ループを抜ける
                 index = 0;
                 ++this.next_playing_buffer_count;
                 playing_queue = this.queue[this.next_playing_buffer_count];
@@ -147,12 +158,21 @@ return enchant.Class.create({
         this.cur_frame += data_length;
     },
     
+    reinitialize : function(){
+        this.proceedToNextNode(this.parse_tree, false);
+        this.next_playing_buffer_count = 0;
+        this.frame_in_buf = 0;
+        this.cur_frame = 0;
+    },
+    
     stop : function(){
         this.node.disconnect();
+        this.can_play = false;
     },
     
     play : function(){
         this.node.connect(this.context.destination);
+        this.can_play = true;
     }
 });
 

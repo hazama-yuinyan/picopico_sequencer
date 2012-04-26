@@ -1,11 +1,25 @@
 var functions = [               //波形生成に使われる関数群
     function(time, freq){       //引数には現在のノートが鳴り始めてからの経過時間(s)とそのノートが発生させるべき周波数が入ってくる
         return Math.sin(freq * 2 * Math.PI * time);
+    },
+    
+    function(time, freq){       //矩形波
+        return Math.round(Math.sin(2 * Math.PI * freq * time));
+    },
+    
+    function(time, freq){       //ノコギリ波
+        var x = freq * time;
+        return 2.0 * (x - Math.round(x));
+    },
+    
+    function(time, freq){       //三角波
+        var x = Math.pow(-1.0, Math.round(freq * time)) * functions[2](time, freq);
+        return x;
     }
 ];
 
 /**
- * 0 <= x < toの範囲で漸減する直線を描く関数
+ * 0 <= x < toの範囲で漸減/漸増する直線を描く関数
  */
 function linear(val, x, to, len, is_up){
     var tmp = (is_up) ? x : to - x;
