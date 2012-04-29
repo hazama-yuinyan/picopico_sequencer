@@ -22,7 +22,6 @@ main.compile = function(){
 
 main.stop = function(){
     main.sequencer.stop();
-    main.sequencer.reinitialize();
     var button = document.getElementById("controller");
     button.onclick = main.play;
     button.value = "プレイ";
@@ -40,7 +39,7 @@ main.play = function(){
 };
 
 main.hold = function(){
-    main.sequencer.stop();
+    main.sequencer.hold();
     var button = document.getElementById("controller");
     button.onclick = main.play;
     button.value = "プレイ";

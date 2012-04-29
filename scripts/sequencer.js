@@ -17,6 +17,7 @@ return enchant.Class.create({
         this.track_infos = [{frame_in_buf : 0, next_tag_count : 0}];    //各トラックごとの再生情報
         this.secs_per_frame = 1.0 / this.context.sampleRate;
         this.nodes = [this.context.createJavaScriptNode(this.buffer_size, 1, 1)];
+        this.compressor = this.context.createDynamicsCompressor();
         this.actual_sample_rate = this.context.sampleRate;
         this.cur_frame = 0;             //現在の再生側の経過時間をサンプルフレーム数で表したもの
         this.sound_producer = new Worker("scripts/sound_producer.js");   //バックグラウンドで波形生成を担当する
@@ -69,6 +70,7 @@ return enchant.Class.create({
         ]);
         
         this.nodes[0].onaudioprocess = this.processAudio;
+        this.nodes[0].connect(this.compressor);
         //一番目のノートを演奏する準備をする
         this.prepareToProcessNextNode(this.getNextNode(this.cur_ast_node, false));
     },
@@ -147,9 +149,7 @@ return enchant.Class.create({
     prepareToProcessNextNode : function(node){
         if(!node){             //全部のASTノードの処理が終わったので、波形生成スレッドを停止する
             this.sound_producer.terminate();
-            this.nodes.forEach(function(node){
-                node.connect(this.context.destination);
-            }, this);
+            this.compressor.connect(this.context.destination);
             return;
         }
         var track_num = this.env.for_worker.getCurrentTrackNum();
@@ -159,6 +159,7 @@ return enchant.Class.create({
                 if(node[0].value === "track"){
                     var new_node = this.context.createJavaScriptNode(this.buffer_size, 1, 1);
                     new_node.onaudioprocess = this.processAudio;
+                    new_node.connect(this.compressor);
                     this.nodes.push(new_node);
                     this.track_infos.push({frame_in_buf : 0, next_tag_count : 0});
                     this.queues.push([]);
@@ -219,7 +220,6 @@ return enchant.Class.create({
     proceedToNextNoteForTrack : function(track_num){
         var track_tags = this.note_tags[track_num], track_info = this.track_infos[track_num];
         if(track_info.next_tag_count >= track_tags.length){         //曲の最後まで到達したので、再度の再生に備える
-            this.reinitialize();
             this.can_play = false;
             return null;
         }
@@ -271,16 +271,17 @@ return enchant.Class.create({
     },
     
     stop : function(){
-        this.nodes.forEach(function(node){
-            node.disconnect();
-        });
+        this.hold();
+        this.reinitialize();
+    },
+    
+    hold : function(){
+        this.compressor.disconnect();
         this.can_play = false;
     },
     
     play : function(){
-        this.nodes.forEach(function(node){
-            node.connect(this.context.destination);
-        }, this);
+        this.compressor.connect(this.context.destination);
         this.can_play = true;
     }
 });
