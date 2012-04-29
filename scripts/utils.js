@@ -7,12 +7,22 @@ define(["scripts/lib/enchant.js"], function(dummy){
             this.cur_default_length = 480;
             this.cur_default_octave = 4;
             this.cur_gate_time = 0;
+            this.cur_volumes = [127];
+            this.cur_track_num = 0;
             this.program_nums = [0];
             
             var diff_pitches = {c : 0, d : 2, e : 4, f : 5, g : 7, a : 9, b : 11};
             this.getPitchDifference = function(char){
                 return diff_pitches[char];
             };
+        },
+        
+        restoreDefault : function(){
+            this.notes_with_signature = {};
+            this.cur_tempo = 120;
+            this.cur_default_length = 480;
+            this.cur_default_octave = 4;
+            this.cur_gate_time = 0;
         },
         
         getPitchDiffByKey : function(note_name){
@@ -22,7 +32,8 @@ define(["scripts/lib/enchant.js"], function(dummy){
         setCurrentKey : function(key_def){
             this.notes_with_signature = {};
             if(typeof key_def == "string"){
-                
+                throw SyntaxError("Sorry, but currently you can't set key signatures by keyword! Please specify which notes should " + 
+                    "be sharpend or flattened one by one.");
             }else{
                 //if(!match){throw SyntaxError("Invalid parameters to command [KEY SIGNATURE]");}
                 var notes = key_def[1], signs = key_def[0];
@@ -71,6 +82,22 @@ define(["scripts/lib/enchant.js"], function(dummy){
         
         setProgramNumForTrack : function(track_num, program_num){
             this.program_nums[track_num] = program_num;
+        },
+        
+        getVolumeForTrack : function(track_num){
+            return this.cur_volumes[track_num];
+        },
+        
+        setVolume : function(track_num, v){
+            this.cur_volumes[track_num] = v;
+        },
+        
+        getCurrentTrackNum : function(){
+            return this.cur_track_num;
+        },
+        
+        setTrackNum : function(track_num){
+            this.cur_track_num = track_num;
         }
     });
     

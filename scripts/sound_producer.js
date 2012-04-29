@@ -26,21 +26,27 @@ function linear(val, x, to, len, is_up){
     return val * tmp / len;
 }
 
-var cur_sample_frame = 0, len_foot = 1000;
+var cur_sample_frame = 0, len_foot = 1000, note_id = 0, cur_track_num = 0;
 
 onmessage = function(e){
     var data = e.data, freq_list = data.freq_list, func = functions[data.program_num], note_len = data.note_len;
-    var buffer = new Float32Array(note_len), secs_per_frame = data.secs_per_frame;
+    var buffer = new Float32Array(note_len), secs_per_frame = data.secs_per_frame, amp = data.volume;
+    if(cur_track_num != data.track_num){
+        cur_track_num = data.track_num;
+        cur_sample_frame = 0;
+        note_id = 0;
+    }
+    var note_tag = {type : "note", start_frame : cur_sample_frame, end_frame : cur_sample_frame + note_len, note_id : note_id++};
     
     for(var i = 0; i < note_len; ++i, ++cur_sample_frame){    //出力バッファーに波形データをセットする
         var y = 0.0;
         freq_list.forEach(function(freq){
-            y += func(i * secs_per_frame, freq);
+            y += amp * func(i * secs_per_frame, freq);
         });
         if(i <= len_foot){y = linear(y, i, len_foot, len_foot, true);}    //急激な波形の変化を抑えるため、ノートの端の方は波形を変化させる
         if(i >= note_len - len_foot){y = linear(y, i, note_len, len_foot, false);}
         buffer[i] = y;
     }
     
-    postMessage(buffer);
+    postMessage({buffer : buffer, tag : note_tag});
 };

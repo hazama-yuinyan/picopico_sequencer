@@ -12,7 +12,8 @@ main.compile = function(){
     var editor = document.getElementById("editor");
     var tree = compiler.mml_parser.parse(editor.value);
     var display = document.getElementById("ast");
-    display.value = tree.toPrettyString();
+    display.value = tree && tree.toPrettyString() || compiler.mml_parser.stringifyErrors();
+    if(!tree){return;}
     this.sequencer = new Sequencer(tree, this);
     var button = document.getElementById("controller");
     button.onclick = main.hold;

@@ -2,14 +2,15 @@ define(["scripts/lib/enchant.js", "lexer", "scripts/parser.js", "utils", "lib/tr
     var MMLLexer = enchant.Class.create(Lexer, {
         initialize : function(){
             Lexer.call(this, [
-                {type : "IGNORE", regexp : /^\/.+\n|^[ \t\n\r]+/},
-                {type : "note_name", regexp : /^[a-gr]/i},
-                {type : "keywords", regexp : /^[loqtv]/i},
+                {type : "IGNORE", regexp : /^\/[^\n\t\r]+|^[ ]+/},
+                {type : "line_delimiter", regexp : /^[\t\n\r]+/},
                 {type : "commands", regexp : /^(velocity|volume|program|include|key_signature|k.sign)/i},
+                {type : "note_name", regexp : /^[a-gr]/i},
+                {type : "keywords", regexp : /^[loqtuv]/i},
                 {type : "num", regexp : /^\d+/, callback : function(arg){
-                    return parseInt(arg);
+                    return parseInt(arg, 10);
                 }},
-                {type : "operators", regexp : /^[<>,\.\^\+#\-!\*@{}\[\]"']/}
+                {type : "operators", regexp : /^[<>,\.\^\+#\-!\*@{}\[\]"'\(\)]/}
             ]);
         }
     });
@@ -25,8 +26,8 @@ define(["scripts/lib/enchant.js", "lexer", "scripts/parser.js", "utils", "lib/tr
             with(parser){
                 parser.def({
                     mml: Seq(Repeat(Ref("line")), End()),
-                    line: Any(Repeat1(Ref("longer_command")), Repeat1(Any(Ref("shortened_command"), Ref("tuplet"), Ref("chord"),
-                        Ref("tie"), Ref("note")))),
+                    line: Seq(Maybe(Any(Repeat1(Ref("longer_command")), Repeat1(Any(Ref("shortened_command"), Ref("tuplet"), Ref("chord"),
+                        Ref("tie"), Ref("note"))))), Token("line_delimiter")),
                     tie: Seq(Ref("note"), Repeat1(Token("&"), Ref("note"))),
                     tuplet: Seq(Token("{"), Repeat1(Ref("note")), Token("}"), Maybe(Ref("note_length"))),
                     chord: Seq(Any(Token('"'), Token("'")), Repeat1(Any(Ref("note"), Ref("shortened_command"))), Any(Token('"'), Token("'")),
@@ -36,8 +37,9 @@ define(["scripts/lib/enchant.js", "lexer", "scripts/parser.js", "utils", "lib/tr
                     note_length: Seq(Maybe(Token("*")), Token("num"), Repeat(Token(".")), Repeat(Token("^"),
                         Maybe(Token("*")), Token("num"), Repeat(Token(".")))),
                     pitch: Seq(Token("note_name"), Maybe(Token("!")), Repeat(Any(Token("#"), Token("+"), Token("-")))),
-                    shortened_command: Any(Seq(Maybe(Token("@")), Maybe(Token("keywords")), Seq(Maybe(Token("*")), Token("num"),
-                        Repeat(Token("."))), Maybe(Token(":"), Repeat(Token("num"), Maybe(Token(","))))), Any(Token("<"), Token(">"))),
+                    shortened_command: Any(Seq(Token("("), Token("keywords"), Token("num"), Token(")")), Seq(Maybe(Token("@")),
+                        Maybe(Token("keywords")), Seq(Maybe(Token("*")), Token("num"), Repeat(Token("."))),
+                        Maybe(Token(":"), Repeat(Token("num"), Maybe(Token(","))))), Any(Token("<"), Token(">"))),
                     longer_command: Seq(Token("["), Token("commands"), Ref("argument_list"), Token("]")),
                     argument_list: Any(Label("digit_args", Seq(Token("num"), Repeat(Token(","), Token("num")))),
                         Label("note_args", Seq(Any(Token("+"), Token("#"), Token("-")), Repeat1(Token("note_name")),
@@ -50,7 +52,7 @@ define(["scripts/lib/enchant.js", "lexer", "scripts/parser.js", "utils", "lib/tr
                     return tree.cons("mml", [tree.list(m[0])]);
                 },
                 line: function(m){
-                    return tree.cons("line", [tree.list(m[0] || m[1])]);
+                    return tree.cons("line", [(m[0]) ? tree.list(m[0]) : tree.string("empty_line")]);
                 },
                 tie: function(m){
                     var array = [m[0]].concat(m[1].length && m[1][1]).filter(function(obj){
@@ -59,11 +61,11 @@ define(["scripts/lib/enchant.js", "lexer", "scripts/parser.js", "utils", "lib/tr
                     return tree.cons("tie", [tree.list(array)]);
                 },
                 note: function(m){
-                    var velocity_node = tree.cons("velocity", (m.g.velocity) ? [tree.string(m.g.velocity[0] ? "true" : "false"),
+                    var velocity_node = tree.cons("velocity", (m.g.velocity) ? [tree.string(m.g.velocity[0] || "none"),
                         tree.num(m.g.velocity[1])] :
                         [tree.string("none")]);
                     
-                    return tree.cons((m.g.pitch[0].value === 0) ? "rest" : "note", [tree.cons("params", [tree.list([m[0],
+                    return tree.cons((m.g.pitch[0].value <= 0) ? "rest" : "note", [tree.cons("params", [tree.list([m[0],
                         tree.cons("length", m.g.note_length || [tree.num(_self.env.getCurrentDefaultLength())]),
                         tree.cons("gate_time", (m.g.gate_time) ? [tree.num(m.g.gate_time)] : [tree.string("none")]),
                         tree.cons("velocity", velocity_node)])])]);
@@ -120,7 +122,7 @@ define(["scripts/lib/enchant.js", "lexer", "scripts/parser.js", "utils", "lib/tr
                         [m.g.gate_time && tree.num(m.g.gate_time) || tree.string("none")])]);
                 },
                 pitch: function(m){     //音高をMIDIのNoteNum形式で求める
-                    if(m[0] === 'r'){return tree.cons("pitch", [tree.num(0)]);}
+                    if(m[0] === 'r'){return tree.cons("pitch", [tree.num(-127)]);}
                     var pitch_num = _self.env.getOctaveInNoteNum();
                     pitch_num += _self.env.getPitchDifference(m.g.note_name);
                     var diff_pitch = _self.env.getPitchDiffByKey(m.g.note_name), num_accidentals = m[2].length;
@@ -136,24 +138,34 @@ define(["scripts/lib/enchant.js", "lexer", "scripts/parser.js", "utils", "lib/tr
                         return tree.cons("command", [tree.string("o"), tree.string(next_octave), tree.string("none")]);
                     }
                     
-                    var args = m[0], optional_args = args[3];   //その他のコマンドの処理
-                    _self.cmd_manager.invoke((!m.g.keywords) ? "program_change" : args[1],
-                        [args[2], args[3] && optional_args[1], args[0] ? true : false]);
-                    return tree.cons("command", [tree.string(m.g.keywords || "program_change"), tree.string(args[2][1]),
-                        tree.string(args[3] && optional_args[1] || "none")]);
+                    var args = m[0], optional_args = args[3], command_name, arg1, arg2;   //その他のコマンドの処理
+                    if(args[0] == '(' && args[3] == ')'){
+                        command_name = "track";
+                        _self.cmd_manager.invoke(command_name, args[2]);
+                        arg1 = args[2];
+                    }else{
+                        command_name = (!m.g.keywords) ? "program_change" : args[1].toLowerCase();
+                        _self.cmd_manager.invoke(command_name, [args[2], args[3] && optional_args[1], args[0] ? true : false]);
+                        arg1 = args[2][1];
+                        arg2 = args[3] && optional_args[1];
+                    }
+                    return tree.cons("command", [tree.string(command_name), tree.string(arg1), tree.string(arg2 || "none")]);
                 },
                 longer_command: function(m){
-                    _self.cmd_manager.invoke(m[1], m.g.argument_list.array);
-                    return tree.cons("command", [tree.string(m.g.commands)].concat(m.g.argument_list.node || tree.string("none")));
+                    var command_name = m.g.commands.toLowerCase();
+                    _self.cmd_manager.invoke(command_name, m.g.argument_list.array);
+                    return tree.cons("command", [tree.string(command_name)].concat(m.g.argument_list.node || tree.string("none")));
                 },
                 argument_list: function(m){
                     var array, result;
                     if(m.g.digit_args){
                         array = m.g.digit_args.map(function(val){
                             return val[1];
+                        }).filter(function(val){
+                            return !!val;
                         });
                         array.unshift(m[0][0]);
-                        result = {array : array, node : tree.string(array.join(""))};
+                        result = {array : array, node : tree.num(array)};
                     }else{
                         var note_args = m.g.note_args, signs = [note_args[0]], note_names = [].concat(note_args[1]);
                         note_args[2].forEach(function(obj){
@@ -183,8 +195,17 @@ define(["scripts/lib/enchant.js", "lexer", "scripts/parser.js", "utils", "lib/tr
                 {shorter_name : "t", longer_name : ["tempo"], func : function(/*args*/){
                     //_self.env.setTempo(args[0]);
                 }},
+                {shorter_name : null, longer_name : ["track"], func : function(num){
+                    _self.env.setTrackNum(num - 1);
+                }},
                 {shorter_name : null, longer_name : ["program_change"], func : function(args){
                     _self.env.setProgramNumForTrack(0, args[0][1]);
+                }},
+                {shorter_name : "v", longer_name : ["volume"], func : function(/*args*/){
+                
+                }},
+                {shorter_name : "u", longer_name : ["velocity"], func : function(/*args*/){
+                
                 }}
             ]);
             
@@ -192,10 +213,21 @@ define(["scripts/lib/enchant.js", "lexer", "scripts/parser.js", "utils", "lib/tr
                 this.env = new util.Enviroment();
                 var tokens = lexer.tokenize(input_str);
                 var result = parser.parse(tokens, "mml");
-                if(result.value){traverse.addParentPointers(result.value);}
-                return result && result.value;
+                if(!result){return;}
+                
+                traverse.addParentPointers(result.value);
+                return result.value;
+            };
+            
+            this.stringifyErrors = function(){
+                var errors = parser.errors, str = "";
+                errors.forEach(function(error){
+                    str += "An error occured in " + error.cause + " : " + error.msg + "\n";
+                });
+                
+                return str;
             }
-        }            
+        }
     });
     
     return {mml_lexer : new MMLLexer(), mml_parser : new MMLParser()};

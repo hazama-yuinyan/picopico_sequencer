@@ -9,7 +9,7 @@ define(["scripts/lib/enchant.js"], function(){
                         if(m = definition.regexp.exec(str)){
                             if(definition.type.search(/ignore/i) == -1){
                                 tokens.push({type : definition.type == "operators" ? m[0] : definition.type,
-                                    value : definition.callback && definition.callback(m[0]) || m[0]});
+                                    value : (definition.callback) ? definition.callback(m[0]) : m[0]});
                             }
                             return false;
                         }
