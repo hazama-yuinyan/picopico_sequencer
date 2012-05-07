@@ -166,6 +166,8 @@ return enchant.Class.create({
                     this.note_tags.push([]);
                     this.cur_ast_node = {};     //トラックが変わったので、適当なノードを着目ノードに設定する
                     this.env.for_worker.restoreDefault();
+                    this.env.for_worker.setVolume(this.env.for_worker.getCurrentTrackNum(), 127);
+                    this.env.for_worker.setProgramNumForTrack(this.env.for_worker.getCurrentTrackNum(), 0);
                     this.next_metaevent = this.find(this.note_tags[0], function(tag){
                         return((tag.name == "t" || tag.name == "tempo" || tag.name == "k.sign" || tag.name == "key_signature") && tag.start_frame >= 0);
                     });

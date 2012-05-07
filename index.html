@@ -3,20 +3,21 @@
     <head>
         <title>ぴこぴこ・しーけんさー</title>
         <script data-main="scripts/main.js" src="scripts/lib/require.js"></script>
-        <style>#editor{
-            display: block;
-            float: left;
-        }
-        #ast{
-            display: block;
-            float: right;
-            background-color: #eee;
-        }
-        </style>
+        <style ref="stylesheet" href="style.css" type="text/css"></style>
     </head>
     <body>
-        <p>
-<textarea id="editor" cols="60" rows="20">
+        <div id="main_pane">
+            <div id="tool_box">
+                
+            </div>
+            <div id="tab_box">
+                <p>
+            </div>
+            <div>
+                <canvas width="400" height="300"></canvas>
+            </div>
+            <div>
+            <textarea id="editor" cols="60" rows="20">
 /[volume 127] [velocity 127]
 (t1)@1 v100 c4c8d8 e8e8g4 e8e8d8d8 c1
 [key_signature +f]
@@ -36,10 +37,13 @@ l4 d ">b<e"d">b<g" "a2f"d "ce"d"ca"
 l8 ffdde2r4 ffdde4fee4^8,,60d,,50
 /ここからキーDbMajor
 v100 l1 o3 "dfa" l2 "egb" "ea<c" >"dfa"1920, 6
-</textarea>
-        <textarea id="ast" cols="60" rows="20">
-        </textarea>
-        </p>
+            </textarea>
+            </div>
+        <div>
+            <textarea id="ast" cols="60" rows="20">
+            </textarea>
+            </div>
+        </div>
         <p><input type="button" value="コンパイル" onclick="main.compile()"></p>
         <p><input id="controller" type="button" value="再生" onclick="main.play()"></p>
         <p><input id="stop_button" type="button" value="ストップ" onclick="main.stop()"></p>
