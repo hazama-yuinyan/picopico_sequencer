@@ -1,4 +1,5 @@
-define(["scripts/lib/enchant.js"], function(){
+define(["dojo/_base/declare", "dojo/_base/lang"], function(declare, lang){
+    
 function $H(object) {
 	return new Hash(object);
 };
@@ -10,37 +11,9 @@ function $A(object){
 	return results;
 }
 
-Object.prototype.extend = function(destination, source){
-	for(var property in source){
-		destination[property] = source[property];
-	}
-	
-	return destination;
+function isHash(obj){
+	return obj instanceof Hash;
 };
-
-if(!Object.prototype.clone){
-	Object.prototype.clone = function(obj){
-		return Object.prototype.extend.call(this, {}, obj);
-	};
-}
-
-if(!Object.prototype.isString){
-	Object.prototype.isString = function(obj){
-		return typeof(obj) == "string";
-	};
-}
-
-if(!Object.prototype.isArray){
-	Object.prototype.isArray = function(obj){
-		return Object.prototype.toString.call(obj) == "[object Array]";
-	};
-}
-
-if(!Object.prototype.isHash){
-	Object.prototype.isHash = function(obj){
-		return obj instanceof Hash;
-	};
-}
 
 Array.prototype.inject = function(memo, iterator, context) {
 	this.forEach(function(value, index) {
@@ -49,9 +22,9 @@ Array.prototype.inject = function(memo, iterator, context) {
 	return memo;
 };
 
-var Hash = enchant.Class.create({
-	initialize : function(object) {
-		this._object = Object.isHash(object) ? object.toObject() : Object.clone(object);
+var Hash = declare(null, {
+	constructor : function(object) {
+		this._object = isHash(object) ? object.toObject() : lang.mixin({}, object);
 	},
 
 	each : function(iterator, context) {
@@ -79,7 +52,7 @@ var Hash = enchant.Class.create({
 	},
 
 	toObject : function() {
-		return Object.clone(this._object);
+		return lang.mixin(this._object);
 	},
 
 	merge : function(object) {
@@ -114,11 +87,11 @@ Parse.mobj = function(values, group) {
     m.group = $H(group);
     m.g = m.group.toObject();
     return m;
-}
+};
 
-Parse.Parser = enchant.Class.create({
-	initialize : function(){
-		this._grammers = $H();
+Parse.Parser = declare(null, {
+	constructor : function(){
+		this._grammers = $H({});
         this.errors = [];
 	},
 	
@@ -128,7 +101,7 @@ Parse.Parser = enchant.Class.create({
             type: "Seq",
             children: $A(arguments),
             parse: function(tokens) {
-                var values = [], group = $H(), r;
+                var values = [], group = $H({}), r;
                 
                 for(var i = 0;i < this.children.length; ++i) {
                     if(r = this.children[i].parse(tokens)) {
@@ -152,7 +125,7 @@ Parse.Parser = enchant.Class.create({
             tokentype: tokentype,
             parse: function(tokens) {
                 if(tokens.length && this.parser.isTokenOf(tokens[0], this.tokentype)) {
-                    var group = $H();
+                    var group = $H({});
                     group.set(this.tokentype, tokens[0].value);
                     return {
                         value: tokens[0].value,
@@ -174,7 +147,7 @@ Parse.Parser = enchant.Class.create({
             maximum: maximum,
             parse: function(tokens) {
                 var values = [];
-                var group = $H();
+                var group = $H({});
                 for(var i = 0; this.maximum == null || i < this.maximum; ++i){
                     var r = this.child.parse(tokens);
                     if(!r){
@@ -236,7 +209,7 @@ Parse.Parser = enchant.Class.create({
                 if(r) {
                     return r;
                 } else {
-                    return {rests:tokens, value:null, group:$H()};
+                    return {rests:tokens, value:null, group:$H({})};
                 }
             },
         };
@@ -247,7 +220,7 @@ Parse.Parser = enchant.Class.create({
             type: "End",
             parse: function(tokens){
                if(!tokens.length) {
-                   return {rests:[], value:null, group:$H()};
+                   return {rests:[], value:null, group:$H({})};
                } else {
                    parser.errors.push({cause : this.type, msg : "Expected EOF, but I'm still in middle of the inputs!"});
                    return null;
@@ -271,13 +244,13 @@ Parse.Parser = enchant.Class.create({
                     this.parser.errors.splice(0);
                     var value;
                     if(this.fn) {
-                        var m = Object.clone(r.value);
+                        var m = lang.mixin(r.value);
                         m.name = this.name;
                         value = this.fn(m);
                     } else {
                         value = r.value;
                     }
-                    var group = $H();
+                    var group = $H({});
                     group.set(this.name, value);
                     return {
                         rests: r.rests,
@@ -328,14 +301,14 @@ Parse.Parser = enchant.Class.create({
     def: function(name, child, fn) {
         if(arguments.length == 1) {
             $H(arguments[0]).each(function(item){
-                if(Object.isArray(item.value)) {
+                if(lang.isArray(item.value)) {
                     this.def(item.key, item.value[0], item.value[1]);
                 } else {
                     this.def(item.key, item.value);
                 }
             }, this);
         } else {
-            if(Object.isString(child)) {
+            if(lang.isString(child)) {
                 var src = this.compile(child);
                 with(this) {
                     child = eval(src);

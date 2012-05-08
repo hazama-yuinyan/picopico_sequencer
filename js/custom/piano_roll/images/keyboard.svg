@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<svg version="1.2" baseProfile="tiny" viewBox="0 0 21000 29700" preserveAspectRatio="xMidYMid" fill-rule="evenodd" clip-path="url(#presentation_clip_path)" stroke-width="28.222" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:draw="urn:oasis:names:tc:opendocument:xmlns:drawing:1.0" xmlns:presentation="urn:oasis:names:tc:opendocument:xmlns:presentation:1.0" xmlns:smil="urn:oasis:names:tc:opendocument:xmlns:smil-compatible:1.0" xmlns:anim="urn:oasis:names:tc:opendocument:xmlns:animation:1.0" xml:space="preserve">
+ <defs>
+  <clipPath id="presentation_clip_path" clipPathUnits="userSpaceOnUse">
+   <rect x="0" y="0" width="21000" height="29700"/>
+  </clipPath>
+ </defs>
+ <g id="id2" class="Master_Slide" clip-path="url(#presentation_clip_path)">
+  <g id="bg-id2" visibility="visible" class="Background">
+   <rect fill="none" stroke="none" x="0" y="0" width="21000" height="29700"/>
+  </g>
+  <g id="bo-id2" visibility="visible" class="BackgroundObjects"/>
+ </g>
+ <g id="id1" class="Slide" visibility="visible" clip-path="url(#presentation_clip_path)">
+  <g class="Group">
+   <g class="com.sun.star.drawing.CustomShape">
+    <g>
+     <path fill="rgb(255,255,255)" stroke="none" d="M 2500,13850 L 1000,13850 1000,1000 4000,1000 4000,13850 2500,13850 Z"/>
+     <path fill="none" stroke="rgb(0,0,0)" d="M 2500,13850 L 1000,13850 1000,1000 4000,1000 4000,13850 2500,13850"/>
+     <rect fill="none" stroke="none" x="1000" y="1000" width="3001" height="12851"/>
+    </g>
+   </g>
+   <g class="com.sun.star.drawing.CustomShape">
+    <g>
+     <path fill="rgb(0,0,0)" stroke="none" d="M 1750,12550 L 1000,12550 1000,11550 2500,11550 2500,12550 1750,12550 Z"/>
+     <path fill="none" stroke="rgb(128,128,128)" d="M 1750,12550 L 1000,12550 1000,11550 2500,11550 2500,12550 1750,12550"/>
+     <rect fill="none" stroke="none" x="1000" y="11550" width="1501" height="1001"/>
+    </g>
+   </g>
+   <g class="com.sun.star.drawing.CustomShape">
+    <g>
+     <path fill="rgb(0,0,0)" stroke="none" d="M 1750,10750 L 1000,10750 1000,9750 2500,9750 2500,10750 1750,10750 Z"/>
+     <path fill="none" stroke="rgb(128,128,128)" d="M 1750,10750 L 1000,10750 1000,9750 2500,9750 2500,10750 1750,10750"/>
+     <rect fill="none" stroke="none" x="1000" y="9750" width="1501" height="1001"/>
+    </g>
+   </g>
+   <g class="com.sun.star.drawing.CustomShape">
+    <g>
+     <path fill="rgb(0,0,0)" stroke="none" d="M 1750,6950 L 1000,6950 1000,5950 2500,5950 2500,6950 1750,6950 Z"/>
+     <path fill="none" stroke="rgb(128,128,128)" d="M 1750,6950 L 1000,6950 1000,5950 2500,5950 2500,6950 1750,6950"/>
+     <rect fill="none" stroke="none" x="1000" y="5950" width="1501" height="1001"/>
+    </g>
+   </g>
+   <g class="com.sun.star.drawing.CustomShape">
+    <g>
+     <path fill="rgb(0,0,0)" stroke="none" d="M 1750,5150 L 1000,5150 1000,4150 2500,4150 2500,5150 1750,5150 Z"/>
+     <path fill="none" stroke="rgb(128,128,128)" d="M 1750,5150 L 1000,5150 1000,4150 2500,4150 2500,5150 1750,5150"/>
+     <rect fill="none" stroke="none" x="1000" y="4150" width="1501" height="1001"/>
+    </g>
+   </g>
+   <g class="com.sun.star.drawing.CustomShape">
+    <g>
+     <path fill="rgb(0,0,0)" stroke="none" d="M 1750,3250 L 1000,3250 1000,2250 2500,2250 2500,3250 1750,3250 Z"/>
+     <path fill="none" stroke="rgb(128,128,128)" d="M 1750,3250 L 1000,3250 1000,2250 2500,2250 2500,3250 1750,3250"/>
+     <rect fill="none" stroke="none" x="1000" y="2250" width="1501" height="1001"/>
+    </g>
+   </g>
+   <g class="com.sun.star.drawing.LineShape">
+    <g>
+     <path fill="none" stroke="rgb(0,0,0)" d="M 2500,2750 L 4000,2750"/>
+    </g>
+   </g>
+   <g class="com.sun.star.drawing.LineShape">
+    <g>
+     <path fill="none" stroke="rgb(0,0,0)" d="M 2500,4600 L 4000,4600"/>
+    </g>
+   </g>
+   <g class="com.sun.star.drawing.LineShape">
+    <g>
+     <path fill="none" stroke="rgb(0,0,0)" d="M 2500,6450 L 4000,6450"/>
+    </g>
+   </g>
+   <g class="com.sun.star.drawing.LineShape">
+    <g>
+     <path fill="none" stroke="rgb(0,0,0)" d="M 1000,8300 L 4000,8300"/>
+    </g>
+   </g>
+   <g class="com.sun.star.drawing.LineShape">
+    <g>
+     <path fill="none" stroke="rgb(0,0,0)" d="M 2500,10150 L 4000,10150"/>
+    </g>
+   </g>
+   <g class="com.sun.star.drawing.LineShape">
+    <g>
+     <path fill="none" stroke="rgb(0,0,0)" d="M 2500,12000 L 4000,12000"/>
+    </g>
+   </g>
+  </g>
+ </g>
+</svg>

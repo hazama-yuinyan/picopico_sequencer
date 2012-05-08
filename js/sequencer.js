@@ -1,7 +1,7 @@
-define(["scripts/lib/enchant.js", "utils"], function(dummy, util){
+define(["utils", "dojo/_base/declare", "dojo/_base/lang", "dijit/registry"], function(util, declare, lang, registry){
 
-return enchant.Class.create({
-    initialize : function(parse_tree, main){
+return declare(null, {
+    constructor : function(parse_tree, main){
         this.buffer_size = 4096;
         this.context = (window.AudioContext) ? new AudioContext() : new webkitAudioContext();
         this.main = main;
@@ -20,7 +20,7 @@ return enchant.Class.create({
         this.compressor = this.context.createDynamicsCompressor();
         this.actual_sample_rate = this.context.sampleRate;
         this.cur_frame = 0;             //現在の再生側の経過時間をサンプルフレーム数で表したもの
-        this.sound_producer = new Worker("scripts/sound_producer.js");   //バックグラウンドで波形生成を担当する
+        this.sound_producer = new Worker("js/sound_producer.js");   //バックグラウンドで波形生成を担当する
         this.can_play = true;
         
         var _self = this;
@@ -61,11 +61,11 @@ return enchant.Class.create({
             }},
             {shorter_name : "v", longer_name : ["volume"], func : function(args){
                 var env = _self.env[args[2]];
-                env.setVolume(env.getCurrentTrackNum(), (Object.prototype.isArray.call(this, args[0].value)) ? args[0].value[0] : args[0].value);
+                env.setVolume(env.getCurrentTrackNum(), (lang.isArray(args[0].value)) ? args[0].value[0] : args[0].value);
             }},
             {shorter_name : "u", longer_name : ["velocity"], func : function(args){
                 var env = _self.env[args[2]];
-                env.setVolume(env.getCurrentTrackNum(), (Object.prototype.isArray.call(this, args[0].value)) ? args[0].value[0] : args[0].value);
+                env.setVolume(env.getCurrentTrackNum(), (lang.isArray(args[0].value)) ? args[0].value[0] : args[0].value);
             }}
         ]);
         
@@ -259,8 +259,8 @@ return enchant.Class.create({
         track_info.frame_in_buf = index;
         if(track_num === 0){
             this.cur_frame += data_length;
-            var music_info = document.getElementById("music_info");
-            music_info.innerHTML = this.cur_frame;
+            var music_info = registry.byId("music_info");
+            music_info.set("value", this.cur_frame);
         }
     },
     
@@ -274,7 +274,6 @@ return enchant.Class.create({
     
     stop : function(){
         this.hold();
-        this.reinitialize();
     },
     
     hold : function(){
@@ -283,6 +282,7 @@ return enchant.Class.create({
     },
     
     play : function(){
+        this.reinitialize();
         this.compressor.connect(this.context.destination);
         this.can_play = true;
     }

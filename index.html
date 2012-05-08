@@ -1,52 +1,65 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
     <head>
+        <meta charset="utf-8">
         <title>ぴこぴこ・しーけんさー</title>
-        <script data-main="scripts/main.js" src="scripts/lib/require.js"></script>
-        <style ref="stylesheet" href="style.css" type="text/css"></style>
+        <link rel="stylesheet" href="style.css"></link>
+        <link rel="stylesheet" href="js/lib/dijit/themes/claro/claro.css"></link>
+        <script>
+            dojoConfig = {
+                async : true,
+                isDebug : true,
+                baseUrl : location.pathname.replace(/\/[^/]+$/, "/js/"),
+                tlmSiblingOfDojo : false,
+                parseOnLoad : false,
+                packages : [
+                    {name : "dojo", location : "lib/dojo"},
+                    {name : "dijit", location : "lib/dijit"},
+                    {name : "dojox", location : "lib/dojox"}
+                ]
+            };
+        </script>
+        <script src="js/lib/dojo/dojo.js"></script>
+        <script>
+            require(["main", "dojo/behavior", "dojo/parser", "modules", "dojo/domReady!"], function(main, behavior, parser){
+                parser.parse();
+                behavior.add(main);
+                behavior.apply();
+            });
+        </script>
     </head>
-    <body>
-        <div id="main_pane">
-            <div id="tool_box">
-                
+    <body class="claro">
+        <div id="app_layout" class="layout" data-dojo-type="dijit.layout.BorderContainer"
+                                            data-dojo-props="design: 'headline'">
+            <div id="tool_bar" data-dojo-type="dijit.Toolbar"
+                               data-dojo-props="region: 'top'">
+                <button id="compile_button" type="button" data-dojo-type="dijit.form.Button">コンパイル</button>
+                <button id="controller" type="button" data-dojo-type="dijit.form.Button">再生</button>
+                <button id="stop_button" type="button" data-dojo-type="dijit.form.Button">ストップ</button>
+                <div id="music_info" data-dojo-type="dijit.form.NumberTextBox">0</div>
             </div>
-            <div id="tab_box">
-                <p>
+            <div data-dojo-type="dijit.layout.TabContainer"
+                data-dojo-props="region: 'center', tabPosition: 'bottom'">
+                <div data-dojo-type="myCustomWidgets.PianoRoll"
+                                  data-dojo-props="title: 'ピアノロール'">
+                </div>
+                <div data-dojo-type="dijit.layout.ContentPane"
+                     data-dojo-props="title:'MMLソース'">
+                    <textarea id="editor" rows="30" data-dojo-type="dijit.form.SimpleTextarea">
+                    </textarea>
+                </div>
+                <div data-dojo-type="dijit.layout.ContentPane"
+                     data-dojo-props="title:'構文木'">
+                    <textarea id="ast" rows="30" data-dojo-type="dijit.form.SimpleTextarea">
+                    </textarea>
+                </div>
             </div>
-            <div>
-                <canvas width="400" height="300"></canvas>
+            <div class="edgePanel" data-dojo-type="dijit.layout.ContentPane"
+                data-dojo-props="region: 'left', splitter: true">Sidebar content (left)
             </div>
-            <div>
-            <textarea id="editor" cols="60" rows="20">
-/[volume 127] [velocity 127]
-(t1)@1 v100 c4c8d8 e8e8g4 e8e8d8d8 c1
-[key_signature +f]
-t132 l4 d edg f2d eda g2d <d>bg
-f t66 e t132 <c>bga t80 g2
-[key_signature +fc][volume 127]
-t80 l8 bbffa2r4 bbffa4baa4^8,,80g,,60
-[key_signature -b, -e, -a, -d, -g]
-l4 o4 {dde}e2d4 cc>b4<c4d1
-
-(t2)@0 v65 l2 "ceg" "ceg" "cfa" "d1gb"
-/ここからキーGMajor
-l4 d ">b<e"d">b<g" "a2f"d "ce"d"ca"
-">b<g"960">b<d" "d2g<d""dg" "df""ce""c<c"
->"db"960"ca" ">b2<g"
-/ここからキーDMajor
-l8 ffdde2r4 ffdde4fee4^8,,60d,,50
-/ここからキーDbMajor
-v100 l1 o3 "dfa" l2 "egb" "ea<c" >"dfa"1920, 6
-            </textarea>
-            </div>
-        <div>
-            <textarea id="ast" cols="60" rows="20">
-            </textarea>
+            <div data-dojo-type="dijit.layout.ContentPane"
+                data-dojo-props="region: 'bottom', splitter: true">Bottom
             </div>
         </div>
-        <p><input type="button" value="コンパイル" onclick="main.compile()"></p>
-        <p><input id="controller" type="button" value="再生" onclick="main.play()"></p>
-        <p><input id="stop_button" type="button" value="ストップ" onclick="main.stop()"></p>
-        <p id="music_info"></p>
     </body>
 </html>

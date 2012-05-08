@@ -1,7 +1,7 @@
-define(["scripts/lib/enchant.js", "lexer", "scripts/parser.js", "utils", "lib/treehugger/tree", "lib/treehugger/traverse"], function(dummy, Lexer, Parse, util, tree, traverse){
-    var MMLLexer = enchant.Class.create(Lexer, {
-        initialize : function(){
-            Lexer.call(this, [
+define(["lexer", "parser", "utils", "lib/treehugger/tree", "lib/treehugger/traverse", "dojo/_base/declare"], function(Lexer, Parse, util, tree, traverse, declare){
+    var MMLLexer = declare([Lexer], {
+        constructor : function(){
+            this.definitions = [
                 {type : "IGNORE", regexp : /^\/[^\n\t\r]+|^[ ]+/},
                 {type : "line_delimiter", regexp : /^[\t\n\r]+/},
                 {type : "commands", regexp : /^(velocity|volume|program|include|key_signature|k.sign)/i},
@@ -11,12 +11,12 @@ define(["scripts/lib/enchant.js", "lexer", "scripts/parser.js", "utils", "lib/tr
                     return parseInt(arg, 10);
                 }},
                 {type : "operators", regexp : /^[<>,\.\^\+#\-!\*@{}\[\]"'\(\)]/}
-            ]);
+            ];
         }
     });
     
-    var MMLParser = enchant.Class.create({
-        initialize : function(){
+    var MMLParser = declare(null, {
+        constructor : function(){
             var lexer = new MMLLexer();
             var parser = new Parse.Parser();
             
@@ -230,5 +230,5 @@ define(["scripts/lib/enchant.js", "lexer", "scripts/parser.js", "utils", "lib/tr
         }
     });
     
-    return {mml_lexer : new MMLLexer(), mml_parser : new MMLParser()};
+    return {mml_parser : new MMLParser()};
 });

@@ -1,7 +1,7 @@
-define(["scripts/lib/enchant.js"], function(dummy){
+define(["dojo/_base/declare"], function(declare){
     
-    var Enviroment = enchant.Class.create({
-        initialize : function(){
+    var Enviroment = declare(null, {
+        constructor : function(){
             this.notes_with_signature = {};
             this.cur_tempo = 120;
             this.cur_default_length = 480;
@@ -101,8 +101,8 @@ define(["scripts/lib/enchant.js"], function(dummy){
         }
     });
     
-    var CommandManager = enchant.Class.create({
-        initialize : function(){
+    var CommandManager = declare(null, {
+        constructor : function(){
             this.command_names = {};
         },
         

@@ -1,0 +1,77 @@
+html, body {
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    padding: 0;
+}
+
+.dijitToggleButtonChecked{
+    
+}
+ 
+#app_layout {
+    height: 100%;
+}
+#leftCol {
+    width: 14em;
+}
+
+#editor{
+    display: block;
+    float: left;
+}
+#ast{
+    display: block;
+    float: right;
+    background-color: #eee;
+}
+
+#main_pane{
+    display: box;
+    -moz-box-orient: vertical;
+    -webkit-box-orient: vertical;
+    -o-box-orient: vertical;
+    -ms-box-orient: vertical;
+}
+
+#tool_box{
+    display: box;
+    /*display: -webkit-box;
+    display: -o-box;
+    display: -ms-box;*/
+    -moz-box-orient: horizontal;
+    -webkit-box-orient: horizontal;
+    -o-box-orient: horizontal;
+    -ms-box-orient: horizontal;
+    -moz-box-direction: normal;
+    -webkit-box-direction: normal;
+    -o-box-direction: normal;
+    -ms-box-direction: normal;
+}
+
+#tool_box > .button{
+    display: inline-block;
+    border: outset 5px #aaa;
+    
+}
+
+#tool_box > .button:hover{
+    border: inset 5px #aaa;
+}
+
+#tool_box > .button:active{
+    border: inset 5px #aaa;
+    box-shadow: -5px -5px 5px 5px rgba(0, 0, 0, 0.4) inset;
+}
+
+#tab_box{
+    display: box;
+    -moz-box-orient: horizontal;
+    -webkit-box-orient: horizontal;
+    -o-box-orient: horizontal;
+    -ms-box-orient: horizontal;
+    -moz-box-direction: normal;
+    -webkit-box-direction: normal;
+    -o-box-direction: normal;
+    -ms-box-direction: normal;
+}
