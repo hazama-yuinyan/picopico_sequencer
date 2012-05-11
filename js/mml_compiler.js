@@ -100,7 +100,7 @@ define(["lexer", "parser", "utils", "lib/treehugger/tree", "lib/treehugger/trave
                 },
                 chord: function(m){
                     if(m[0] !== m[2]){
-                        throw Error("Invalid operators! You have to use the same quotation mark on either side of a chord" +
+                        throw Error("Invalid operators! You have to use the same quotation mark on either side of a chord " +
                             "and keep them balanced!");
                     }
                     var contents = m[1], len = -1, cur_default_len = _self.env.getCurrentDefaultLength(), notes = [];
@@ -212,6 +212,7 @@ define(["lexer", "parser", "utils", "lib/treehugger/tree", "lib/treehugger/trave
             this.parse = function(input_str){
                 this.env = new util.Enviroment();
                 var tokens = lexer.tokenize(input_str);
+                if(!tokens.length){return;}
                 var result = parser.parse(tokens, "mml");
                 if(!result){return;}
                 
@@ -222,7 +223,7 @@ define(["lexer", "parser", "utils", "lib/treehugger/tree", "lib/treehugger/trave
             this.stringifyErrors = function(){
                 var errors = parser.errors, str = "";
                 errors.forEach(function(error){
-                    str += "An error occured in " + error.cause + " : " + error.msg + "\n";
+                    str += "An error occured in " + error.cause + " at " + error.line_num + " : " + error.pos + "; " + error.msg + "\n";
                 });
                 
                 return str;

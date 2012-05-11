@@ -105,11 +105,16 @@ Parse.Parser = declare(null, {
                 
                 for(var i = 0;i < this.children.length; ++i) {
                     if(r = this.children[i].parse(tokens)) {
+                        //parser.errors.splice(0);
                         tokens = r.rests;
                         values.push(r.value);
                         group.update(r.group);
                     } else {
-                        parser.errors.push({cause : this.type, msg : "Unexpected syntax. Expected : " + this.children[i].type});
+                        if(tokens.length){
+                            var token = tokens[0];
+                            parser.errors.push({cause : this.type, msg : "Unexpected syntax. Expected : " + this.children[i].type,
+                                line_num : token.line_num, pos : token.num_chars});
+                        }
                         return null;
                     }
                 }
@@ -133,13 +138,16 @@ Parse.Parser = declare(null, {
                         group: group,
                     };
                 }
-                this.parser.errors.push({cause : this.type, msg : "Unexpected token. Expected : " + this.tokentype});
+                if(tokens.length){
+                    var token = tokens[0];
+                    this.parser.errors.push({cause : this.type, msg : "Unexpected token. Expected : " +  this.tokentype, line_num : token.line_num,
+                        pos : token.num_chars});
+                }
                 return null;
             }
         };
     },
     Repeat_: function(child, minimum, maximum) {
-        //var parser = this;
         return {
             type: "Repeat",
             child: child,
@@ -189,12 +197,13 @@ Parse.Parser = declare(null, {
                 for(var i = 0; i < this.children.length; ++i) {
                     var r = this.children[i].parse(tokens);
                     if(r) {
+                        parser.errors.splice(0);
                         return r;
                     }
                 }
-                parser.errors.push({cause : this.type, msg : "None of the syntaxes found."});
+                //parser.errors.push({cause : this.type, msg : "None of the syntaxes found."});
                 return null;
-            },
+            }
         };
     },
     Maybe: function(child) {
@@ -211,7 +220,7 @@ Parse.Parser = declare(null, {
                 } else {
                     return {rests:tokens, value:null, group:$H({})};
                 }
-            },
+            }
         };
     },
     End: function() {
@@ -222,7 +231,9 @@ Parse.Parser = declare(null, {
                if(!tokens.length) {
                    return {rests:[], value:null, group:$H({})};
                } else {
-                   parser.errors.push({cause : this.type, msg : "Expected EOF, but I'm still in middle of the inputs!"});
+                   var token = tokens[0];
+                   parser.errors.push({cause : this.type, msg : "Expected EOF, but I'm still in middle of the inputs!", line_num : token.line_num,
+                        pos : token.num_chars});
                    return null;
                }
             }
@@ -255,12 +266,12 @@ Parse.Parser = declare(null, {
                     return {
                         rests: r.rests,
                         value: value,
-                        group: group,
+                        group: group
                     };
                 } else {
                     return null;
                 }
-            },
+            }
         };
     },
     Label: function(name, child) {
@@ -276,7 +287,7 @@ Parse.Parser = declare(null, {
                     return {
                         rests: r.rests,
                         value: r.value,
-                        group: group,
+                        group: group
                     };
                 } else {
                     return null;
@@ -334,7 +345,7 @@ Parse.Parser = declare(null, {
     },
     parse: function(tokens, entryPoint) {
         return this._grammers.get(entryPoint || this._entry).parse(tokens);
-    },
+    }
 });
 
     return Parse;

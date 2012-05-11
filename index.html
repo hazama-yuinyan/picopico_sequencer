@@ -38,9 +38,9 @@
                 <button id="stop_button" type="button" data-dojo-type="dijit.form.Button">ストップ</button>
                 <div id="music_info" data-dojo-type="dijit.form.NumberTextBox">0</div>
             </div>
-            <div data-dojo-type="dijit.layout.TabContainer"
+            <div id="main_tab" data-dojo-type="dijit.layout.TabContainer"
                 data-dojo-props="region: 'center', tabPosition: 'bottom'">
-                <div data-dojo-type="myCustomWidgets.PianoRoll"
+                <div id="piano_roll" data-dojo-type="myCustomWidgets.PianoRoll"
                                   data-dojo-props="title: 'ピアノロール'">
                 </div>
                 <div data-dojo-type="dijit.layout.ContentPane"
@@ -57,8 +57,8 @@
             <div class="edgePanel" data-dojo-type="dijit.layout.ContentPane"
                 data-dojo-props="region: 'left', splitter: true">Sidebar content (left)
             </div>
-            <div data-dojo-type="dijit.layout.ContentPane"
-                data-dojo-props="region: 'bottom', splitter: true">Bottom
+            <div id="various_uses_pane" data-dojo-type="dijit.layout.ContentPane"
+                data-dojo-props="region: 'bottom', splitter: true">No Errors
             </div>
         </div>
     </body>

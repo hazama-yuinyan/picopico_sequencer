@@ -5,9 +5,10 @@
  */
 
 
-define(["mml_compiler", "sequencer", "dojo/on", "dojo/dom", "dojo/dom-class", "dijit/registry"], function(compiler, Sequencer, on, dom, dom_class, registry){
+define(["mml_compiler", "sequencer", "dojo/dom-class", "dijit/registry", "mml_updater"], function(compiler, Sequencer, dom_class, registry, updater){
 
     var sequencer = null,
+    tree = null,
     compile = function(){
         var editor = registry.byId("editor");
         var tree = compiler.mml_parser.parse(editor.value);
@@ -37,7 +38,8 @@ define(["mml_compiler", "sequencer", "dojo/on", "dojo/dom", "dojo/dom-class", "d
         dom_class.toggle("controller", "play_button");
         dom_class.toggle("controller", "hold_button");
     };
-
+    
+    var _self = this;
 return {
     ".compile_button" : {
         onclick : function(e){
@@ -88,7 +90,35 @@ return {
     
     "#stop_button" : function(target){
         dom_class.add(target, "stop_button");
-    }/*,
+    },
+    
+    "#main_tab" : function(){
+        var tab_container = registry.byId("main_tab");
+        tab_container.watch("selectedChildWidget", function(name, old, new_val){
+            if(new_val.title == "ピアノロール" && old.title == "MMLソース"){
+                var tmp, error_console;
+                try{
+                    var editor = registry.byId("editor");
+                    tmp = updater.compile(editor.value);
+                }
+                catch(e){
+                    error_console = registry.byId("various_uses_pane");
+                    error_console.domNode.textContent = e.message;
+                    return;
+                }
+                if(!tmp.tree){
+                    error_console = registry.byId("various_uses_pane");
+                    error_console.domNode.textContent = tmp;
+                    return;
+                }
+                tree = tmp.tree;
+                new_val.set("_tree", tmp.list);
+                new_val.onUpdate();
+            }else if(old.title == "ピアノロール"){
+                old.set("_tree", null);
+            }
+        });
+    },
     
     "#editor" : function(){
         registry.byId("editor").value = "/[volume 127] [velocity 127]\n" +
@@ -110,7 +140,7 @@ return {
             'l8 ffdde2r4 ffdde4fee4^8,,60d,,50\n' +
             '/ここからキーDbMajor\n' +
             'v100 l1 o3 "dfa" l2 "egb" "ea<c" >"dfa"1920, 6"';
-    }*/
+    }
 };
 
 });
