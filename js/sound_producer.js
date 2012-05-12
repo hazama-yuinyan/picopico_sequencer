@@ -36,7 +36,8 @@ onmessage = function(e){
         cur_sample_frame = 0;
         note_id = 0;
     }
-    var note_tag = {type : "note", start_frame : cur_sample_frame, end_frame : cur_sample_frame + note_len, note_id : note_id++};
+    var note_tag = {type : "note", start_frame : cur_sample_frame, end_frame : cur_sample_frame + note_len, note_id : note_id++,
+        len_in_ticks : data.len_in_ticks};
     
     for(var i = 0; i < note_len; ++i, ++cur_sample_frame){    //出力バッファーに波形データをセットする
         var y = 0.0;

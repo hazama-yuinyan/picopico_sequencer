@@ -20,6 +20,7 @@ return declare(null, {
         this.compressor = this.context.createDynamicsCompressor();
         this.actual_sample_rate = this.context.sampleRate;
         this.cur_frame = 0;             //現在の再生側の経過時間をサンプルフレーム数で表したもの
+        this.cur_ticks = 0;             //現在の再生側の経過時間をMIDIのtick数で表したもの(ピアノロールとの同期用)
         this.sound_producer = new Worker("js/sound_producer.js");   //バックグラウンドで波形生成を担当する
         this.can_play = true;
         
@@ -123,6 +124,10 @@ return declare(null, {
         }
     },
     
+    getCurTempo : function(){
+        return this.env.for_playback.getCurrentTempo();
+    },
+    
     /**
      * MIDIのノートナンバーを周波数に変換する
      * @param note_num {Number} 変換するMIDIのノートナンバー
@@ -149,7 +154,7 @@ return declare(null, {
     prepareToProcessNextNode : function(node){
         if(!node){             //全部のASTノードの処理が終わったので、波形生成スレッドを停止する
             this.sound_producer.terminate();
-            this.compressor.connect(this.context.destination);
+            this.main.play();
             return;
         }
         var track_num = this.env.for_worker.getCurrentTrackNum();
@@ -210,7 +215,7 @@ return declare(null, {
         
         this.sound_producer.postMessage({
             freq_list : freqs, program_num : this.env.for_worker.getProgramNumForTrack(track_num), note_len : node.end_frame - start_frame,
-                secs_per_frame : this.secs_per_frame, volume : vol / 127.0, track_num : track_num
+                secs_per_frame : this.secs_per_frame, volume : vol / 127.0, track_num : track_num, len_in_ticks : ticks
         });
     },
     
@@ -261,6 +266,9 @@ return declare(null, {
             this.cur_frame += data_length;
             var music_info = registry.byId("music_info");
             music_info.set("value", this.cur_frame);
+            var sample_frame_per_tick = this.actual_sample_rate / (this.getCurTempo() * 480.0 / 60.0);
+            var ticks = data_length / sample_frame_per_tick;
+            this.cur_ticks += ticks;
         }
     },
     
@@ -270,6 +278,8 @@ return declare(null, {
             track_info.frame_in_buf = 0;
         });
         this.cur_frame = 0;
+        this.cur_ticks = 0;
+        this.env.for_playback.restoreDefault();
     },
     
     stop : function(){

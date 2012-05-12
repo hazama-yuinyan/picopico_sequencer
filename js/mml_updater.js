@@ -1,4 +1,4 @@
-define(["mml_compiler"], function(mml_compiler){
+define(["dojo/_base/lang", "mml_compiler"], function(lang, mml_compiler){
     
     // module: mml_updater
     // summary: 
@@ -46,8 +46,8 @@ define(["mml_compiler"], function(mml_compiler){
             // summary:
             //      noteタイプのノードのparamsを受け取って一つのオブジェクトにまとめる
             
-            var tmp = {type : "note", pitch : params[0][0][0].value, length : params[0][1][0].value, gate_time : params[0][2][0].value,
-                velocity : params[0][3][0].value, start_time : this.start_time};
+            var tmp = {type : (params[0][0][0].value < 0) ? "rest" : "note", pitch : params[0][0][0].value, length : params[0][1][0].value,
+                gate_time : params[0][2][0].value, velocity : params[0][3][0].value, start_time : this.start_time};
             return tmp;
         },
         
@@ -71,7 +71,8 @@ define(["mml_compiler"], function(mml_compiler){
             // summary:
             //      commandタイプのノードを受け取って一つのオブジェクトにまとめる
             
-            var tmp = {type : "command", name : command[0].value, arg1 : command[1].value, arg2 : command[2].value};
+            var tmp = {type : "command", name : command[0].value, arg1 : lang.isArray(command[1]) ? command[1] : command[1].value,
+                arg2 : command[2] && command[2].value || "none"};
             return tmp;
         },
         
@@ -107,6 +108,7 @@ define(["mml_compiler"], function(mml_compiler){
             }while((node = this.getNextNode(node, true)));
             
             list.push(inner);
+            this.start_time = 0;
             return {tree : tree, list : list};
         },
         

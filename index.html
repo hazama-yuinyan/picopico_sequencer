@@ -45,17 +45,20 @@
                 </div>
                 <div data-dojo-type="dijit.layout.ContentPane"
                      data-dojo-props="title:'MMLソース'">
-                    <textarea id="editor" rows="30" data-dojo-type="dijit.form.SimpleTextarea">
-                    </textarea>
+                    <textarea id="editor" rows="30" data-dojo-type="dijit.form.SimpleTextarea"></textarea>
                 </div>
                 <div data-dojo-type="dijit.layout.ContentPane"
                      data-dojo-props="title:'構文木'">
-                    <textarea id="ast" rows="30" data-dojo-type="dijit.form.SimpleTextarea">
-                    </textarea>
+                    <textarea id="ast" rows="30" data-dojo-type="dijit.form.SimpleTextarea"></textarea>
                 </div>
             </div>
-            <div class="edgePanel" data-dojo-type="dijit.layout.ContentPane"
-                data-dojo-props="region: 'left', splitter: true">Sidebar content (left)
+            <div class="edgePanel" data-dojo-type="dijit.layout.AccordionContainer"
+                data-dojo-props="region: 'left', splitter: true, minSize: 100">
+                <div data-dojo-type="dijit.layout.ContentPane" data-dojo-props="title: '曲情報'">
+                    <label for="track_selector">トラックナンバー</label>
+                    <input data-dojo-type="dijit.form.NumberSpinner" data-dojo-props="constraints: {max: 32, min: 1}, value: 1" id="track_selector">
+                </div>
+                <div data-dojo-type="dijit.layout.ContentPane" data-dojo-props="title: 'プロパティー'"></div>
             </div>
             <div id="various_uses_pane" data-dojo-type="dijit.layout.ContentPane"
                 data-dojo-props="region: 'bottom', splitter: true">No Errors

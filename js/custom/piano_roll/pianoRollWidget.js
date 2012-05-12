@@ -10,9 +10,10 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
             //      左端の鍵盤上で一番上に表示されている鍵盤のノートナンバー
             cur_uppermost_note : 71,
             cur_uppermost_note_pos : 0,
-            // channel_num : Number
-            //      現在選択されているチャンネルナンバー
-            channel_num : 1,
+            guide_bar : null,
+            // _track_num : Number
+            //      現在選択されているトラックナンバー
+            _track_num : 1,
             // _viewport_info: Object
             //      ピアノロールの左端の鍵盤を除いた部分の大きさ
             _viewport_size : {w : 0, h : 0},
@@ -21,9 +22,9 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
             //      xは鍵盤の右端を、yは鍵盤の上端を基準とした相対座標
             _viewport_pos : {x : 0, y : 0},
             _keyboard_pos : 0,
-            // _cur_sample_frame: Number
-            //      現在のサンプルフレーム数
-            _cur_sample_frame : 0,
+            // _cur_ticks: Number
+            //      現在のtick数
+            _cur_ticks : 0,
             // _bar_height: Number
             //      音符を配置するバー一本分の高さ
             //      upperはF-Bまで、lowerはC-Eまでの音に対応する音符領域の高さ
@@ -34,6 +35,12 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
             _last_mouse_pos : {x : 0, y : 0},
             _width_quarter_note : 48,
             _ticks_per_quarter_note : 480,
+            _set_track_numAttr : function(num){
+                this._track_num = num;
+                if(this._tree && this._tree[this._track_num - 1]){
+                    this.onUpdate();
+                }
+            },
             _set_treeAttr : function(tree){
                 this._tree = tree;
             },
@@ -56,8 +63,8 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
                 this._viewport_pos.y = pos.y;
             },
             
-            _set_cur_sample_frameAttr : function(/*Number*/ cur_frame){
-                this._cur_sample_frame = cur_frame;
+            _set_cur_ticksAttr : function(/*Number*/ cur_ticks){
+                this._cur_ticks = cur_ticks;
             },
             
             _get_bar_heightsAttr : function(){
@@ -106,6 +113,14 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
                 return y;
             },
             
+            convertTicksToPos : function(ticks){
+                // summary:
+                //      指定したtick数をx方向のオフセットに換算する
+                
+                var MULTIPLIERS_NOTE_LEN = this._ticks_per_quarter_note / this._width_quarter_note;
+                return ticks / MULTIPLIERS_NOTE_LEN;
+            },
+            
             _drawGuideLines : function(){
                 // summary:
                 //      背景に小節線や拍子の区切りをあらわす線を描く
@@ -131,8 +146,14 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
                     this._surface.createLine({x1 : x, y1 : (IS_AT_MEASURE_END) ? 0 : BOTTOM_MEASURE_NUM_BAR, x2 : x, y2 : viewport_size.h})
                         .setStroke((IS_AT_MEASURE_END) ? "black" : "gray");
                 }
+            },
+            
+            _drawInfobar : function(){
+                // summary:
+                //      小節番号を含む領域を描画する
                 
-                //最後に小節番号を含む領域を描画する
+                var WIDTH_MEASURE = 4 * this._width_quarter_note, KEYBOARD_WIDTH = this.keyboard_size.width, BOTTOM_MEASURE_NUM_BAR = 18;
+                var viewport_size = this.get("_viewport_size"), viewport_pos = this.get("_viewport_pos"), x;
                 this._surface.createRect({x : KEYBOARD_WIDTH, y : 0, width : viewport_size.w, height : BOTTOM_MEASURE_NUM_BAR})
                     .setFill("white");
                 this._surface.createLine({x1 : KEYBOARD_WIDTH, y1 : BOTTOM_MEASURE_NUM_BAR, x2 : viewport_size.w, y2 : BOTTOM_MEASURE_NUM_BAR})
@@ -154,7 +175,7 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
                 var i = 0;
                 for(; i < list.length; ++i){
                     var event = list[i];
-                    if(lang.isArray(event) && event[0].start_time >= ticks || event.start_time >= ticks){
+                    if(lang.isArray(event) && event[0].start_time + event[0].length >= ticks || event.start_time + event.length >= ticks){
                         return i;
                     }
                 }
@@ -168,12 +189,12 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
                 
                 if(!this._tree){return;}
                 var MULTIPLIERS_NOTE_LEN = this._ticks_per_quarter_note / this._width_quarter_note;
-                var start_ticks = this._viewport_pos.x * MULTIPLIERS_NOTE_LEN, cur_channel = this._tree[this.channel_num - 1], _self = this;
-                var index = this._findStartNoteIndex(cur_channel, start_ticks), info = {}, inner_index = 0;
+                var start_ticks = this._viewport_pos.x * MULTIPLIERS_NOTE_LEN, cur_track = this._tree[this._track_num - 1], _self = this;
+                var index = this._findStartNoteIndex(cur_track, start_ticks), info = {}, inner_index = 0;
                 if(index == -1){return;}
                 var proceedToNextEvent = function(info){
-                    if(index >= cur_channel.length){return false;}
-                    var tmp = cur_channel[index];
+                    if(index >= cur_track.length){return false;}
+                    var tmp = cur_track[index];
                     if(lang.isArray(tmp)){
                         if(inner_index < tmp.length){
                             tmp = tmp[inner_index];
@@ -183,6 +204,9 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
                             ++index;
                             return proceedToNextEvent(info);
                         }
+                    }else if(tmp.type == "rest"){
+                        ++index;
+                        return proceedToNextEvent(info);
                     }
                     info.event = tmp;
                     info.x = tmp.start_time / MULTIPLIERS_NOTE_LEN - _self._viewport_pos.x + _self.keyboard_size.width;
@@ -205,6 +229,14 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
                 }while(proceedToNextEvent(info));
             },
             
+            _drawGuideBar : function(offset){
+                var BOTTOM_MEASURE_NUM_BAR = 18;
+                if(this.guide_bar){this._surface.remove(this.guide_bar, true);}
+                this.guide_bar = this._surface.createRect({x : offset, y : BOTTOM_MEASURE_NUM_BAR, width : 4, height : this._viewport_size.h})
+                    .setFill("gray")
+                    .setStroke("blue");
+            },
+            
             onUpdate : function(){
                 this._surface.clear();
                 
@@ -212,11 +244,12 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
                 
                 this._drawNotes();
                 
+                this._drawInfobar();
+                
                 //鍵盤を左端に表示する
                 var TOTAL_KEYBOARD_HEIGHT = 7 * this.keyboard_size.height;
                 this._surface.createImage({x : 0, y : this._keyboard_pos, width : this.keyboard_size.width,
                     height : TOTAL_KEYBOARD_HEIGHT, src : "js/custom/piano_roll/images/keyboard.svg"});
-                console.log("keyboard_y : " + /*(*/this._keyboard_pos/* - TOTAL_KEYBOARD_HEIGHT)*/);
             },
             
             clip : function(lower, upper, val){
@@ -226,6 +259,19 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
             
             isBetween : function(lower, upper, val){
                 return (lower <= val && val <= upper);
+            },
+            
+            onSoundPlaying : function(ticks){
+                this._cur_ticks += ticks;
+                var original_offset = this.convertTicksToPos(this._cur_ticks), viewport_size = this.get("_viewport_size");
+                var PIANO_ROLL_WIDTH = viewport_size.w - this.keyboard_size.width;
+                var offset = original_offset % PIANO_ROLL_WIDTH + this.keyboard_size.width;
+                if(this._viewport_pos.x + PIANO_ROLL_WIDTH < original_offset){
+                    this._viewport_pos.x += PIANO_ROLL_WIDTH;
+                    this.onUpdate();
+                }
+                
+                this._drawGuideBar(offset);
             },
             
             onmousedown : function(e){

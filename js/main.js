@@ -5,13 +5,17 @@
  */
 
 
-define(["mml_compiler", "sequencer", "dojo/dom-class", "dijit/registry", "mml_updater"], function(compiler, Sequencer, dom_class, registry, updater){
+define(["mml_compiler", "sequencer", "dojo/dom-class", "dijit/registry", "dojox/timing", "mml_updater"],
+    function(compiler, Sequencer, dom_class, registry, timing, updater){
 
     var sequencer = null,
     tree = null,
+    timer = null,
     compile = function(){
-        var editor = registry.byId("editor");
-        var tree = compiler.mml_parser.parse(editor.value);
+        if(!tree){
+            var editor = registry.byId("editor");
+            tree = compiler.mml_parser.parse(editor.value);
+        }
         var display = registry.byId("ast");
         display.set("value", tree && tree.toPrettyString() || compiler.mml_parser.stringifyErrors());
         if(!tree){return;}
@@ -20,6 +24,7 @@ define(["mml_compiler", "sequencer", "dojo/dom-class", "dijit/registry", "mml_up
 
     stop = function(){
         sequencer.stop();
+        timer.stop();
     },
     
     play = function(){
@@ -28,6 +33,29 @@ define(["mml_compiler", "sequencer", "dojo/dom-class", "dijit/registry", "mml_up
             return;
         }
         sequencer.play();
+        
+        var FPS = 30, millisecs_per_frame = 1000.0 / FPS;
+        timer = new timing.Timer(millisecs_per_frame);
+        var piano_roll = registry.byId("piano_roll"), ticks_per_quarter_note = piano_roll._ticks_per_quarter_note, num_iter = 0;
+        timer.onStart = function(){
+            piano_roll.set("_cur_ticks", 0);
+            var viewport_pos = piano_roll.get("_viewport_pos");
+            viewport_pos.x = 0;
+            piano_roll.set("_viewport_pos", viewport_pos);
+            piano_roll.onUpdate();
+        };
+        
+        timer.onTick = function(){
+            var cur_tempo = sequencer.getCurTempo(), ticks = cur_tempo * ticks_per_quarter_note / 60.0 / FPS;
+            if(++num_iter % FPS === 0){
+                var cur_ticks_in_seq = sequencer.cur_ticks;
+                piano_roll.set("_cur_ticks", cur_ticks_in_seq);
+            }
+            piano_roll.onSoundPlaying(ticks);
+            var error_console = registry.byId("various_uses_pane");
+            error_console.domNode.textContent = piano_roll._cur_ticks * 100;
+        };
+        timer.start();
     },
     
     hold = function(){
@@ -39,7 +67,6 @@ define(["mml_compiler", "sequencer", "dojo/dom-class", "dijit/registry", "mml_up
         dom_class.toggle("controller", "hold_button");
     };
     
-    var _self = this;
 return {
     ".compile_button" : {
         onclick : function(e){
@@ -95,7 +122,7 @@ return {
     "#main_tab" : function(){
         var tab_container = registry.byId("main_tab");
         tab_container.watch("selectedChildWidget", function(name, old, new_val){
-            if(new_val.title == "ピアノロール" && old.title == "MMLソース"){
+            if(new_val.title == "ピアノロール"){
                 var tmp, error_console;
                 try{
                     var editor = registry.byId("editor");
@@ -120,8 +147,15 @@ return {
         });
     },
     
+    "#track_selector" : function(){
+        var track_selector = registry.byId("track_selector"), piano_roll = registry.byId("piano_roll");
+        track_selector.watch("value", function(name, old, new_val){
+            piano_roll.set("_track_num", new_val);
+        });
+    },
+    
     "#editor" : function(){
-        registry.byId("editor").value = "/[volume 127] [velocity 127]\n" +
+        registry.byId("editor").set("value", "/[volume 127] [velocity 127]\n" +
             "(t1)@1 v100 c4c8d8 e8e8g4 e8e8d8d8 c1\n" +
             "[key_signature +f]\n" +
             "t132 l4 d edg f2d eda g2d <d>bg\n" +
@@ -139,7 +173,7 @@ return {
             '/ここからキーDMajor\n' +
             'l8 ffdde2r4 ffdde4fee4^8,,60d,,50\n' +
             '/ここからキーDbMajor\n' +
-            'v100 l1 o3 "dfa" l2 "egb" "ea<c" >"dfa"1920, 6"';
+            'v100 l1 o3 "dfa" l2 "egb" "ea<c" >"dfa"1920, 6\n');
     }
 };
 
