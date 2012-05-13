@@ -1,5 +1,6 @@
 define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin", "dojox/gfx", "dojo/on",
-    "dojo/_base/lang", "dojo/text!custom/piano_roll/templates/piano_roll_template.html", "dijit/layout/BorderContainer", "dijit/layout/BorderContainer"],
+    "dojo/_base/lang", "dojo/text!custom/piano_roll/templates/piano_roll_template.html", "dijit/layout/BorderContainer", "dijit/layout/BorderContainer",
+    "dijit/form/Button"],
     function(declare, WidgetBase, TemplatedMixin, WidgetsInTemplateMixin, gfx, on, lang, template){
         return declare("myCustomWidgets.PianoRoll", [WidgetBase, TemplatedMixin, WidgetsInTemplateMixin], {
             templateString : template,
@@ -210,7 +211,10 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
                     }
                     info.event = tmp;
                     info.x = tmp.start_time / MULTIPLIERS_NOTE_LEN - _self._viewport_pos.x + _self.keyboard_size.width;
+                    if(inner_index !== 0){info.x += (inner_index - 1) * tmp.gate_time / MULTIPLIERS_NOTE_LEN;}
                     info.y = _self.calcNoteNumPos(tmp.pitch) + _self._keyboard_pos;
+                    info.width = (inner_index === 0) ? tmp.length / MULTIPLIERS_NOTE_LEN - tmp.gate_time / MULTIPLIERS_NOTE_LEN :
+                        tmp.length / MULTIPLIERS_NOTE_LEN - (inner_index - 1) * tmp.gate_time / MULTIPLIERS_NOTE_LEN;
                     info.height = (tmp.pitch % 12 < 5) ? _self._bar_heights.lower : _self._bar_heights.upper;
                     index = (inner_index === 0) ? index + 1 : index;
                     return info.x < _self._viewport_pos.x + _self._viewport_size.w;
@@ -219,11 +223,10 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
                 var surface = this._surface; 
                 
                 do{
-                    var width = info.event.length / MULTIPLIERS_NOTE_LEN;
-                    if(!this.isBetween(0, this._viewport_size.h, info.y)){continue;}
+                    if(!this.isBetween(0, this._viewport_size.h, info.y)){continue;}    //ビューポートの高さに収まらないノートは描画しない
                     
                     var color = "#ff0000";
-                    surface.createRect({x : info.x, y : info.y, width : width, height : info.height})
+                    surface.createRect({x : info.x, y : info.y, width : info.width, height : info.height})
                            .setFill(color)
                            .setStroke("black");
                 }while(proceedToNextEvent(info));

@@ -46,8 +46,9 @@ define(["dojo/_base/lang", "mml_compiler"], function(lang, mml_compiler){
             // summary:
             //      noteタイプのノードのparamsを受け取って一つのオブジェクトにまとめる
             
+            var gate_time = (params[0][2][0].value != "none") ? params[0][2][0].value : 0;
             var tmp = {type : (params[0][0][0].value < 0) ? "rest" : "note", pitch : params[0][0][0].value, length : params[0][1][0].value,
-                gate_time : params[0][2][0].value, velocity : params[0][3][0].value, start_time : this.start_time};
+                gate_time : gate_time, velocity : params[0][3][0].value, start_time : this.start_time};
             return tmp;
         },
         

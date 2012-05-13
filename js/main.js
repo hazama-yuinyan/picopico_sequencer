@@ -47,7 +47,7 @@ define(["mml_compiler", "sequencer", "dojo/dom-class", "dijit/registry", "dojox/
         
         timer.onTick = function(){
             var cur_tempo = sequencer.getCurTempo(), ticks = cur_tempo * ticks_per_quarter_note / 60.0 / FPS;
-            if(++num_iter % FPS === 0){
+            if(++num_iter % Math.floor(FPS / 2) === 0){
                 var cur_ticks_in_seq = sequencer.cur_ticks;
                 piano_roll.set("_cur_ticks", cur_ticks_in_seq);
             }
@@ -163,7 +163,7 @@ return {
             "[key_signature +fc][volume 127]\n" +
             "t80 l8 bbffa2r4 bbffa4baa4^8,,80g,,60\n" +
             "[key_signature -b, -e, -a, -d, -g]\n" +
-            "l4 o4 {dde}e2d4 cc>b4<c4d1\n\n" +
+            "l4 o4 {dde}e2d4,*240 cc>b4<c4d1\n\n" +
 
             '(t2)@0 v65 l2 "ceg" "ceg" "cfa" "d1gb"\n' +
             '/ここからキーGMajor\n' +
@@ -173,7 +173,7 @@ return {
             '/ここからキーDMajor\n' +
             'l8 ffdde2r4 ffdde4fee4^8,,60d,,50\n' +
             '/ここからキーDbMajor\n' +
-            'v100 l1 o3 "dfa" l2 "egb" "ea<c" >"dfa"1920, 6\n');
+            'v100 l1 o3 "dfa" l2 "egb" "ea<c" >"dfa"1920, 120\n');
     }
 };
 

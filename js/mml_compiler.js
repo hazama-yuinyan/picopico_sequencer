@@ -29,12 +29,12 @@ define(["lexer", "parser", "utils", "lib/treehugger/tree", "lib/treehugger/trave
                     line: Seq(Maybe(Any(Repeat1(Ref("longer_command")), Repeat1(Any(Ref("shortened_command"), Ref("tuplet"), Ref("chord"),
                         Ref("tie"), Ref("note"))))), Token("line_delimiter")),
                     tie: Seq(Ref("note"), Repeat1(Token("&"), Ref("note"))),
-                    tuplet: Seq(Token("{"), Repeat1(Ref("note")), Token("}"), Maybe(Ref("note_length"))),
+                    tuplet: Seq(Token("{"), Repeat1(Ref("note")), Token("}"), Maybe(Ref("length"))),
                     chord: Seq(Any(Token('"'), Token("'")), Repeat1(Any(Ref("note"), Ref("shortened_command"))), Any(Token('"'), Token("'")),
                         Maybe(Token("num"), Maybe(Token(","), Label("gate_time", Token("num"))))),
-                    note: Seq(Ref("pitch"), Maybe(Ref("note_length")), Maybe(Token(","), Maybe(Label("gate_time", Ref("note_length"))),
+                    note: Seq(Ref("pitch"), Maybe(Label("note_length", Ref("length"))), Maybe(Token(","), Maybe(Label("gate_time", Ref("length"))),
                         Maybe(Token(","), Label("velocity", Seq(Maybe(Any(Token("+"), Token("-"))), Token("num")))))),
-                    note_length: Seq(Maybe(Token("*")), Token("num"), Repeat(Token(".")), Repeat(Token("^"),
+                    length: Seq(Maybe(Token("*")), Token("num"), Repeat(Token(".")), Repeat(Token("^"),
                         Maybe(Token("*")), Token("num"), Repeat(Token(".")))),
                     pitch: Seq(Token("note_name"), Maybe(Token("!")), Repeat(Any(Token("#"), Token("+"), Token("-")))),
                     shortened_command: Any(Seq(Token("("), Token("keywords"), Token("num"), Token(")")), Seq(Maybe(Token("@")),
@@ -70,7 +70,7 @@ define(["lexer", "parser", "utils", "lib/treehugger/tree", "lib/treehugger/trave
                         tree.cons("gate_time", (m.g.gate_time) ? [tree.num(m.g.gate_time)] : [tree.string("none")]),
                         tree.cons("velocity", velocity_node)])])]);
                 },
-                note_length: function(m){
+                length: function(m){
                     var length = 0, sequence = [["^", m[0], m[1], m[2]]].concat(m[3]).filter(function(obj){
                         return !!obj;
                     });

@@ -20,7 +20,9 @@ return declare(null, {
         this.compressor = this.context.createDynamicsCompressor();
         this.actual_sample_rate = this.context.sampleRate;
         this.cur_frame = 0;             //現在の再生側の経過時間をサンプルフレーム数で表したもの
+        this.next_ticks = 0;            //cur_ticksの一時保管領域。processAudioCallbackは実際に演奏されるよりも前に呼び出されるため
         this.cur_ticks = 0;             //現在の再生側の経過時間をMIDIのtick数で表したもの(ピアノロールとの同期用)
+        this.last_vol = 127;
         this.sound_producer = new Worker("js/sound_producer.js");   //バックグラウンドで波形生成を担当する
         this.can_play = true;
         
@@ -210,12 +212,35 @@ return declare(null, {
             return this.convertToFrequency(note[0][0][0][0].value);
         }, this);
         this.cur_ast_node = node;
-        var vol = (node.cons == "chord") ? this.env.for_worker.getVolumeForTrack(track_num) :
-            (node[0][3][0].value != "none") ? node[0][3][0].value : this.env.for_worker.getVolumeForTrack(track_num);
+        
+        var gate_time_in_ticks = (node.cons == "chord") ? node[2][0].value : node[0][2][0].value;
+        var gate_time = (gate_time_in_ticks != "none") ? this.convertMidiTicksToSampleFrame(gate_time_in_ticks) : 0;
+        
+        var vol;
+        if(node.cons == "chord" || node[0][3].length == 1){
+            vol = this.env.for_worker.getVolumeForTrack(track_num);
+        }else{
+            switch (node[0][3][0].value) {
+            case "+" :
+                vol = this.last_vol + node[0][3][1].value;
+                break;
+                
+            case "-" :
+                vol = this.last_vol - node[0][3][1].value;
+                break;
+                
+            default:
+                vol = node[0][3][1].value;
+                break;
+            }
+        }
+        
+        this.last_vol = vol;
         
         this.sound_producer.postMessage({
             freq_list : freqs, program_num : this.env.for_worker.getProgramNumForTrack(track_num), note_len : node.end_frame - start_frame,
-                secs_per_frame : this.secs_per_frame, volume : vol / 127.0, track_num : track_num, len_in_ticks : ticks
+            secs_per_frame : this.secs_per_frame, volume : vol / 127.0, track_num : track_num, len_in_ticks : ticks,
+            gate_time : gate_time
         });
     },
     
@@ -266,9 +291,10 @@ return declare(null, {
             this.cur_frame += data_length;
             var music_info = registry.byId("music_info");
             music_info.set("value", this.cur_frame);
+            this.cur_ticks = this.next_ticks;
             var sample_frame_per_tick = this.actual_sample_rate / (this.getCurTempo() * 480.0 / 60.0);
             var ticks = data_length / sample_frame_per_tick;
-            this.cur_ticks += ticks;
+            this.next_ticks += ticks;
         }
     },
     
@@ -279,6 +305,7 @@ return declare(null, {
         });
         this.cur_frame = 0;
         this.cur_ticks = 0;
+        this.next_ticks = 0;
         this.env.for_playback.restoreDefault();
     },
     
