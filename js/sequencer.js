@@ -1,7 +1,7 @@
 define(["utils", "dojo/_base/declare", "dojo/_base/lang", "dijit/registry"], function(util, declare, lang, registry){
 
 return declare(null, {
-    constructor : function(parse_tree, main){
+    constructor : function(main){
         this.buffer_size = 4096;
         this.context = (window.AudioContext) ? new AudioContext() : new webkitAudioContext();
         this.main = main;
@@ -10,33 +10,27 @@ return declare(null, {
             for_playback : new util.Enviroment()
         };
         this.cmd_manager = new util.CommandManager();
-        this.cur_ast_node = parse_tree;             //現在着目しているASTのノード(波形生成時用)
-        this.queues = [[]];                         //波形データのキュー。ワーカーで生成された後、使用されるまでここに保持される
-        this.note_tags = [[]];                      //再生時に必要な情報を線形リストで保持する
+        this.cur_ast_node = null;                   //現在着目しているASTのノード(波形生成時用)
+        this.queues = null;                         //波形データのキュー。ワーカーで生成された後、使用されるまでここに保持される
+        this.note_tags = null;                      //再生時に必要な情報を線形リストで保持する
         this.next_metaevent = null;                 //次のトラックをまたがって適用されるメタイベント
-        this.track_infos = [{frame_in_buf : 0, next_tag_count : 0}];    //各トラックごとの再生情報
+        this.track_infos = null;                    //各トラックごとの再生情報
         this.secs_per_frame = 1.0 / this.context.sampleRate;
-        this.nodes = [this.context.createJavaScriptNode(this.buffer_size, 1, 1)];
+        this.nodes = null;
+        this.gain_nodes = null;
         this.compressor = this.context.createDynamicsCompressor();
         this.actual_sample_rate = this.context.sampleRate;
         this.cur_frame = 0;             //現在の再生側の経過時間をサンプルフレーム数で表したもの
         this.next_ticks = 0;            //cur_ticksの一時保管領域。processAudioCallbackは実際に演奏されるよりも前に呼び出されるため
         this.cur_ticks = 0;             //現在の再生側の経過時間をMIDIのtick数で表したもの(ピアノロールとの同期用)
-        this.last_vol = 127;
-        this.sound_producer = new Worker("js/sound_producer.js");   //バックグラウンドで波形生成を担当する
+        this.last_vol = 127;            //一個前のノードのボリューム(波形生成時用)
+        this.sound_producer = null;     //バックグラウンドで波形生成を担当する
         this.can_play = true;
         
         var _self = this;
         this.processAudio = function(e){
             var data = e.outputBuffer.getChannelData(0), track_num = _self.nodes.indexOf(e.currentTarget);
             _self.processAudioCallback(data.length, data, e.outputBuffer.getChannelData(1), track_num);
-        };
-        
-        this.sound_producer.onmessage = function(e){
-            var data = e.data, cur_track_num = _self.env.for_worker.getCurrentTrackNum();
-            _self.queues[cur_track_num].push(data.buffer);
-            _self.note_tags[cur_track_num].push(data.tag);
-            _self.prepareToProcessNextNode(_self.getNextNode(_self.cur_ast_node, true));
         };
         
         this.cmd_manager.registerAll([
@@ -71,11 +65,52 @@ return declare(null, {
                 env.setVolume(env.getCurrentTrackNum(), (lang.isArray(args[0].value)) ? args[0].value[0] : args[0].value);
             }}
         ]);
+    },
+    
+    setASTTree : function(tree_root){
+        this.cur_ast_node = tree_root;
+    },
+    
+    /**
+     * 構文木から波形を生成して演奏をするための準備をする
+     */
+    prepareToPlay : function(){
+        this.queues = [[]];
+        this.note_tags = [[]];
+        this.next_metaevent = null;
+        this.track_infos = [{frame_in_buf : 0, next_tag_count : 0}];
+        if(this.gain_nodes){
+            this.gain_nodes.forEach(function(node){
+                node.disconnect();
+            });
+        }
+        if(this.nodes){
+            this.nodes.forEach(function(node){
+                node.disconnect();
+            });
+        }
+        this.nodes = [this.context.createJavaScriptNode(this.buffer_size, 1, 1)];
+        this.gain_nodes = [this.context.createGainNode()];
+        this.last_vol = 127;
+        this.sound_producer = new Worker("js/sound_producer.js");
+        
+        this.env.for_worker.restoreDefault();
+        this.env.for_worker.setTrackNum(0);
+        
+        var _self = this;
+        this.sound_producer.onmessage = function(e){
+            var data = e.data, cur_track_num = _self.env.for_worker.getCurrentTrackNum();
+            _self.queues[cur_track_num].push(data.buffer);
+            _self.note_tags[cur_track_num].push(data.tag);
+            _self.prepareToProcessNextNode(_self.getNextNode(_self.cur_ast_node, true));
+        };
         
         this.nodes[0].onaudioprocess = this.processAudio;
-        this.nodes[0].connect(this.compressor);
+        this.nodes[0].connect(this.gain_nodes[0]);
+        this.gain_nodes[0].connect(this.compressor);
         //一番目のノートを演奏する準備をする
         this.prepareToProcessNextNode(this.getNextNode(this.cur_ast_node, false));
+        this.can_play = true;
     },
     
     /**
@@ -166,8 +201,11 @@ return declare(null, {
                 if(node[0].value === "track"){
                     var new_node = this.context.createJavaScriptNode(this.buffer_size, 1, 1);
                     new_node.onaudioprocess = this.processAudio;
-                    new_node.connect(this.compressor);
+                    var gain_node = this.context.createGainNode();
+                    new_node.connect(gain_node);
+                    gain_node.connect(this.compressor);
                     this.nodes.push(new_node);
+                    this.gain_nodes.push(gain_node);
                     this.track_infos.push({frame_in_buf : 0, next_tag_count : 0});
                     this.queues.push([]);
                     this.note_tags.push([]);
@@ -239,7 +277,7 @@ return declare(null, {
         
         this.sound_producer.postMessage({
             freq_list : freqs, program_num : this.env.for_worker.getProgramNumForTrack(track_num), note_len : node.end_frame - start_frame,
-            secs_per_frame : this.secs_per_frame, volume : vol / 127.0, track_num : track_num, len_in_ticks : ticks,
+            secs_per_frame : this.secs_per_frame, volume : vol, track_num : track_num, len_in_ticks : ticks,
             gate_time : gate_time
         });
     },
@@ -258,9 +296,13 @@ return declare(null, {
         var tag = track_tags[track_info.next_tag_count];
         if(tag.type === "command"){   //画面表示用に"command"タイプのタグの処理をする
             this.cmd_manager.invoke(tag.name, [tag.arg1, tag.arg2, "for_playback"]);
+            if(tag.name.search(/u|v|volume|velocity/) != -1){
+                this.gain_nodes[track_num].gain.value = tag.arg1.value / 127.0;
+            }
             ++track_info.next_tag_count;
             return this.proceedToNextNoteForTrack(track_num);
         }
+        this.gain_nodes[track_num].gain.value = tag.vol / 127.0;
         
         return tag;
     },

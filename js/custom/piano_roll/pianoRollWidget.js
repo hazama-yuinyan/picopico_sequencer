@@ -44,6 +44,7 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
             },
             _set_treeAttr : function(tree){
                 this._tree = tree;
+                this.onUpdate();
             },
             
             _getviewport_sizeAttr : function(){

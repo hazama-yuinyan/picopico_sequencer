@@ -47,7 +47,7 @@ var cur_sample_frame = 0, len_suppressing = 1000, note_id = 0, cur_track_num = 0
 
 onmessage = function(e){
     var data = e.data, freq_list = data.freq_list, func = functions[data.program_num], note_len = data.note_len;
-    var buffer = new Float32Array(note_len), amp = data.volume, gate_time = data.gate_time, is_chord = (freq_list.length > 1);
+    var buffer = new Float32Array(note_len), gate_time = data.gate_time, is_chord = (freq_list.length > 1);
     secs_per_frame = data.secs_per_frame;
     has_arpeggiated_note = true;
     if(cur_track_num != data.track_num){
@@ -56,7 +56,7 @@ onmessage = function(e){
         note_id = 0;
     }
     var note_tag = {type : "note", start_frame : cur_sample_frame, end_frame : cur_sample_frame + note_len, note_id : note_id++,
-        len_in_ticks : data.len_in_ticks};
+        len_in_ticks : data.len_in_ticks, vol : data.volume};
     
     //ここから実際に出力バッファーに波形データをセットする
     var i, y;
@@ -72,7 +72,6 @@ onmessage = function(e){
                 if(start_frame_list[j] > i){break;}
                 y += func(i * secs_per_frame, freq_list[j]);
             }
-            y *= amp;
             
             //急激な波形の変化を抑えるため、ノートの端の方は波形を変化させる
             if(i >= next_note_start_frame && has_arpeggiated_note){
@@ -90,7 +89,7 @@ onmessage = function(e){
     }else{                      //単音の場合
         var freq = freq_list[0], actual_end_frame = (gate_time !== 0) ? note_len - gate_time : note_len;
         for(i = 0; i < note_len; ++i, ++cur_sample_frame){
-            y = amp * func(i * secs_per_frame, freq);
+            y = func(i * secs_per_frame, freq);
             if(i <= len_suppressing){y = linear(y, i, 0, len_suppressing, len_suppressing, true);}    //急激な波形の変化を抑えるため、ノートの端の方は波形を変化させる
             if(i >= actual_end_frame - len_suppressing){y = linear(y, i, actual_end_frame - len_suppressing, actual_end_frame, len_suppressing, false);}
             if(i >= actual_end_frame){freq = 0.0;}          //ゲートタイムの長さに合わせて発音時間を調整する

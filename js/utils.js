@@ -35,7 +35,6 @@ define(["dojo/_base/declare"], function(declare){
                 throw SyntaxError("Sorry, but currently you can't set key signatures by keyword! Please specify which notes should " + 
                     "be sharpend or flattened one by one.");
             }else{
-                //if(!match){throw SyntaxError("Invalid parameters to command [KEY SIGNATURE]");}
                 var notes = key_def[1], signs = key_def[0];
                 notes.forEach(function(note_name, index){
                     var sign = (signs.length > 1) ? signs[index] : signs;

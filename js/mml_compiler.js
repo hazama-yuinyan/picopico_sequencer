@@ -31,7 +31,7 @@ define(["lexer", "parser", "utils", "lib/treehugger/tree", "lib/treehugger/trave
                     tie: Seq(Ref("note"), Repeat1(Token("&"), Ref("note"))),
                     tuplet: Seq(Token("{"), Repeat1(Ref("note")), Token("}"), Maybe(Ref("length"))),
                     chord: Seq(Any(Token('"'), Token("'")), Repeat1(Any(Ref("note"), Ref("shortened_command"))), Any(Token('"'), Token("'")),
-                        Maybe(Token("num"), Maybe(Token(","), Label("gate_time", Token("num"))))),
+                        Maybe(Maybe(Token("num")), Maybe(Token(","), Label("gate_time", Token("num"))))),
                     note: Seq(Ref("pitch"), Maybe(Label("note_length", Ref("length"))), Maybe(Token(","), Maybe(Label("gate_time", Ref("length"))),
                         Maybe(Token(","), Label("velocity", Seq(Maybe(Any(Token("+"), Token("-"))), Token("num")))))),
                     length: Seq(Maybe(Token("*")), Token("num"), Repeat(Token(".")), Repeat(Token("^"),

@@ -9,17 +9,21 @@ define(["mml_compiler", "sequencer", "dojo/dom-class", "dijit/registry", "dojox/
     function(compiler, Sequencer, dom_class, registry, timing, updater){
 
     var sequencer = null,
-    tree = null,
+    data_store = null,
     timer = null,
     compile = function(){
-        if(!tree){
-            var editor = registry.byId("editor");
-            tree = compiler.mml_parser.parse(editor.value);
+        processMMLSource();
+        var tab_container = registry.byId("main_tab");
+        if(tab_container.selectedChildWidget.id == "piano_roll"){
+            tab_container.selectedChildWidget.set("_tree", data_store.list);
         }
         var display = registry.byId("ast");
-        display.set("value", tree && tree.toPrettyString() || compiler.mml_parser.stringifyErrors());
-        if(!tree){return;}
-        sequencer = new Sequencer(tree, {stop : stop, play : play, hold : hold});
+        display.set("value", data_store.tree && data_store.tree.toPrettyString() || compiler.mml_parser.stringifyErrors());
+        if(!data_store.tree){return;}
+        
+        if(!sequencer){sequencer = new Sequencer({stop : stop, play : play, hold : hold});}
+        sequencer.setASTTree(data_store.tree);
+        sequencer.prepareToPlay();
     },
 
     stop = function(){
@@ -60,6 +64,28 @@ define(["mml_compiler", "sequencer", "dojo/dom-class", "dijit/registry", "dojox/
     
     hold = function(){
         sequencer.hold();
+    },
+    
+    processMMLSource = function(){
+        var tmp, error_console;
+        try{
+            var editor = registry.byId("editor");
+            tmp = updater.compile(editor.value);
+        }
+        catch(e){
+            error_console = registry.byId("various_uses_pane");
+            error_console.domNode.textContent = e.message;
+            return;
+        }
+        
+        error_console = registry.byId("various_uses_pane");
+        if(!tmp.tree){
+            error_console.domNode.textContent = tmp;
+            return;
+        }else{
+            error_console.domNode.textContent = "compiled successfully!";
+        }
+        data_store = tmp;
     },
     
     switchController = function(){
@@ -123,24 +149,8 @@ return {
         var tab_container = registry.byId("main_tab");
         tab_container.watch("selectedChildWidget", function(name, old, new_val){
             if(new_val.title == "ピアノロール"){
-                var tmp, error_console;
-                try{
-                    var editor = registry.byId("editor");
-                    tmp = updater.compile(editor.value);
-                }
-                catch(e){
-                    error_console = registry.byId("various_uses_pane");
-                    error_console.domNode.textContent = e.message;
-                    return;
-                }
-                if(!tmp.tree){
-                    error_console = registry.byId("various_uses_pane");
-                    error_console.domNode.textContent = tmp;
-                    return;
-                }
-                tree = tmp.tree;
-                new_val.set("_tree", tmp.list);
-                new_val.onUpdate();
+                processMMLSource();
+                new_val.set("_tree", data_store.list);
             }else if(old.title == "ピアノロール"){
                 old.set("_tree", null);
             }
@@ -156,14 +166,14 @@ return {
     
     "#editor" : function(){
         registry.byId("editor").set("value", "/[volume 127] [velocity 127]\n" +
-            "(t1)@1 v100 c4c8d8 e8e8g4 e8e8d8d8 c1\n" +
+            "(t1)@1 v40 c4c8d8 e8e8g4 e8e8d8d8 c1\n" +
             "[key_signature +f]\n" +
             "t132 l4 d edg f2d eda g2d <d>bg\n" +
             "f t66 e t132 <c>bga t80 g2\n" +
-            "[key_signature +fc][volume 127]\n" +
+            "[key_signature +fc][volume 80]\n" +
             "t80 l8 bbffa2r4 bbffa4baa4^8,,80g,,60\n" +
             "[key_signature -b, -e, -a, -d, -g]\n" +
-            "l4 o4 {dde}e2d4,*240 cc>b4<c4d1\n\n" +
+            "l4 o4 u30 {dde}e2d4,*240 cc>b4<c4d1\n\n" +
 
             '(t2)@0 v65 l2 "ceg" "ceg" "cfa" "d1gb"\n' +
             '/ここからキーGMajor\n' +
