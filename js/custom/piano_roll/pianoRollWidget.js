@@ -1,7 +1,7 @@
 define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin", "dojox/gfx", "dojo/on",
-    "dojo/_base/lang", "dojo/text!custom/piano_roll/templates/piano_roll_template.html", "dijit/layout/BorderContainer", "dijit/layout/BorderContainer",
-    "dijit/form/Button"],
-    function(declare, WidgetBase, TemplatedMixin, WidgetsInTemplateMixin, gfx, on, lang, template){
+    "dojo/_base/lang", "dojo/text!custom/piano_roll/templates/piano_roll_template.html", "dijit/Tooltip", "dijit/layout/BorderContainer",
+    "dijit/layout/BorderContainer", "dijit/form/Button"],
+    function(declare, WidgetBase, TemplatedMixin, WidgetsInTemplateMixin, gfx, on, lang, template, Tooltip){
         return declare("myCustomWidgets.PianoRoll", [WidgetBase, TemplatedMixin, WidgetsInTemplateMixin], {
             templateString : template,
             widgetsInTemplate : true,
@@ -10,7 +10,11 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
             // cur_uppermost_note: Number
             //      左端の鍵盤上で一番上に表示されている鍵盤のノートナンバー
             cur_uppermost_note : 71,
+            // cur_uppermost_note_pos: Number
+            //      cur_uppermost_noteの座標
             cur_uppermost_note_pos : 0,
+            // guide_bar: Object
+            //      ガイドバーのインスタンス。ガイドバーのみを消去するため
             guide_bar : null,
             // _track_num : Number
             //      現在選択されているトラックナンバー
@@ -22,12 +26,15 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
             //      ピアノロールの左端の鍵盤を除いた部分の位置
             //      xは鍵盤の右端を、yは鍵盤の上端を基準とした相対座標
             _viewport_pos : {x : 0, y : 0},
+            // _keyboard_pos: Number
+            //      鍵盤の上端の位置
+            //      ビューポートの初期位置が基準なので値域は-3 * keyboard_size.height <= y <= 4 * keyboard_size.height
             _keyboard_pos : 0,
             // _cur_ticks: Number
             //      現在のtick数
             _cur_ticks : 0,
-            // _bar_height: Number
-            //      音符を配置するバー一本分の高さ
+            // _bar_heights: Number
+            //      音符を配置するバー一本分の幅
             //      upperはF-Bまで、lowerはC-Eまでの音に対応する音符領域の高さ
             _bar_heights : {upper : 0, lower : 0},
             _tree : null,
@@ -36,6 +43,53 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
             _last_mouse_pos : {x : 0, y : 0},
             _width_quarter_note : 48,
             _ticks_per_quarter_note : 480,
+            _predefined_inst_names : ["正弦波", "矩形波", "ノコギリ波", "三角波", "M字型", "ノイズ"],
+            // _metaevent_list
+            //      info_bar領域に特殊なアイコンを描画すべきメタイベントのリスト
+            //      中身はSVGの画像
+            _metaevent_list : [],
+            _set_metaevent_listAttr : function(events){ //ツールチップで表示すべきイベントのリストを作る
+                this._metaevent_list.splice(0);
+                var MULTIPLIERS_NOTE_LEN = this._ticks_per_quarter_note / this._width_quarter_note, label_texts = [], _self = this;
+                
+                var prettifyEventParams = function(info){
+                    var name, params;
+                    if(info.name.search(/^(t|tempo)/) != -1){
+                        name = "テンポチェンジ";
+                        params = info.arg1;
+                    }else if(info.name.search(/^(k.sign|key_signature)/) != -1){
+                        name = "キー変更";
+                        info.arg1 = info.arg1.replace(/^\+/, "#").replace(/^-/, "♭");
+                        var sign = info.arg1[0];
+                        params = info.arg2.match(/[a-g]/gi).map(function(note_name){
+                            return note_name + sign;
+                        }).join(", ");
+                    }else{
+                        name = "プログラムチェンジ";
+                        var inst_names = _self._predefined_inst_names;
+                        params = (info.arg1 < inst_names.length) ? inst_names[info.arg1] : "ユーザー定義波形" + info.arg1 - inst_names.length + 1;
+                    }
+                    
+                    return '<p>Event name : ' + name + '<br>' + params + "</p>";
+                };
+                
+                var last_x = 0;
+                events.forEach(function(event){
+                    var x = event.start_time / MULTIPLIERS_NOTE_LEN;
+                    
+                    if(x != last_x){       //保管しておいた情報を元に実際にイベントの情報を表示するツールチップとアイコンを追加する
+                        var metaevent = {x : last_x};
+                        metaevent.tooltip = new Tooltip({label : ["<div>"].concat(label_texts).concat(["</div>"]).join(""), showDelay : 250,
+                            connectId : []});
+                        this._metaevent_list.push(metaevent);
+                        label_texts.splice(0);
+                    }
+                    
+                    label_texts.push(prettifyEventParams(event));
+                    
+                    last_x = x;
+                }, this);
+            },
             _set_track_numAttr : function(num){
                 this._track_num = num;
                 if(this._tree && this._tree[this._track_num - 1]){
@@ -161,13 +215,34 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
                 this._surface.createLine({x1 : KEYBOARD_WIDTH, y1 : BOTTOM_MEASURE_NUM_BAR, x2 : viewport_size.w, y2 : BOTTOM_MEASURE_NUM_BAR})
                     .setStroke("black");
                 x = -(viewport_pos.x % WIDTH_MEASURE) + KEYBOARD_WIDTH + 8;
-                var canceller = function(e){e.preventDefault();};
+                var canceller = function(e){e.preventDefault();}, measure_num_texts = [];
                 for(var measure_num = Math.floor(viewport_pos.x / WIDTH_MEASURE) + 1; x < viewport_size.w; x += WIDTH_MEASURE, ++measure_num){
                     var text = this._surface.createText({x : x, y : 16, text : (measure_num).toString(), align : "start"})
                         .setFont({family : "Arial", size : "14pt", weight : "normal"})
                         .setFill("black");
+                    measure_num_texts.push(text);
                     on(text.rawNode, "mousemove", canceller);
                 }
+                
+                this._metaevent_list.filter(function(metaevent){    //メタイベントのアイコンを描画する
+                    return this.isBetween(viewport_pos.x, viewport_pos.x + viewport_size.w, metaevent.x);
+                }, this).forEach(function(metaevent){
+                    var offset = metaevent.x - viewport_pos.x + this.keyboard_size.width;
+                    measure_num_texts.every(function(text){
+                        var width = text.rawNode.offsetWidth;
+                        if(this.isBetween(text.shape.x, text.shape.x + width, offset)){
+                            offset += width;
+                            return false;
+                        }else if(this.isBetween(offset, offset + 12, text.shape.x)){
+                            offset -= width;
+                            return false;
+                        }
+                        return true;
+                    }, this);
+                    metaevent.img = this._surface.createImage({x : offset, y : 2, width : 12, height : 12,
+                        src : "js/custom/piano_roll/images/metaevent.png"});
+                    metaevent.tooltip.set("connectId", metaevent.img.rawNode);
+                }, this);
             },
             
             _findStartNoteIndex : function(list, ticks){
@@ -189,11 +264,13 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
                 // summary:
                 //      音符を描画する
                 
-                if(!this._tree){return;}
+                if(!this._tree || this._track_num > this._tree.length){return;}
                 var MULTIPLIERS_NOTE_LEN = this._ticks_per_quarter_note / this._width_quarter_note;
-                var start_ticks = this._viewport_pos.x * MULTIPLIERS_NOTE_LEN, cur_track = this._tree[this._track_num - 1], _self = this;
+                var viewport_pos = this.get("_viewport_pos"), viewport_size = this.get("_viewport_size"), _self = this;
+                var start_ticks = viewport_pos.x * MULTIPLIERS_NOTE_LEN, cur_track = this._tree[this._track_num - 1];
                 var index = this._findStartNoteIndex(cur_track, start_ticks), info = {}, inner_index = 0;
                 if(index == -1){return;}
+                
                 var proceedToNextEvent = function(info){
                     if(index >= cur_track.length){return false;}
                     var tmp = cur_track[index];
@@ -210,16 +287,18 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
                         ++index;
                         return proceedToNextEvent(info);
                     }
+                    
                     info.event = tmp;
-                    info.x = tmp.start_time / MULTIPLIERS_NOTE_LEN - _self._viewport_pos.x + _self.keyboard_size.width;
+                    info.x = tmp.start_time / MULTIPLIERS_NOTE_LEN - viewport_pos.x + _self.keyboard_size.width;
                     if(inner_index !== 0){info.x += (inner_index - 1) * tmp.gate_time / MULTIPLIERS_NOTE_LEN;}
                     info.y = _self.calcNoteNumPos(tmp.pitch) + _self._keyboard_pos;
                     info.width = (inner_index === 0) ? tmp.length / MULTIPLIERS_NOTE_LEN - tmp.gate_time / MULTIPLIERS_NOTE_LEN :
                         tmp.length / MULTIPLIERS_NOTE_LEN - (inner_index - 1) * tmp.gate_time / MULTIPLIERS_NOTE_LEN;
                     info.height = (tmp.pitch % 12 < 5) ? _self._bar_heights.lower : _self._bar_heights.upper;
                     index = (inner_index === 0) ? index + 1 : index;
-                    return info.x < _self._viewport_pos.x + _self._viewport_size.w;
+                    return info.x < viewport_pos.x + viewport_size.w;
                 };
+                
                 proceedToNextEvent(info);
                 var surface = this._surface; 
                 

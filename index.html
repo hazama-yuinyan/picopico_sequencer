@@ -57,8 +57,14 @@
                 <div data-dojo-type="dijit.layout.ContentPane" data-dojo-props="title: '曲情報'">
                     <label for="track_selector">トラックナンバー</label>
                     <input data-dojo-type="dijit.form.NumberSpinner" data-dojo-props="constraints: {max: 32, min: 1}, value: 1" id="track_selector">
+                    <br>
+                    <label for="music_title">タイトル</label>
+                    <textarea data-dojo-type="dijit.form.Textarea" id="music_title"></textarea>
                 </div>
-                <div data-dojo-type="dijit.layout.ContentPane" data-dojo-props="title: 'プロパティー'"></div>
+                <div data-dojo-type="dijit.layout.ContentPane" data-dojo-props="title: 'プロパティー'">
+                    <label for="velocity">ベロシティー</label>
+                    <input data-dojo-type="dijit.form.NumberSpinner" data-dojo-props="constarints: {max: 127, min: 0}, value: 100" id="velocity">
+                </div>
             </div>
             <div id="various_uses_pane" data-dojo-type="dijit.layout.ContentPane"
                 data-dojo-props="region: 'bottom', splitter: true">No Messages

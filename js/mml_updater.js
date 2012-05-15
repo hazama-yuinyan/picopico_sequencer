@@ -73,7 +73,7 @@ define(["dojo/_base/lang", "mml_compiler"], function(lang, mml_compiler){
             //      commandタイプのノードを受け取って一つのオブジェクトにまとめる
             
             var tmp = {type : "command", name : command[0].value, arg1 : lang.isArray(command[1]) ? command[1] : command[1].value,
-                arg2 : command[2] && command[2].value || "none"};
+                arg2 : command[2] && command[2].value || "none", start_time : this.start_time};
             return tmp;
         },
         
@@ -81,7 +81,7 @@ define(["dojo/_base/lang", "mml_compiler"], function(lang, mml_compiler){
             var tree = compiler.parse(str);
             if(!tree){return compiler.stringifyErrors();}
             
-            var node = this.getNextNode(tree, false), list = [], inner = [];
+            var node = this.getNextNode(tree, false), list = [], inner = [], metaevents = [];
             do{
                 switch(node.cons){
                 case "params" :
@@ -100,6 +100,8 @@ define(["dojo/_base/lang", "mml_compiler"], function(lang, mml_compiler){
                         this.start_time = 0;
                         list.push(inner);
                         inner = [];
+                    }else if(tmp.name.search(/^(t|tempo|k.sign|key_signature|program_change)/) != -1){
+                        metaevents.push(tmp);
                     }
                     break;
                 
@@ -110,7 +112,7 @@ define(["dojo/_base/lang", "mml_compiler"], function(lang, mml_compiler){
             
             list.push(inner);
             this.start_time = 0;
-            return {tree : tree, list : list};
+            return {tree : tree, list : list, metaevents : metaevents};
         },
         
         sourcify : function(ast){

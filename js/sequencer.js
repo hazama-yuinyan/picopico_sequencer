@@ -10,17 +10,18 @@ return declare(null, {
             for_playback : new util.Enviroment()
         };
         this.cmd_manager = new util.CommandManager();
-        this.cur_ast_node = null;                   //現在着目しているASTのノード(波形生成時用)
-        this.queues = null;                         //波形データのキュー。ワーカーで生成された後、使用されるまでここに保持される
-        this.note_tags = null;                      //再生時に必要な情報を線形リストで保持する
-        this.next_metaevent = null;                 //次のトラックをまたがって適用されるメタイベント
-        this.track_infos = null;                    //各トラックごとの再生情報
+        this.cur_ast_node = null;       //現在着目しているASTのノード(波形生成時用)
+        this.queues = null;             //波形データのキュー。ワーカーで生成された後、使用されるまでここに保持される
+        this.note_tags = null;          //再生時に必要な情報を線形リストで保持する
+        this.next_metaevent = null;     //次のトラックをまたがって適用されるメタイベント
+        this.track_infos = null;        //各トラックごとの再生情報
         this.secs_per_frame = 1.0 / this.context.sampleRate;
         this.nodes = null;
         this.gain_nodes = null;
         this.compressor = this.context.createDynamicsCompressor();
         this.actual_sample_rate = this.context.sampleRate;
         this.cur_frame = 0;             //現在の再生側の経過時間をサンプルフレーム数で表したもの
+        this.actual_end_frame = 0;      //バッファーが空になるように曲の終端チェックを少しずらすときに使用する
         this.next_ticks = 0;            //cur_ticksの一時保管領域。processAudioCallbackは実際に演奏されるよりも前に呼び出されるため
         this.cur_ticks = 0;             //現在の再生側の経過時間をMIDIのtick数で表したもの(ピアノロールとの同期用)
         this.last_vol = 127;            //一個前のノードのボリューム(波形生成時用)
@@ -289,8 +290,9 @@ return declare(null, {
      */
     proceedToNextNoteForTrack : function(track_num){
         var track_tags = this.note_tags[track_num], track_info = this.track_infos[track_num];
-        if(track_info.next_tag_count >= track_tags.length){         //曲の最後まで到達したので、再度の再生に備える
+        if(track_info.next_tag_count >= track_tags.length){         //曲の最後まで到達したので、メソッドを抜ける
             this.can_play = false;
+            if(track_num === 0 && this.actual_end_frame === 0){this.actual_end_frame = this.cur_frame + 5 * this.buffer_size;}
             return null;
         }
         var tag = track_tags[track_info.next_tag_count];
@@ -308,15 +310,22 @@ return declare(null, {
     },
     
     processAudioCallback : function(data_length, left_data, right_data, track_num){
-        if(!this.can_play){
+        if(!this.can_play && this.actual_end_frame !== 0 && this.cur_frame >= this.actual_end_frame){
             this.main.stop();
             return;
         }
-        var track_info = this.track_infos[track_num], tag = this.proceedToNextNoteForTrack(track_num);
-        if(!tag){return;}       //曲の終端に到達したので、メソッドを抜ける
+        var track_info = this.track_infos[track_num], tag = this.proceedToNextNoteForTrack(track_num), i;
+        if(!tag){       //曲の終端に到達したので、メソッドを抜ける
+            if(track_num === 0){this.cur_frame += data_length;}
+            for(i = 0; i < data_length; ++i){    //後片付けをする
+                left_data[i] = 0;
+                right_data[i] = 0;
+            }
+            return;
+        }
         var playing_buffer = this.queues[track_num][tag.note_id], index = track_info.frame_in_buf;
         
-        for(var i = 0; i < data_length; ++i, ++index){    //出力バッファーに波形データをセットする
+        for(i = 0; i < data_length; ++i, ++index){    //出力バッファーに波形データをセットする
             if(index >= playing_buffer.length){
                 ++track_info.next_tag_count;
                 if(!(tag = this.proceedToNextNoteForTrack(track_num))){break;} //曲の終端に到達したので、ループを抜ける
@@ -346,6 +355,7 @@ return declare(null, {
             track_info.frame_in_buf = 0;
         });
         this.cur_frame = 0;
+        this.actual_end_frame = 0;
         this.cur_ticks = 0;
         this.next_ticks = 0;
         this.env.for_playback.restoreDefault();

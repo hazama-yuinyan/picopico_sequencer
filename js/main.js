@@ -150,6 +150,7 @@ return {
         tab_container.watch("selectedChildWidget", function(name, old, new_val){
             if(new_val.title == "ピアノロール"){
                 processMMLSource();
+                new_val.set("_metaevent_list", data_store.metaevents);
                 new_val.set("_tree", data_store.list);
             }else if(old.title == "ピアノロール"){
                 old.set("_tree", null);
