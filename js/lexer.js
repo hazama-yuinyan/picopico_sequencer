@@ -11,6 +11,7 @@ define(["dojo/_base/declare"], function(declare){
                 this.definitions.every(function(definition){
                     if(m = definition.regexp.exec(str)){
                         if(definition.type.search(/ignore/i) == -1){
+                            if(definition.enable_if && !definition.enable_if()){return true;}
                             tokens.push({type : definition.type == "operators" ? m[0] : definition.type,
                                 value : (definition.callback) ? definition.callback(m[0]) : m[0],
                                 line_num : line_num, num_chars : num_chars});

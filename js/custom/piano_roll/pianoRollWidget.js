@@ -1,7 +1,7 @@
 define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin", "dojox/gfx", "dojo/on",
-    "dojo/_base/lang", "dojo/text!custom/piano_roll/templates/piano_roll_template.html", "dijit/Tooltip", "dijit/layout/BorderContainer",
+    "dojo/_base/lang", "dojo/text!custom/piano_roll/templates/piano_roll_template.html", "dijit/Tooltip", "dijit/registry", "dijit/layout/BorderContainer",
     "dijit/layout/BorderContainer", "dijit/form/Button"],
-    function(declare, WidgetBase, TemplatedMixin, WidgetsInTemplateMixin, gfx, on, lang, template, Tooltip){
+    function(declare, WidgetBase, TemplatedMixin, WidgetsInTemplateMixin, gfx, on, lang, template, Tooltip, registry){
         return declare("myCustomWidgets.PianoRoll", [WidgetBase, TemplatedMixin, WidgetsInTemplateMixin], {
             templateString : template,
             widgetsInTemplate : true,
@@ -37,6 +37,7 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
             //      音符を配置するバー一本分の幅
             //      upperはF-Bまで、lowerはC-Eまでの音に対応する音符領域の高さ
             _bar_heights : {upper : 0, lower : 0},
+            _velocity_colors : {weak : [0, 0, 255], strong : [255, 0, 0]},
             _tree : null,
             _surface : null,
             _touched : false,
@@ -151,22 +152,37 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
                 this.onUpdate();
             },
             
+            isInLowerOfOctave : function(note_num){
+                return note_num % 12 < 5;
+            },
+            
             calcNoteNumPos : function(note_num){
                 // summary:
                 //      指定したノートナンバーの鍵盤のオフセットを鍵盤の上端を基準とした相対座標として算出する
                 
                 var i = 107, y = 0, bar_heights = this.get("_bar_heights");
-                while(i - note_num >= 12){
-                    y += this.keyboard_size.height;
+                while(i - note_num > 12){
                     i -= 12;
+                    y += this.keyboard_size.height;
                 }
                 
-                for(var bar_height = bar_heights.upper; i > note_num; --i){
-                    y += bar_height;
-                    bar_height = (i % 12 < 5) ? bar_heights.lower : bar_heights.upper;
+                for(; i > note_num; --i){
+                    y += (this.isInLowerOfOctave(i)) ? bar_heights.lower : bar_heights.upper;
                 }
                 
                 return y;
+            },
+            
+            convertPosToNoteNum : function(offset){
+                // summary:
+                //      特定のy座標をノートナンバーに換算する
+                
+                var i = this.cur_uppermost_note, y = this._viewport_pos.y - this.cur_uppermost_note_pos, bar_heights = this.get("_bar_heights");
+                for(; y != offset; --i){
+                    y += (this.isInLowerOfOctave(i)) ? bar_heights.lower : bar_heights.upper;
+                }
+                
+                return i;
             },
             
             convertTicksToPos : function(ticks){
@@ -177,6 +193,14 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
                 return ticks / MULTIPLIERS_NOTE_LEN;
             },
             
+            convertPosToTicks : function(x){
+                // summary:
+                //     特定のx座標をtick数に換算する
+                
+                var MULTIPLIERS_NOTE_LEN = this._ticks_per_quarter_note / this._width_quater_note;
+                return x * MULTIPLIERS_NOTE_LEN;
+            },
+            
             _drawGuideLines : function(){
                 // summary:
                 //      背景に小節線や拍子の区切りをあらわす線を描く
@@ -185,12 +209,11 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
                 var viewport_size = this.get("_viewport_size"), viewport_pos = this.get("_viewport_pos");
                 
                 //まず音高の区切りをあらわす横線を描く
-                var line_offset = viewport_pos.y - this.cur_uppermost_note_pos, i = (line_offset != 0) ? this.cur_uppermost_note - 1 : 
-                    this.cur_uppermost_note, diff_y = 0, bar_heights = this.get("_bar_heights");
-                for(; line_offset < viewport_size.h; --i, line_offset += diff_y){
+                var i = this.cur_uppermost_note, line_offset = this.calcNoteNumPos(i) + this._keyboard_pos, bar_heights = this.get("_bar_heights");
+                for(; line_offset < viewport_size.h; --i){
                     this._surface.createLine({x1 : KEYBOARD_WIDTH, y1 : line_offset, x2 : viewport_size.w, y2 : line_offset})
                         .setStroke("gray");
-                    diff_y = (i % 12 < 5) ? bar_heights.lower : bar_heights.upper;
+                    line_offset += (this.isInLowerOfOctave(i)) ? bar_heights.lower : bar_heights.upper;
                 }
                 
                 //次に拍子をあらわす区切り線を描く
@@ -294,21 +317,58 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
                     info.y = _self.calcNoteNumPos(tmp.pitch) + _self._keyboard_pos;
                     info.width = (inner_index === 0) ? tmp.length / MULTIPLIERS_NOTE_LEN - tmp.gate_time / MULTIPLIERS_NOTE_LEN :
                         tmp.length / MULTIPLIERS_NOTE_LEN - (inner_index - 1) * tmp.gate_time / MULTIPLIERS_NOTE_LEN;
-                    info.height = (tmp.pitch % 12 < 5) ? _self._bar_heights.lower : _self._bar_heights.upper;
+                    info.height = (_self.isInLowerOfOctave(tmp.pitch)) ? _self._bar_heights.lower : _self._bar_heights.upper;
                     index = (inner_index === 0) ? index + 1 : index;
                     return info.x < viewport_pos.x + viewport_size.w;
                 };
                 
+                var linear = function(val, x, from, to, len, is_up){
+                    var tmp = (is_up) ? x - from : to - x;
+                    return val * tmp / len;
+                };
+                
+                var interpretVelocity = function(velocity){
+                    var color = [], diffs = [color_strong[0] - color_weak[0], color_strong[1] - color_weak[1], color_strong[2] - color_weak[2]];
+                    color[0] = Math.round(linear(Math.abs(diffs[0]), velocity, 0, 127, 128, (color_weak[0] < color_strong[0])));
+                    color[1] = Math.round(linear(Math.abs(diffs[1]), velocity, 0, 127, 128, (color_weak[1] < color_strong[1])));
+                    color[2] = Math.round(linear(Math.abs(diffs[2]), velocity, 0, 127, 128, (color_weak[2] < color_strong[2])));
+                    return color;
+                };
+                
+                var findNoteAt = function(ticks, y){
+                    for(var i = 0, channel = this._tree[this._track_num]; i < channel.length; ++i){
+                        var elem = channel[i];
+                        if(!lang.isArray(elem)){
+                            if(ticks == channel[i].start_time){return elem;}
+                        }else{
+                            if(ticks == elem[0].start_time){
+                                var note_num = this.convertPosToNoteNum(y);
+                                for(var j = 0; j < elem.length; ++j){
+                                    if(note_num == elem[j].pitch){return elem[j];}
+                                }
+                            }
+                        }
+                    }
+                    
+                    throw Error("Unreachable code reached");
+                };
+                
                 proceedToNextEvent(info);
-                var surface = this._surface; 
+                var surface = this._surface, color_weak = this._velocity_colors.weak, color_strong = this._velocity_colors.strong;
                 
                 do{
                     if(!this.isBetween(0, this._viewport_size.h, info.y)){continue;}    //ビューポートの高さに収まらないノートは描画しない
                     
-                    var color = "#ff0000";
-                    surface.createRect({x : info.x, y : info.y, width : info.width, height : info.height})
-                           .setFill(color)
+                    var color = interpretVelocity(info.event.velocity);
+                    var note_rect = surface.createRect({x : info.x, y : info.y, width : info.width, height : info.height})
+                           .setFill("rgb(" + color.join(",") + ")")
                            .setStroke("black");
+                    on(note_rect.rawNode, "click", function(e){
+                        var node = e.currentTarget, pos = {x : node.x.baseVal.value, y : node.y.baseVal.value};
+                        var ticks = this.convertPosToTicks(pos.x + viewport_pos.x);
+                        var target = findNoteAt(ticks, pos.y), velocity_display = registry.byId("velocity");
+                        velocity_display.set("value", target.velocity);
+                    });
                 }while(proceedToNextEvent(info));
             },
             
@@ -371,21 +431,21 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
                         this.isBetween(-7 * this.keyboard_size.height + this._viewport_size.h, 0, this._keyboard_pos + diff_y)){
                         viewport_pos.y += diff_y;
                         this._keyboard_pos += diff_y;
-                        var bar_heights = this.get("_bar_heights"), bar_height = (this.cur_uppermost_note % 12 < 5) ? bar_heights.lower : bar_heights.upper;
-                        if(this.cur_uppermost_note_pos > viewport_pos.y){
-                            ++this.cur_uppermost_note;
-                            bar_height = (this.cur_uppermost_note % 12 < 5) ? bar_heights.lower : bar_heights.upper;
-                            this.cur_uppermost_note_pos -= bar_height;
-                        }else if(this.cur_uppermost_note_pos + bar_height < viewport_pos.y){
-                            --this.cur_uppermost_note;
-                            this.cur_uppermost_note_pos += bar_height;
-                        }
-                        
-                        changed = true;
-                    }else{
                         viewport_pos.y = this.clip(0, 7 * this.keyboard_size.height - this._viewport_size.h, viewport_pos.y);
                         this._keyboard_pos = this.clip(-7 * this.keyboard_size.height + this._viewport_size.h, 0, this._keyboard_pos);
                         this.cur_uppermost_note = this.clip(12, 107, this.cur_uppermost_note);
+                        
+                        var bar_heights = this.get("_bar_heights"), bar_height = (this.isInLowerOfOctave(this.cur_uppermost_note)) ? bar_heights.lower : bar_heights.upper;
+                        if(this.cur_uppermost_note_pos + bar_height < Math.abs(this._keyboard_pos)){
+                            --this.cur_uppermost_note;
+                            this.cur_uppermost_note_pos += bar_height;
+                        }else if(this.cur_uppermost_note_pos > Math.abs(this._keyboard_pos)){
+                            ++this.cur_uppermost_note;
+                            bar_height = (this.isInLowerOfOctave(this.cur_uppermost_note)) ? bar_heights.lower : bar_heights.upper;
+                            this.cur_uppermost_note_pos -= bar_height;
+                        }
+                        
+                        changed = true;
                     }
                     
                     if(Math.abs(diff_x) > 0){

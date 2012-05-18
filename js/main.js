@@ -15,6 +15,7 @@ define(["mml_compiler", "sequencer", "dojo/dom-class", "dijit/registry", "dojox/
         processMMLSource();
         var tab_container = registry.byId("main_tab");
         if(tab_container.selectedChildWidget.id == "piano_roll"){
+            tab_container.selectedChildWidget.set("_metaevent_list", data_store.metaevents);
             tab_container.selectedChildWidget.set("_tree", data_store.list);
         }
         var display = registry.byId("ast");
@@ -172,9 +173,9 @@ return {
             "t132 l4 d edg f2d eda g2d <d>bg\n" +
             "f t66 e t132 <c>bga t80 g2\n" +
             "[key_signature +fc][volume 80]\n" +
-            "t80 l8 bbffa2r4 bbffa4baa4^8,,80g,,60\n" +
+            "t80 l8 bbffa2r4 bbffa4baa4^8,,80g,,-20\n" +
             "[key_signature -b, -e, -a, -d, -g]\n" +
-            "l4 o4 u30 {dde}e2d4,*240 cc>b4<c4d1\n\n" +
+            "l4 o4 u30 {dde}e2d4,*240,+30 cc>b4<c4d1\n\n" +
 
             '(t2)@0 v65 l2 "ceg" "ceg" "cfa" "d1gb"\n' +
             '/ここからキーGMajor\n' +

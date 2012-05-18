@@ -36,9 +36,7 @@ html, body {
 
 #tool_box{
     display: box;
-    /*display: -webkit-box;
-    display: -o-box;
-    display: -ms-box;*/
+    background-color: #ffffff;
     -moz-box-orient: horizontal;
     -webkit-box-orient: horizontal;
     -o-box-orient: horizontal;
@@ -62,16 +60,4 @@ html, body {
 #tool_box > .button:active{
     border: inset 5px #aaa;
     box-shadow: -5px -5px 5px 5px rgba(0, 0, 0, 0.4) inset;
-}
-
-#tab_box{
-    display: box;
-    -moz-box-orient: horizontal;
-    -webkit-box-orient: horizontal;
-    -o-box-orient: horizontal;
-    -ms-box-orient: horizontal;
-    -moz-box-direction: normal;
-    -webkit-box-direction: normal;
-    -o-box-direction: normal;
-    -ms-box-direction: normal;
 }

@@ -1,16 +1,31 @@
-define(["lexer", "parser", "utils", "lib/treehugger/tree", "lib/treehugger/traverse", "dojo/_base/declare"], function(Lexer, Parse, util, tree, traverse, declare){
+define(["lexer", "parser", "utils", "lib/treehugger/tree", "lib/treehugger/traverse", "dojo/_base/declare", "dojo/_base/lang"],
+    function(Lexer, Parse, util, tree, traverse, declare, lang){
     var MMLLexer = declare([Lexer], {
         constructor : function(){
+            var state = "normal";
             this.definitions = [
                 {type : "IGNORE", regexp : /^\/[^\n\t\r]+|^[ ]+/},
                 {type : "line_delimiter", regexp : /^[\t\n\r]+/},
-                {type : "commands", regexp : /^(velocity|volume|program|include|key_signature|k.sign)/i},
+                {type : "commands", regexp : /^(velocity|volume|program|include|key_signature|k.sign|define|function)/i, callback : function(arg){
+                    if(state == "normal" && arg == "function"){state = "func_defining";}
+                    return arg;
+                }},
                 {type : "note_name", regexp : /^[a-gr]/i},
                 {type : "keywords", regexp : /^[loqtuv]/i},
                 {type : "num", regexp : /^\d+/, callback : function(arg){
                     return parseInt(arg, 10);
                 }},
-                {type : "operators", regexp : /^[<>,\.\^\+#\-!\*@{}\[\]"'\(\)]/}
+                {type : "operators", regexp : /^[<>,\.\^\+#\-!\*@{}\[\]"'\(\)$]/, callback : function(arg){
+                    if(state == "func_defining" && arg == '{'){
+                        state = "is_in_func_body";
+                    }else if(state == "is_in_func_body" && arg == '}'){
+                        state = "normal";
+                    }
+                    return arg;
+                }},
+                {type : "JS_strings", regexp : /.+/, enable_if : function(){
+                    return state == "func_defining" || state == "is_in_func_body";
+                }}
             ];
         }
     });
@@ -43,7 +58,8 @@ define(["lexer", "parser", "utils", "lib/treehugger/tree", "lib/treehugger/trave
                     longer_command: Seq(Token("["), Token("commands"), Ref("argument_list"), Token("]")),
                     argument_list: Any(Label("digit_args", Seq(Token("num"), Repeat(Token(","), Token("num")))),
                         Label("note_args", Seq(Any(Token("+"), Token("#"), Token("-")), Repeat1(Token("note_name")),
-                        Repeat(Token(","), Any(Token("+"), Token("#"), Token("-")), Token("note_name")))))
+                        Repeat(Token(","), Any(Token("+"), Token("#"), Token("-")), Token("note_name")))),
+                        Label("function_body", Token("{"), Token("JS_strings"), Token("}")))
                 });
             }
             var _self = this;
@@ -63,7 +79,7 @@ define(["lexer", "parser", "utils", "lib/treehugger/tree", "lib/treehugger/trave
                 note: function(m){
                     var velocity_node = tree.cons("velocity", (m.g.velocity) ? [tree.string(m.g.velocity[0] || "none"),
                         tree.num(m.g.velocity[1])] :
-                        [tree.string("none")]);
+                        [tree.num(_self.env.getVolumeForTrack(_self.env.getCurrentTrackNum()))]);
                     
                     return tree.cons((m.g.pitch[0].value <= 0) ? "rest" : "note", [tree.cons("params", [tree.list([m[0],
                         tree.cons("length", m.g.note_length || [tree.num(_self.env.getCurrentDefaultLength())]),
@@ -201,11 +217,11 @@ define(["lexer", "parser", "utils", "lib/treehugger/tree", "lib/treehugger/trave
                 {shorter_name : null, longer_name : ["program_change"], func : function(args){
                     _self.env.setProgramNumForTrack(0, args[0][1]);
                 }},
-                {shorter_name : "v", longer_name : ["volume"], func : function(/*args*/){
-                
+                {shorter_name : "v", longer_name : ["volume"], func : function(args){
+                     _self.env.setVolume(_self.env.getCurrentTrackNum(), (lang.isArray(args[0])) ? args[0][1] : args[0]);
                 }},
-                {shorter_name : "u", longer_name : ["velocity"], func : function(/*args*/){
-                
+                {shorter_name : "u", longer_name : ["velocity"], func : function(args){
+                     _self.env.setVolume(_self.env.getCurrentTrackNum(), (lang.isArray(args[0])) ? args[0][1] : args[0]);
                 }}
             ]);
             
@@ -227,9 +243,9 @@ define(["lexer", "parser", "utils", "lib/treehugger/tree", "lib/treehugger/trave
                 });
                 
                 return str;
-            }
+            };
         }
     });
     
-    return {mml_parser : new MMLParser()};
+    return {mml_lexer : new MMLLexer(), mml_parser : new MMLParser()};
 });

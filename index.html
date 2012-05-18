@@ -65,9 +65,19 @@
                     <label for="velocity">ベロシティー</label>
                     <input data-dojo-type="dijit.form.NumberSpinner" data-dojo-props="constarints: {max: 127, min: 0}, value: 100" id="velocity">
                 </div>
+                <div data-dojo-type="dijit.layout.ContentPane" data-dojo-props="title: '設定'">
+                    <label for="a">nanntoka</label>
+                    <input data-dojo-type="dijit.form.NumberSpinner" data-dojo-props="constarints: {max: 127, min: 0}, value: 100" id="a">
+                </div>
             </div>
             <div id="various_uses_pane" data-dojo-type="dijit.layout.ContentPane"
                 data-dojo-props="region: 'bottom', splitter: true">No Messages
+            </div>
+        </div>
+        
+        <div class="dijitHidden">
+            <div data-dojo-type="dijit.Dialog" style="width:300px;" data-dojo-props="title:'進捗状況'" id="progress">
+                <div data-dojo-type="dijit.ProgressBar" data-dojo-props="value: 0, maximum: 100" id="main_progress_bar"></div>
             </div>
         </div>
     </body>

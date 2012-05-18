@@ -7,6 +7,7 @@ define(["dojo/_base/lang", "mml_compiler"], function(lang, mml_compiler){
     var compiler = mml_compiler.mml_parser;
     return {
         start_time : 0,
+        last_vol : 100,
         
         /**
          * ASTノードに対してArray.prototype.indexOfと同じ処理を施す
@@ -47,8 +48,12 @@ define(["dojo/_base/lang", "mml_compiler"], function(lang, mml_compiler){
             //      noteタイプのノードのparamsを受け取って一つのオブジェクトにまとめる
             
             var gate_time = (params[0][2][0].value != "none") ? params[0][2][0].value : 0;
+            var vol = (!lang.isString(params[0][3][0].value)) ? params[0][3][0].value : 
+                      (params[0][3][0].value == "none") ? params[0][3][1].value : this.last_vol + parseInt(params[0][3][0].value + params[0][3][1].value);
             var tmp = {type : (params[0][0][0].value < 0) ? "rest" : "note", pitch : params[0][0][0].value, length : params[0][1][0].value,
-                gate_time : gate_time, velocity : params[0][3][0].value, start_time : this.start_time};
+                gate_time : gate_time, velocity : vol, start_time : this.start_time};
+            
+            this.last_vol = vol;
             return tmp;
         },
         
