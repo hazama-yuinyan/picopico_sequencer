@@ -15,7 +15,7 @@ define(["lexer", "parser", "utils", "lib/treehugger/tree", "lib/treehugger/trave
                 {type : "num", regexp : /^\d+/, callback : function(arg){
                     return parseInt(arg, 10);
                 }},
-                {type : "operators", regexp : /^[<>,\.\^\+#\-!\*@{}\[\]"'\(\)$]/, callback : function(arg){
+                {type : "operators", regexp : /^[<>,\.\^\+#\-!\*@{}\[\]"'\(\)\$]/, callback : function(arg){
                     if(state == "func_defining" && arg == '{'){
                         state = "is_in_func_body";
                     }else if(state == "is_in_func_body" && arg == '}'){
@@ -23,7 +23,7 @@ define(["lexer", "parser", "utils", "lib/treehugger/tree", "lib/treehugger/trave
                     }
                     return arg;
                 }},
-                {type : "JS_strings", regexp : /.+/, enable_if : function(){
+                {type : "JS_strings", regexp : /[^}]+/, enable_if : function(){
                     return state == "func_defining" || state == "is_in_func_body";
                 }}
             ];
@@ -59,7 +59,8 @@ define(["lexer", "parser", "utils", "lib/treehugger/tree", "lib/treehugger/trave
                     argument_list: Any(Label("digit_args", Seq(Token("num"), Repeat(Token(","), Token("num")))),
                         Label("note_args", Seq(Any(Token("+"), Token("#"), Token("-")), Repeat1(Token("note_name")),
                         Repeat(Token(","), Any(Token("+"), Token("#"), Token("-")), Token("note_name")))),
-                        Label("function_body", Token("{"), Token("JS_strings"), Token("}")))
+                        Label("function_body", Token("{"), Token("JS_strings"), Token("}")),
+                        Label("macro_body", Token("'"), Token("'")))
                 });
             }
             var _self = this;

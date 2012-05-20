@@ -71,7 +71,8 @@ define(["mml_compiler", "sequencer", "dojo/dom-class", "dijit/registry", "dojox/
         var tmp, error_console;
         try{
             var editor = registry.byId("editor");
-            tmp = updater.compile(editor.value);
+            var source = editor.get("value").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, "\"").replace(/<br[^>]+>|<\/div>/g, "\n").replace(/<div>/g, "");
+            tmp = updater.compile(source);
         }
         catch(e){
             error_console = registry.byId("various_uses_pane");
@@ -167,25 +168,25 @@ return {
     },
     
     "#editor" : function(){
-        registry.byId("editor").set("value", "/[volume 127] [velocity 127]\n" +
-            "(t1)@1 v40 c4c8d8 e8e8g4 e8e8d8d8 c1\n" +
-            "[key_signature +f]\n" +
-            "t132 l4 d edg f2d eda g2d <d>bg\n" +
-            "f t66 e t132 <c>bga t80 g2\n" +
-            "[key_signature +fc][volume 80]\n" +
-            "t80 l8 bbffa2r4 bbffa4baa4^8,,80g,,-20\n" +
-            "[key_signature -b, -e, -a, -d, -g]\n" +
-            "l4 o4 u30 {dde}e2d4,*240,+30 cc>b4<c4d1\n\n" +
+        registry.byId("editor").set("value", "/[volume 127] [velocity 127]<br>" +
+            "(t1)@1 v40 c4c8d8 e8e8g4 e8e8d8d8 c1<br>" +
+            "[key_signature +f]<br>" +
+            "t132 l4 d edg f2d eda g2d &lt;d&gt;bg<br>" +
+            "f t66 e t132 &lt;c&gt;bga t80 g2<br>" +
+            "[key_signature +fc][volume 80]<br>" +
+            "t80 l8 bbffa2r4 bbffa4baa4^8,,80g,,-20<br>" +
+            "[key_signature -b, -e, -a, -d, -g]<br>" +
+            "l4 o4 u30 {dde}e2d4,*240,+30 cc&gt;b4&lt;c4d1<br><br>" +
 
-            '(t2)@0 v65 l2 "ceg" "ceg" "cfa" "d1gb"\n' +
-            '/ここからキーGMajor\n' +
-            'l4 d ">b<e"d">b<g" "a2f"d "ce"d"ca"\n' +
-            '">b<g"960">b<d" "d2g<d""dg" "df""ce""c<c"\n' +
-            '>"db"960"ca" ">b2<g"\n' +
-            '/ここからキーDMajor\n' +
-            'l8 ffdde2r4 ffdde4fee4^8,,60d,,50\n' +
-            '/ここからキーDbMajor\n' +
-            'v100 l1 o3 "dfa" l2 "egb" "ea<c" >"dfa"1920, 120\n');
+            '(t2)@0 v65 l2 &quot;ceg&quot; &quot;ceg&quot; &quot;cfa&quot; &quot;d1gb&quot;<br>' +
+            '/ここからキーGMajor<br>' +
+            'l4 d &quot;&gt;b&lt;e&quot;d&quot;&gt;b&lt;g&quot; &quot;a2f&quot;d &quot;ce&quot;d&quot;ca&quot;<br>' +
+            '&quot;&gt;b&lt;g&quot;960&quot;&gt;b&lt;d&quot; &quot;d2g&lt;d&quot;&quot;dg&quot; &quot;df&quot;&quot;ce&quot;&quot;c&lt;c&quot;<br>' +
+            '&gt;&quot;db&quot;960&quot;ca&quot; &quot;&gt;b2&lt;g&quot;<br>' +
+            '/ここからキーDMajor<br>' +
+            'l8 ffdde2r4 ffdde4fee4^8,,60d,,50<br>' +
+            '/ここからキーDbMajor<br>' +
+            'v100 l1 o3 &quot;dfa&quot; l2 &quot;egb&quot; &quot;ea&lt;c&quot; &gt;&quot;dfa&quot;1920, 120<br>');
     }
 };
 

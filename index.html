@@ -43,9 +43,8 @@
                 <div id="piano_roll" data-dojo-type="myCustomWidgets.PianoRoll"
                                   data-dojo-props="title: 'ピアノロール'">
                 </div>
-                <div data-dojo-type="dijit.layout.ContentPane"
-                     data-dojo-props="title:'MMLソース'">
-                    <textarea id="editor" rows="30" data-dojo-type="dijit.form.SimpleTextarea"></textarea>
+                <div id="editor" data-dojo-type="dijit.Editor"
+                     data-dojo-props="title:'MMLソース', plugins:['undo', 'redo', '|', 'cut', 'copy', 'paste']">
                 </div>
                 <div data-dojo-type="dijit.layout.ContentPane"
                      data-dojo-props="title:'構文木'">

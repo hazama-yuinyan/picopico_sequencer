@@ -1,6 +1,6 @@
 define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin", "dojox/gfx", "dojo/on",
-    "dojo/_base/lang", "dojo/text!custom/piano_roll/templates/piano_roll_template.html", "dijit/Tooltip", "dijit/registry", "dijit/layout/BorderContainer",
-    "dijit/layout/BorderContainer", "dijit/form/Button"],
+    "dojo/_base/lang", "dojo/text!custom/piano_roll/templates/piano_roll_template.html", "dijit/Tooltip", "dijit/registry",
+    "dijit/layout/BorderContainer", "dijit/layout/BorderContainer", "dijit/form/Button"],
     function(declare, WidgetBase, TemplatedMixin, WidgetsInTemplateMixin, gfx, on, lang, template, Tooltip, registry){
         return declare("myCustomWidgets.PianoRoll", [WidgetBase, TemplatedMixin, WidgetsInTemplateMixin], {
             templateString : template,
@@ -18,6 +18,7 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
             guide_bar : null,
             // _track_num : Number
             //      現在選択されているトラックナンバー
+            //      1がベース。つまり配列のインデックスとして使うには1を引かなければならない
             _track_num : 1,
             // _viewport_info: Object
             //      ピアノロールの左端の鍵盤を除いた部分の大きさ
@@ -44,6 +45,7 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
             _last_mouse_pos : {x : 0, y : 0},
             _width_quarter_note : 48,
             _ticks_per_quarter_note : 480,
+            _cur_selected_note : null,
             _predefined_inst_names : ["正弦波", "矩形波", "ノコギリ波", "三角波", "M字型", "ノイズ"],
             // _metaevent_list
             //      info_bar領域に特殊なアイコンを描画すべきメタイベントのリスト
@@ -197,7 +199,7 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
                 // summary:
                 //     特定のx座標をtick数に換算する
                 
-                var MULTIPLIERS_NOTE_LEN = this._ticks_per_quarter_note / this._width_quater_note;
+                var MULTIPLIERS_NOTE_LEN = this._ticks_per_quarter_note / this._width_quarter_note;
                 return x * MULTIPLIERS_NOTE_LEN;
             },
             
@@ -336,13 +338,13 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
                 };
                 
                 var findNoteAt = function(ticks, y){
-                    for(var i = 0, channel = this._tree[this._track_num]; i < channel.length; ++i){
+                    for(var i = 0, channel = _self._tree[_self._track_num - 1]; i < channel.length; ++i){
                         var elem = channel[i];
                         if(!lang.isArray(elem)){
                             if(ticks == channel[i].start_time){return elem;}
                         }else{
                             if(ticks == elem[0].start_time){
-                                var note_num = this.convertPosToNoteNum(y);
+                                var note_num = _self.convertPosToNoteNum(y + _self.viewport_pos.y);
                                 for(var j = 0; j < elem.length; ++j){
                                     if(note_num == elem[j].pitch){return elem[j];}
                                 }
@@ -365,9 +367,17 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
                            .setStroke("black");
                     on(note_rect.rawNode, "click", function(e){
                         var node = e.currentTarget, pos = {x : node.x.baseVal.value, y : node.y.baseVal.value};
-                        var ticks = this.convertPosToTicks(pos.x + viewport_pos.x);
+                        var ticks = _self.convertPosToTicks(pos.x + viewport_pos.x - _self.keyboard_size.width);
                         var target = findNoteAt(ticks, pos.y), velocity_display = registry.byId("velocity");
                         velocity_display.set("value", target.velocity);
+                        
+                        if(_self._cur_selected_note){
+                            _self._cur_selected_note.node.setAttribute("fill-opacity", 1);
+                            _self._cur_selected_note.node.setAttribute("stroke", "#000000");
+                        }
+                        node.setAttribute("fill-opacity", 0.5);        //選択されたことを示すハイライトを追加する
+                        node.setAttribute("stroke", "rgb(255, 183, 0)");
+                        _self._cur_selected_note = {node : node, pos : pos};
                     });
                 }while(proceedToNextEvent(info));
             },
