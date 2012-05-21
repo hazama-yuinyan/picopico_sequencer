@@ -71,7 +71,7 @@ define(["mml_compiler", "sequencer", "dojo/dom-class", "dijit/registry", "dojox/
         var tmp, error_console;
         try{
             var editor = registry.byId("editor");
-            var source = editor.get("value").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, "\"").replace(/<br[^>]+>|<\/div>/g, "\n").replace(/<div>/g, "");
+            var source = editor.get("value").replace(/<br[^>]+>|<\/div>/g, "\n").replace(/<[^>]+>/g, "").replace(/&quot;/g, "\"").replace(/&lt;/g, "<").replace(/&gt;/g, ">");
             tmp = updater.compile(source);
         }
         catch(e){

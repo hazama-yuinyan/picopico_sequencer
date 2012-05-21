@@ -67,6 +67,12 @@ return declare(null, {
             {shorter_name : "u", longer_name : ["velocity"], func : function(/*args*/){
                 //var env = _self.env[args[2]];
                 //env.setVolume(env.getCurrentTrackNum(), (lang.isArray(args[0].value)) ? args[0].value[0] : args[0].value);
+            }},
+            {shorter_name : null, longer_name : ["define"], func : function(/*args*/){
+            
+            }},
+            {shorter_name : null, longer_name : ["function"], func : function(/*args*/){
+            
             }}
         ]);
     },

@@ -4,27 +4,44 @@ define(["lexer", "parser", "utils", "lib/treehugger/tree", "lib/treehugger/trave
         constructor : function(){
             var state = "normal";
             this.definitions = [
-                {type : "IGNORE", regexp : /^\/[^\n\t\r]+|^[ ]+/},
-                {type : "line_delimiter", regexp : /^[\t\n\r]+/},
-                {type : "commands", regexp : /^(velocity|volume|program|include|key_signature|k.sign|define|function)/i, callback : function(arg){
-                    if(state == "normal" && arg == "function"){state = "func_defining";}
+                {type : "IGNORE", regexp : /^\/[^\n\r]+/},
+                {type : "IGNORE", regexp : /^[ \t]+/},
+                {type : "line_delimiter", regexp : /^[\n\r]+/},
+                {type : "commands", regexp : /^(velocity|volume|program|include|key_signature|k.sign|define|function)/i, enable_if : function(){
+                    return state == "normal";
+                }, callback : function(arg){
+                    if(state == "normal" && arg == "function"){
+                        state = "func_defining";
+                    }else if(state == "normal" && arg == "define"){
+                        state = "macro_defining";
+                    }
                     return arg;
                 }},
-                {type : "note_name", regexp : /^[a-gr]/i},
-                {type : "keywords", regexp : /^[loqtuv]/i},
-                {type : "num", regexp : /^\d+/, callback : function(arg){
+                {type : "note_name", regexp : /^[a-gr]/i, enable_if : function(){
+                    return state == "normal";
+                }},
+                {type : "keywords", regexp : /^[loqtuv]/i, enable_if : function(){
+                    return state == "normal";
+                }},
+                {type : "num", regexp : /^\d+/, enable_if : function(){
+                    return state == "normal";
+                }, callback : function(arg){
                     return parseInt(arg, 10);
                 }},
                 {type : "operators", regexp : /^[<>,\.\^\+#\-!\*@{}\[\]"'\(\)\$]/, callback : function(arg){
                     if(state == "func_defining" && arg == '{'){
                         state = "is_in_func_body";
-                    }else if(state == "is_in_func_body" && arg == '}'){
+                    }else if(state == "is_in_func_body" && arg == '}' || state == "macro_defining" && arg == ']'){
                         state = "normal";
+                    }else if(state == "macro_defining" && arg == "'"){
+                        state = "is_in_macro_body";
+                    }else if(state == "is_in_macro_body" && arg == "'"){
+                        state = "macro_defining";
                     }
                     return arg;
                 }},
-                {type : "JS_strings", regexp : /[^}]+/, enable_if : function(){
-                    return state == "func_defining" || state == "is_in_func_body";
+                {type : "arbitrary_string", regexp : /[^'\){}\n\r]+/, enable_if : function(){
+                    return state == "func_defining" || state == "is_in_func_body" || state == "macro_defining" || state == "is_in_macro_body";
                 }}
             ];
         }
@@ -59,8 +76,10 @@ define(["lexer", "parser", "utils", "lib/treehugger/tree", "lib/treehugger/trave
                     argument_list: Any(Label("digit_args", Seq(Token("num"), Repeat(Token(","), Token("num")))),
                         Label("note_args", Seq(Any(Token("+"), Token("#"), Token("-")), Repeat1(Token("note_name")),
                         Repeat(Token(","), Any(Token("+"), Token("#"), Token("-")), Token("note_name")))),
-                        Label("function_body", Token("{"), Token("JS_strings"), Token("}")),
-                        Label("macro_body", Token("'"), Token("'")))
+                        Label("function_body", Seq(Token("("), Token("arbtrary_string"), Token(")"), Token("{"),
+                            Repeat1(Any(Token("arbitrary_string"), Token("line_delimiter"))), Token("}"))),
+                        Label("macro_body", Seq(Token("arbitrary_string"), Token("'"),
+                            Repeat1(Any(Token("arbitrary_string"), Token("line_delimiter"))), Token("'"))))
                 });
             }
             var _self = this;
@@ -183,6 +202,14 @@ define(["lexer", "parser", "utils", "lib/treehugger/tree", "lib/treehugger/trave
                         });
                         array.unshift(m[0][0]);
                         result = {array : array, node : tree.num(array)};
+                    }else if(m.g.function_body){
+                        array = [m.g.function_body[1]];
+                        array.push(m.g.function_body[4].join(""));
+                        result = {array : array, node : [tree.string(array[0]), tree.string(array[1])]};
+                    }else if(m.g.macro_body){
+                        array = [m.g.macro_body[0]];
+                        array.push(m.g.macro_body[2].join(""));
+                        result = {array : array, node : [tree.string(array[0]), tree.string(array[1])]};
                     }else{
                         var note_args = m.g.note_args, signs = [note_args[0]], note_names = [].concat(note_args[1]);
                         note_args[2].forEach(function(obj){
@@ -223,6 +250,12 @@ define(["lexer", "parser", "utils", "lib/treehugger/tree", "lib/treehugger/trave
                 }},
                 {shorter_name : "u", longer_name : ["velocity"], func : function(args){
                      _self.env.setVolume(_self.env.getCurrentTrackNum(), (lang.isArray(args[0])) ? args[0][1] : args[0]);
+                }},
+                {shorter_name : null, longer_name : ["define"], func : function(/*args*/){
+                
+                }},
+                {shorter_name : null, longer_name : ["function"], func : function(/*args*/){
+                
                 }}
             ]);
             
