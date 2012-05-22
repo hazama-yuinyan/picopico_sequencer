@@ -169,7 +169,10 @@ return {
     
     "#editor" : function(){
         registry.byId("editor").set("value", "/[volume 127] [velocity 127]<br>" +
-            "(t1)@1 v40 c4c8d8 e8e8g4 e8e8d8d8 c1<br>" +
+            "[function (freq, time){<br>" +
+            "return Math.cos(2 * Math.PI * freq * time);<br>" +
+            "}]<br>" +
+            "(t1)@6 v40 c4c8d8 e8e8g4 e8e8d8d8 c1<br>" +
             "[key_signature +f]<br>" +
             "t132 l4 d edg f2d eda g2d &lt;d&gt;bg<br>" +
             "f t66 e t132 &lt;c&gt;bga t80 g2<br>" +

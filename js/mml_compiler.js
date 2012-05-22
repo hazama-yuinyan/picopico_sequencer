@@ -81,7 +81,7 @@ define(["lexer", "parser", "utils", "lib/treehugger/tree", "lib/treehugger/trave
                     argument_list: Any(Label("digit_args", Seq(Token("num"), Repeat(Token(","), Token("num")))),
                         Label("note_args", Seq(Any(Token("+"), Token("#"), Token("-")), Repeat1(Token("note_name")),
                         Repeat(Token(","), Any(Token("+"), Token("#"), Token("-")), Token("note_name")))),
-                        Label("function_body", Seq(Token("("), Token("arbitrary_string"), Token(")"), Token("{"),
+                        Label("function_body", Seq(Token("("), Seq(Token("identifier"), Token(","), Token("identifier")), Token(")"), Token("{"),
                             Repeat1(Any(Token("arbitrary_string"), Token("line_delimiter"))), Token("}"))))
                 });
             }

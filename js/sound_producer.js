@@ -46,8 +46,12 @@ function findNextNoteStartFrame(start_frame_list, cur_frame){
 var cur_sample_frame = 0, len_suppressing = 1000, note_id = 0, cur_track_num = 0, secs_per_frame, has_arpeggiated_note = true;
 
 onmessage = function(e){
-    var data = e.data, freq_list = data.freq_list, func = functions[data.program_num], note_len = data.note_len;
-    var buffer = new Float32Array(note_len), gate_time = data.gate_time, is_chord = (freq_list.length > 1);
+    var data = e.data;
+    if(data.func){
+        functions.push(new Function(data.func.params[0], data.func.params[2], data.func.body));
+    }
+    var freq_list = data.freq_list, func = functions[data.program_num], note_len = data.note_len, buffer = new Float32Array(note_len);
+    var gate_time = data.gate_time, is_chord = (freq_list.length > 1);
     secs_per_frame = data.secs_per_frame;
     has_arpeggiated_note = true;
     if(cur_track_num != data.track_num){

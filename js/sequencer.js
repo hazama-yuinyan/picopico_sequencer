@@ -30,6 +30,7 @@ return declare(null, {
         this.sound_producer = null;                         //バックグラウンドで波形生成を担当する
         this.progress_bar = registry.byId("main_progress_bar");   //進捗状況を表示するダイアログ
         this.can_play = true;
+        this.func_definition = null;                        //波形生成スレッドに送る関数の定義
         
         var _self = this;
         this.processAudio = function(e){
@@ -223,6 +224,8 @@ return declare(null, {
                 this.next_metaevent = this.find(this.note_tags[0], function(tag){
                     return((tag.name == "t" || tag.name == "tempo" || tag.name == "k.sign" || tag.name == "key_signature") && tag.start_frame >= 0);
                 });
+            }else if(node[0].value === "function"){
+                this.func_definition = {params : node[1].value, body : node[2].value};
             }else{
                 var start_frame = this.cur_ast_node.end_frame || 0;
                 this.note_tags[track_num].push({
@@ -307,8 +310,9 @@ return declare(null, {
         this.sound_producer.postMessage({
             freq_list : freqs, program_num : this.env.for_worker.getProgramNumForTrack(track_num), note_len : node.end_frame - start_frame,
             secs_per_frame : this.secs_per_frame, volume : vol, track_num : track_num, len_in_ticks : ticks,
-            gate_time : gate_time
+            gate_time : gate_time, func : this.func_definition
         });
+        if(this.func_definition){this.func_definition = null;}
     },
     
     /**

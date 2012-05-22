@@ -1,6 +1,3 @@
-
-
-
 define(["mml_compiler"], function(compiler){
     describe("tests.MMLcompiler", function (){
         var simple_mml_sources = [
@@ -15,13 +12,13 @@ define(["mml_compiler"], function(compiler){
                 "[key_signature -b, -e, -a]\n",
                 "[volume 127]\n",
                 "[define test_macro()'aabb4 c']\n",
-                "[define parameterized(a, b, c)\n" +
+                "[define with_params(a, b, c)\n" +
                 "'a$(a)b$(c)c$(b)']\n",
                 "[function (freq, time){\n" +
                 "var a = 1;\n" +
                 "}]\n",
                 "ab ${test_macro} c1\n",
-                "aacc b${parameterized:2, 1, 4} c\n"
+                "aacc b${with_params:2, 1, 4} c\n"
                 ];
                 
         it("MMLLexer tests", function(){
@@ -58,9 +55,9 @@ define(["mml_compiler"], function(compiler){
             var sources = [
                 "[define test_macro()'aabb4 c']\n" +
                 "ab ${test_macro} c1\n",
-                "[define parameterized(a, b, c)\n" +
+                "[define with_params(a, b, c)\n" +
                 "'a$(a)b$(c)c$(b)']\n" +
-                "aacc b${parameterized:2, 1, 4} c\n"
+                "aacc b${with_params:2, 1, 4} c\n"
                 ];
             var expected_lens = [
                 12,
