@@ -113,7 +113,7 @@ Parse.Parser = declare(null, {
                         if(tokens.length){
                             var token = tokens[0];
                             parser.errors.push({cause : this.type, msg : "Unexpected syntax. Expected : " + this.children[i].type,
-                                line_num : token.line_num, pos : token.num_chars});
+                                line_num : token.line_num, pos : token.col});
                         }
                         return null;
                     }
@@ -141,7 +141,7 @@ Parse.Parser = declare(null, {
                 if(tokens.length){
                     var token = tokens[0];
                     this.parser.errors.push({cause : this.type, msg : "Unexpected token. Expected : " +  this.tokentype, line_num : token.line_num,
-                        pos : token.num_chars});
+                        pos : token.col});
                 }
                 return null;
             }
@@ -233,7 +233,7 @@ Parse.Parser = declare(null, {
                } else {
                    var token = tokens[0];
                    parser.errors.push({cause : this.type, msg : "Expected EOF, but I'm still in middle of the inputs!", line_num : token.line_num,
-                        pos : token.num_chars});
+                        pos : token.col});
                    return null;
                }
             }

@@ -28,20 +28,25 @@ define(["lexer", "parser", "utils", "lib/treehugger/tree", "lib/treehugger/trave
                 }, callback : function(arg){
                     return parseInt(arg, 10);
                 }},
-                {type : "operators", regexp : /^[<>,\.\^\+#\-!\*@{}\[\]"'\(\)\$]/, callback : function(arg){
+                {type : "operators", regexp : /^[<>,\.\^\+#\-!\*@\{\}\[\]"'\(\)\$:]/, callback : function(arg){
                     if(state == "func_defining" && arg == '{'){
-                        state = "is_in_func_body";
-                    }else if(state == "is_in_func_body" && arg == '}' || state == "macro_defining" && arg == ']'){
+                        state = "in_func_body";
+                    }else if(state == "in_func_body" && arg == '}' || state == "in_macro_body" && arg == "'"){
                         state = "normal";
                     }else if(state == "macro_defining" && arg == "'"){
-                        state = "is_in_macro_body";
-                    }else if(state == "is_in_macro_body" && arg == "'"){
-                        state = "macro_defining";
+                        state = "in_macro_body";
+                    }else if(state == "normal" && arg == "$"){
+                        state = "macro_call";
+                    }else if(state == "macro_call" && arg == "}"){
+                        state = "normal";
                     }
                     return arg;
                 }},
-                {type : "arbitrary_string", regexp : /[^'\){}\n\r]+/, enable_if : function(){
-                    return state == "func_defining" || state == "is_in_func_body" || state == "macro_defining" || state == "is_in_macro_body";
+                {type : "identifier", regexp : /^[^\n\r ,\(\)\{\}:]+/, enable_if : function(){
+                    return state == "func_defining" || state == "macro_defining" || state == "macro_call";
+                }},
+                {type : "arbitrary_string", regexp : /[^'\{\}\n\r]+/, enable_if : function(){
+                    return state == "in_func_body" || state == "in_macro_body";
                 }}
             ];
         }
@@ -71,15 +76,13 @@ define(["lexer", "parser", "utils", "lib/treehugger/tree", "lib/treehugger/trave
                     pitch: Seq(Token("note_name"), Maybe(Token("!")), Repeat(Any(Token("#"), Token("+"), Token("-")))),
                     shortened_command: Any(Seq(Token("("), Token("keywords"), Token("num"), Token(")")), Seq(Maybe(Token("@")),
                         Maybe(Token("keywords")), Seq(Maybe(Token("*")), Token("num"), Repeat(Token("."))),
-                        Maybe(Token(":"), Repeat(Token("num"), Maybe(Token(","))))), Any(Token("<"), Token(">"))),
+                        Maybe(Token(":"), Repeat(Token("num"), Maybe(Token(","))))), Token("<"), Token(">")),
                     longer_command: Seq(Token("["), Token("commands"), Ref("argument_list"), Token("]")),
                     argument_list: Any(Label("digit_args", Seq(Token("num"), Repeat(Token(","), Token("num")))),
                         Label("note_args", Seq(Any(Token("+"), Token("#"), Token("-")), Repeat1(Token("note_name")),
                         Repeat(Token(","), Any(Token("+"), Token("#"), Token("-")), Token("note_name")))),
-                        Label("function_body", Seq(Token("("), Token("arbtrary_string"), Token(")"), Token("{"),
-                            Repeat1(Any(Token("arbitrary_string"), Token("line_delimiter"))), Token("}"))),
-                        Label("macro_body", Seq(Token("arbitrary_string"), Token("'"),
-                            Repeat1(Any(Token("arbitrary_string"), Token("line_delimiter"))), Token("'"))))
+                        Label("function_body", Seq(Token("("), Token("arbitrary_string"), Token(")"), Token("{"),
+                            Repeat1(Any(Token("arbitrary_string"), Token("line_delimiter"))), Token("}"))))
                 });
             }
             var _self = this;
@@ -206,10 +209,6 @@ define(["lexer", "parser", "utils", "lib/treehugger/tree", "lib/treehugger/trave
                         array = [m.g.function_body[1]];
                         array.push(m.g.function_body[4].join(""));
                         result = {array : array, node : [tree.string(array[0]), tree.string(array[1])]};
-                    }else if(m.g.macro_body){
-                        array = [m.g.macro_body[0]];
-                        array.push(m.g.macro_body[2].join(""));
-                        result = {array : array, node : [tree.string(array[0]), tree.string(array[1])]};
                     }else{
                         var note_args = m.g.note_args, signs = [note_args[0]], note_names = [].concat(note_args[1]);
                         note_args[2].forEach(function(obj){
@@ -246,24 +245,144 @@ define(["lexer", "parser", "utils", "lib/treehugger/tree", "lib/treehugger/trave
                     _self.env.setProgramNumForTrack(0, args[0][1]);
                 }},
                 {shorter_name : "v", longer_name : ["volume"], func : function(args){
-                     _self.env.setVolume(_self.env.getCurrentTrackNum(), (lang.isArray(args[0])) ? args[0][1] : args[0]);
+                    _self.env.setVolume(_self.env.getCurrentTrackNum(), (lang.isArray(args[0])) ? args[0][1] : args[0]);
                 }},
                 {shorter_name : "u", longer_name : ["velocity"], func : function(args){
-                     _self.env.setVolume(_self.env.getCurrentTrackNum(), (lang.isArray(args[0])) ? args[0][1] : args[0]);
-                }},
-                {shorter_name : null, longer_name : ["define"], func : function(/*args*/){
-                
+                    _self.env.setVolume(_self.env.getCurrentTrackNum(), (lang.isArray(args[0])) ? args[0][1] : args[0]);
                 }},
                 {shorter_name : null, longer_name : ["function"], func : function(/*args*/){
                 
                 }}
             ]);
             
+            this.indexOfToken = function(tokens, start_index, val){
+                if(!start_index){start_index = 0;}
+                for(var i = start_index; i < tokens.length; ++i){
+                    if(tokens[i].value == val){return i;}
+                }
+                
+                return tokens.length;
+            };
+            
+            this.macro_error = function(line_num, col, msg){
+                throw Error("An error occurred at " + line_num + " : " + col + "; " + msg);
+            };
+            
+            this.preparse = function(tokens){
+                // summary:
+                //      パースの前にマクロの定義と展開を行う
+                
+                var macros = [], i = this.indexOfToken(tokens, 0, "[");
+                while(i < tokens.length){           //まず、マクロ定義を探す
+                    var start_index = i;            //[define macro_name([param1,param2...])'macro_body']
+                    if(tokens[i + 1].value != "define"){
+                        i = this.indexOfToken(tokens, i + 1, "[");
+                        continue;
+                    }
+                    
+                    if(tokens[i + 2].type != "identifier"){
+                        this.macro_error(tokens[i + 2].line_num, tokens[i + 2].col, "Macros need to have a name to refer to them later!");
+                    }
+                    var new_macro = {name : tokens[i + 2].value};
+                    i += 3;
+                    
+                    var params = [];
+                    for(; tokens[i].type == "identifier" || tokens[i].type == "(" || tokens[i].type == ")" || tokens[i].type == ","; ++i){
+                        if(tokens[i].type == "identifier"){params.push({name : tokens[i].value});}
+                    }
+                    new_macro.formal_params = params;
+                    
+                    if(tokens[i].type == "line_delimiter"){++i;}
+                    if(tokens[i].value != "'"){
+                        this.macro_error(tokens[i].line_num, tokens[i].col, "Unexpected token!; " + tokens[i].value);
+                    }
+                    ++i;
+                    
+                    var body = [];
+                    for(; tokens[i].type != "'"; ++i){
+                        body.push(tokens[i].value);
+                    }
+                    if(tokens[i].type != "'" || tokens[i + 1].type != "]"){
+                        this.macro_error(tokens[i + 1].line_num, tokens[i + 1].col, "Unexpected token!; " + tokens[i + 1].value);
+                    }
+                    new_macro.body = body.join("");
+                    macros.push(new_macro);
+                    var len = (i + 2) - start_index;
+                    tokens.splice(start_index, len);        //マクロ定義の部分はもういらないので、トークンから取り除く
+                    i = i + 2 - len;
+                    
+                    i = this.indexOfToken(tokens, i, "[");
+                }
+                
+                function findMacro(name){
+                    for(var i = 0; i < macros.length; ++i){
+                        if(macros[i].name == name){return macros[i];}
+                    }
+                    
+                    return null;
+                }
+                
+                function substituteParameters(macro_body, param_list){
+                    function substituteParametersImpl(str, identifier){
+                        return param_list[identifier];
+                    }
+                    
+                    return macro_body.replace(/\$\(([^)]+)\)/g, substituteParametersImpl);
+                }
+                
+                i = this.indexOfToken(tokens, 0, "$");
+                while(i < tokens.length){       //マクロ展開を行う
+                    var start_index2 = i;       //${macro_name[:param1,param2...]}
+                    if(tokens[i + 1].type != "{"){
+                        this.macro_error(tokens[i + 1].line_num, tokens[i + 1].col, "Unexpected token!; " + tokens[i + 1].value);
+                    }
+                    i += 2;
+                    
+                    if(tokens[i].type != "identifier"){
+                        this.macro_error(tokens[i].line_num, tokens[i].col, "Unexpected syntax! Needs an identifer to expand a macro!");
+                    }
+                    var target_macro = findMacro(tokens[i].value);
+                    if(!target_macro){
+                        this.macro_error(tokens[i].line_num, tokens[i].col, "A macro named " + tokens[i].value + " is not defined!");
+                    }
+                    ++i;
+                    
+                    var param_list = {};
+                    if(tokens[i].type == ":"){      //実引数あり
+                        ++i;
+                        for(var param_id = 0; tokens[i].type == "identifier" || tokens[i].type == ","; ++i){
+                            if(tokens[i].type == "identifier"){
+                                param_list[target_macro.formal_params[param_id].name] = tokens[i].value;
+                                ++param_id;
+                            }
+                        }
+                    }
+                    
+                    if(tokens[i].type != "}"){
+                        this.macro_error(tokens[i].line_num, tokens[i].col, "Unexpected token!; " + tokens[i].value);
+                    }
+                    ++i;
+                    var len2 = i - start_index2;
+                    var expanded = substituteParameters(target_macro.body, param_list);
+                    var macro_tokens = lexer.tokenize(expanded);
+                    tokens.splice(start_index2, len2);      //まず、マクロ展開式をトークンから削除する
+                    i -= len2;
+                    var front = tokens.slice(0, i), back = tokens.slice(i);     //次にマクロを展開した文字列をトークン列に変換後、
+                    tokens = front.concat(macro_tokens, back);                  //元のトークン列に挿入する
+                    i += macro_tokens.length;
+                    
+                    i = this.indexOfToken(tokens, i, "$");
+                }
+                
+                return tokens;
+            };
+            
             this.parse = function(input_str){
                 this.env = new util.Enviroment();
                 var tokens = lexer.tokenize(input_str);
                 if(!tokens.length){return;}
-                var result = parser.parse(tokens, "mml");
+                var preparsed_tokens = this.preparse(tokens);
+                var result = parser.parse(preparsed_tokens, "mml");
                 if(!result){return;}
                 
                 traverse.addParentPointers(result.value);

@@ -14,10 +14,14 @@ define(["mml_compiler"], function(compiler){
                 "[key_signature +fc]\n",
                 "[key_signature -b, -e, -a]\n",
                 "[volume 127]\n",
-                "[define test_macro'aabb4 c']\n",
+                "[define test_macro()'aabb4 c']\n",
+                "[define parameterized(a, b, c)\n" +
+                "'a$(a)b$(c)c$(b)']\n",
                 "[function (freq, time){\n" +
                 "var a = 1;\n" +
-                "}\n"
+                "}]\n",
+                "ab ${test_macro} c1\n",
+                "aacc b${parameterized:2, 1, 4} c\n"
                 ];
                 
         it("MMLLexer tests", function(){
@@ -34,8 +38,11 @@ define(["mml_compiler"], function(compiler){
                 7,
                 12,
                 5,
-                8,
-                11
+                10,
+                16,
+                14,
+                9,
+                17
                 ];
             var tokens;
             simple_mml_sources.forEach(function(source, i){
@@ -46,13 +53,36 @@ define(["mml_compiler"], function(compiler){
             });
         });
         
+        it("MMLPreParser tests", function(){
+            var lexer = compiler.mml_lexer, parser = compiler.mml_parser;
+            var sources = [
+                "[define test_macro()'aabb4 c']\n" +
+                "ab ${test_macro} c1\n",
+                "[define parameterized(a, b, c)\n" +
+                "'a$(a)b$(c)c$(b)']\n" +
+                "aacc b${parameterized:2, 1, 4} c\n"
+                ];
+            var expected_lens = [
+                12,
+                14
+                ];
+            
+            sources.forEach(function(source, i){
+                console.log("start " + (i + 1) + " th macro expansion");
+                var tokens = lexer.tokenize(source);
+                var preparsed = parser.preparse(tokens);
+                expect(preparsed.length).toEqual(expected_lens[i]);
+                console.log(preparsed);
+            });
+        });
+        
         it("MMLParser tests", function(){
             var parser = compiler.mml_parser;
             
-            var tree;
-            simple_mml_sources.forEach(function(source, i){
+            var tree, sources = simple_mml_sources.slice(0, simple_mml_sources.length - 2);
+            sources.forEach(function(source, i){
                 console.log("start " + (i + 1) + " th parse");
-                tree = parser.parse(simple_mml_sources[i]);
+                tree = parser.parse(source);
                 expect(tree).not.toEqual(null);
                 console.log(tree);
             });
