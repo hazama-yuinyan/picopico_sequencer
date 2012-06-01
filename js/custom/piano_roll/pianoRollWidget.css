@@ -1,0 +1,18 @@
+.iconWholeNote,
+.iconHalfNote,
+.iconQuarterNote,
+.iconEighthNote,
+.iconSixteenthNote,
+.iconThirtysecondNote
+{
+    background-image: url("images/note_icons.png");
+    width: 27px;
+    height: 32px;
+}
+
+.iconWholeNote{background-position: -135px;}
+.iconHalfNote{background-position: -27px;}
+.iconQuarterNote{background-position: -54px;}
+.iconEighthNote{background-position: -108px;}
+.iconSixteenthNote{background-position: 0px;}
+.iconThirtysecondNote{background-position: -81px;}

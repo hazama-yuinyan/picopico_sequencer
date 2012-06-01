@@ -7,6 +7,12 @@ define(["lexer", "parser", "utils", "lib/treehugger/tree", "lib/treehugger/trave
                 {type : "IGNORE", regexp : /^\/[^\n\r]+/},
                 {type : "IGNORE", regexp : /^[ \t]+/},
                 {type : "line_delimiter", regexp : /^[\n\r]+/},
+                {type : "identifier", regexp : /^[^'\n\r ,\(\)\{\}:\]]+/, enable_if : function(){
+                    return state == "func_defining" || state == "macro_defining" || state == "macro_call";
+                }},
+                {type : "arbitrary_string", regexp : /^[^'\{\}:,\]\n\r]+/, enable_if : function(){
+                    return state == "in_func_body" || state == "in_macro_body" || state == "macro_call";
+                }},
                 {type : "commands", regexp : /^(velocity|volume|program|include|key_signature|k.sign|define|function)/i, enable_if : function(){
                     return state == "normal";
                 }, callback : function(arg){
@@ -41,14 +47,12 @@ define(["lexer", "parser", "utils", "lib/treehugger/tree", "lib/treehugger/trave
                         state = "normal";
                     }
                     return arg;
-                }},
-                {type : "identifier", regexp : /^[^\n\r ,\(\)\{\}:]+/, enable_if : function(){
-                    return state == "func_defining" || state == "macro_defining" || state == "macro_call";
-                }},
-                {type : "arbitrary_string", regexp : /[^'\{\}\n\r]+/, enable_if : function(){
-                    return state == "in_func_body" || state == "in_macro_body";
                 }}
             ];
+            
+            this.resetState = function(){
+                state = "normal";
+            };
         }
     });
     
@@ -265,7 +269,7 @@ define(["lexer", "parser", "utils", "lib/treehugger/tree", "lib/treehugger/trave
             };
             
             this.macro_error = function(line_num, col, msg){
-                throw Error("An error occurred at " + line_num + " : " + col + "; " + msg);
+                throw Error("An error occurred when expanding macro at " + line_num + " : " + col + "; " + msg);
             };
             
             this.preparse = function(tokens){

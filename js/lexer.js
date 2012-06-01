@@ -11,7 +11,7 @@ define(["dojo/_base/declare"], function(declare){
                 this.definitions.every(function(definition){
                     if(m = definition.regexp.exec(str)){
                         if(definition.type.search(/ignore/i) == -1){
-                            if(definition.enable_if && !definition.enable_if()){
+                            if(definition.enable_if && !definition.enable_if(m[0])){
                                 m = null;
                                 return true;
                             }
