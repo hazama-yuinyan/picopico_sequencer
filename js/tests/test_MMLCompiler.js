@@ -88,6 +88,32 @@ define(["mml_compiler"], function(compiler){
             expect(preparsed.length).toEqual(expected_len);
             console.log(preparsed);
         });
+        it("with parameters but no arguments", function(){
+            lexer.resetState();
+            var source =
+                "[define with_params(a, b, c)\n" +
+                "'a$(a)b$(c)c$(b)']\n" +
+                "aacc b${with_params:2} c\n";
+            var expected_len = 12;
+            
+            var tokens = lexer.tokenize(source);
+            var preparsed = parser.preparse(tokens);
+            expect(preparsed.length).toEqual(expected_len);
+            console.log(preparsed);
+        });
+        it("with arguments containing keywords", function(){
+            lexer.resetState();
+            var source =
+                "[define with_params(keyword, b, c)\n" +
+                "'$(keyword) ab$(c)c$(b)']\n" +
+                "aacc b${with_params:l8, 2, 4} c\n";
+            var expected_len = 15;
+            
+            var tokens = lexer.tokenize(source);
+            var preparsed = parser.preparse(tokens);
+            expect(preparsed.length).toEqual(expected_len);
+            console.log(preparsed);
+        });
     });
     describe("tests.MMLCompiler.Parser", function(){
         var parser = compiler.mml_parser;

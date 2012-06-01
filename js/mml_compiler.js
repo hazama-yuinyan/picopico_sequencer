@@ -351,7 +351,7 @@ define(["lexer", "parser", "utils", "lib/treehugger/tree", "lib/treehugger/trave
                     }
                     ++i;
                     
-                    var param_list = {};
+                    var param_list = {length : 0};
                     if(tokens[i].type == ":"){      //実引数あり
                         ++i;
                         for(var param_id = 0; tokens[i].type == "identifier" || tokens[i].type == ","; ++i){
@@ -360,12 +360,19 @@ define(["lexer", "parser", "utils", "lib/treehugger/tree", "lib/treehugger/trave
                                 ++param_id;
                             }
                         }
+                        param_list.length = param_id;
                     }
                     
                     if(tokens[i].type != "}"){
                         this.macro_error(tokens[i].line_num, tokens[i].col, "Unexpected token!; " + tokens[i].value);
                     }
                     ++i;
+                    if(target_macro.formal_params.length > param_list.length){  //実引数が仮引数よりも少なかった場合は、空文字列をその引数に指定する
+                        var formals = target_macro.formal_params;
+                        for(var j = 0; j < formals.length; ++j){
+                            if(!param_list[formals[j].name]){param_list[formals[j].name] = "";}
+                        }
+                    }
                     var len2 = i - start_index2;
                     var expanded = substituteParameters(target_macro.body, param_list);
                     var macro_tokens = lexer.tokenize(expanded);
