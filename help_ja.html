@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>ヘルプ</title>
+        <link rel="stylesheet" type="text/css" href="manual_style.css">
+    </head>
+    <body id="contents">
+        <h1>ピコピコシーケンサーマニュアル</h1>
+        <article>
+            <section id="abstraction">
+                <h2>概要</h2>
+                <p>ピコピコシーケンサーへようこそ。<br>
+                ピコピコシーケンサーは、HTML5をベースとしたFlashを一切使用しないシーケンサーです。肝心な音楽の記譜にはMMLをやや独自拡張した
+                オリジナル言語を使用し、ピアノロールによるGUIもあります。今のところ、未実装ですがいずれGUIによる編集機能もつく予定です。
+                </p>
+            </section>
+            
+            <section id="basics">
+                <h2>基本</h2>
+            </section>
+            
+            <section id="MML_grammar">
+                <h2>簡易MML文法集</h2>
+                <p>周知のとおり、MMLには様々な方言・流派が存在します。同じMMLを使用していると記載されていても、処理系ごとに異なる方言が採用されている
+                ことが多いのが現状です。こちらで紹介するMML文法もあくまでも広く普及している記法のMMLのサブセットの一種であり、ピコピコシーケンサー
+                でしか使用できない方言の一種であることを予めご了承ください。
+                </p>
+                <div class="spec_header">
+                    <h3>音階・音長</h3>
+                    <p>[A-G][!#+-]([step, gate, velocity]) where...
+                    </p>
+                    <ul>
+                        <li>step = 2<sup>n</sup>(n = 0, 1, 2...) or *0~*32767 : ステップタイム</li>
+                        <li>gate = 2<sup>n</sup>(n = 0, 1, 2...) or *0~*32767 : ゲートタイム</li>
+                        <li>velocity = 0~127 : ベロシティー</li>
+                    </ul>
+                </div>
+                <div class="grammar_spec">
+                    <div class="grammar_left">
+                        <p>音楽を記述する際の基本、音階は音名の英語表記であるアルファベット1文字を使用して表します。具体的には、いわゆる「ド」
+                        の音に"c"、「レ」に"d"...というふうに「ソ」の"g"まではアルファベット順に、「ラ」と「シ」に関しては先頭に戻って
+                        "a"と"b"の1文字を割り当てます。
+                        </p>
+                        <p>音階をあらわすアルファベット一文字の後に"!","#","+","-"のどれかの記号をつけると臨時記号の付いた音符になります。
+                        これらはそれぞれ"!"がナチュラル、"#"と"+"がシャープ、"-"がフラットを表しており、ひとつの音符に複数つけることもできます。
+                        </p>
+                        <p>音符コマンドは追加で計3種類の引数を取ります。一つ目の引数stepはその音符のステップタイムを表し、これは語弊を恐れずに言うならば
+                        その音符の論理的な継続時間を表します。この引数には通常、音楽的な音長を指定します。なお、ステップタイムを省略した場合は、
+                        デフォルトの音長が自動的に設定されます。<br>
+                        音楽的な音長の代わりに絶対的音長(いわゆるtick数)で長さを指定することもできます。この場合、数字の前に"*"(アスタリスク)
+                        を付けます。<br>
+                        数字の後に^(サーカムフレックス)をつけることで楽譜におけるタイのように音長を足し算することができます。<br>
+                        ステップタイムの直後に"."(ドット)をつけることでドットの前の音長の2<sup>ドットの数</sup>分だけ音長を伸ばすことができます。
+                        </p>
+                        <p>つぎのgate引数は、その音符のゲートタイムを表し、こちらも語弊を恐れずに言うならばその音符の演奏上の継続時間を表します。
+                        </p>
+                        <p>最後の引数velocityはベロシティーを表し、MIDIを使用していないピコピコシーケンサーでは、音量と等価です。
+                        </p>
+                    </div>
+                    <div class="grammar_right">
+<pre>
+例1.
+    cdef edc /これは全てデフォルト音長で「ドレミファ　ミレド」のメロディーになります。
+    c++++ /d+と同じ意味
+    c- /C♭、つまりbのこと
+    c!
+例2.
+    c /デフォルトの音長
+    c4 /Cの四分音符
+    c+8 /Cシャープの八分音符
+例3.
+    c*480 /c4と同じ意味
+    c*480.. /後述するドットを付加することも可能
+例4.
+    c1^1 /全音符２つ分（二全音符）の長さ
+    c4^*480^8 /絶対音長指定を挟んでもいい
+例5.
+    c4, 8 /楽譜表記上は四分音符だが、実際の演奏では八分音符の長さになる（いわゆるスタッカート）
+    c, 8 /このようにも書ける
+例6.
+    c4,,127 /音量最大で発音する
+    c,,-20 /前の音よりベロシティーを20下げて発音する
+</pre>
+                    </div>
+                </div>
+                <div class="spec_header">
+                    <h3>休符</h3>
+                    <p>R([step]) where...
+                    </p>
+                    <ul>
+                        <li>step = 2<sup>n</sup>(n = 0, 1, 2...) or *0~*32767 : ステップタイム</li>
+                    </ul>
+                </div>
+                <div class="grammar_spec">
+                    <div class="grammar_left">
+                        <p>音符と並んで記譜する際の基本となる記号である休符は、"r"一文字で表します。休符コマンドの場合、引数は一つのみで、
+                        その指定方法や意味は、音符の場合のそれと全く同じなので割愛します。
+                        </p>
+                    </div>
+                    <div class="grammar_right">
+<pre>
+例.
+    r4 /四分休符
+    r4.. /4+8+16分休符
+    r4^8^16 /上の例はこうも書ける
+    r*480 /もちろん絶対音長での指定も可能
+</pre>
+                    </div>
+                </div>
+                <div class="spec_header">
+                    <h3>調号</h3>
+                    <p>[K.SIGN (key1, key2...)] or [K.SIGN (sign note1, note2...)]<br>
+                    [KEY SIGNATURE (key1, key2...)] or [KEY SIGNATURE (sign note1, note2...)] where...
+                    </p>
+                    <ul>
+                        <li>key1, key2... = [+-#][A-G] : 調号をつける音名とつける調号の種類</li>
+                        <li>sign = [+-#] : 調号の種類</li>
+                        <li>note1, note2... = [A-G] : signで指定した調号をつける音名</li>
+                    </ul>
+                </div>
+                <div class="grammar_spec">
+                    <div class="grammar_left">
+                        <p>このコマンド以降の調号を変更します。今のところ、調号をつける音名を一つ一つユーザーが指定しなければなりません。
+                        が、いずれCMajorやEbMajorなどの調名による指定もできるようにする予定です。
+                        </p>
+                        <p>最初の音符の説明で出てきたナチュラル記号は、このコマンドと組み合わせて使用します。さらに、"+"や"-"と組み合わせることで
+                        ナチュラルと臨時記号の両方を考慮した音程にすることができます。（楽譜の場合には、ナチュラル記号は明示しなくとも、
+                        シャープやフラットをつけるだけで調号の効果を消すことができますが、このMMLにおいては"+"や"-"の記号は実際には、
+                        半音上げ、半音下げを意味するのみで厳密に言えばシャープやフラットではありません。よって、楽譜と同じように調号の付いた
+                        音階に臨時記号をつける場合には、まずナチュラルを使用して調号の効果を打ち消す必要があります）
+                        </p>
+                    </div>
+                    <div class="grammar_right">
+<pre>
+例.
+    [K.SIGN +c, +f] f! /本来ならFにはシャープがつく調だが、この音符のみ調号を打ち消してFとして演奏する
+    [K.SIGN -bea] b- /この調では通常ならBにはフラットが付いているが、更にマイナスを指定しているためB--(=A)として演奏される
+    (通常ならこの調では使用されないが、ダブルフラットと同じ意味)
+</pre>
+                    </div>
+                </div>
+                <div class="spec_header">
+                    <h3>オクターブ変更</h3>
+                    <p>O(octave) where...
+                    </p>
+                    <ul>
+                        <li>octave = 1~8 : オクターブ</li>
+                    </ul>
+                </div>
+                <div class="grammar_spec">
+                    <div class="grammar_left">
+                        <p>オクターブを設定します。初期値はO4であり、中央ハは、O4 cに該当します。
+                        </p>
+                        <p>またこちらはコマンドではないが、<で+1,>で-1オクターブを変化させることができます。
+                        </p>
+                    </div>
+                    <div class="grammar_right">
+<pre>
+例.
+    o3
+    o8
+    o4 c /中央ハを演奏する
+    o4 < /ここはo5相当になる
+</pre>
+                    </div>
+                </div>
+                <div class="spec_header">
+                    <h3>音長制御</h3>
+                    <p>L(length) where...
+                    </p>
+                    <ul>
+                        <li>length = 2<sup>n</sup>(n = 0, 1, 2...) : 音長</li>
+                    </ul>
+                </div>
+                <div class="grammar_spec">
+                    <div class="grammar_left">
+                        <p>デフォルト音長(ステップタイムを省略した時に設定される値)を設定します。初期状態はL4。今のところ、音楽的音長による
+                        実装のみとなっています。
+                        </p>
+                    </div>
+                    <div class="grammar_right">
+<pre>
+例.
+    L8
+</pre>
+                    </div>
+                </div>
+                <div class="spec_header">
+                    <h3>音量設定</h3>
+                    <p>V(velocity)<br>
+                    [VELOCITY (velocity)]<br>
+                    U(volume)<br>
+                    [VOLUME (volume)] where...
+                    </p>
+                    <ul>
+                        <li>velocity, volume = 0~127 : 音量</li>
+                    </ul>
+                </div>
+                <div class="grammar_spec">
+                    <div class="grammar_left">
+                        <p>音量を設定します。通常のMMLに合わせて計4種類の表記法がありますが、全て機能的には等価です。
+                        </p>
+                    </div>
+                    <div class="grammar_right">
+<pre>
+例.
+    v127
+    u127
+</pre>
+                    </div>
+                </div>
+                <div class="spec_header">
+                    <h3>テンポ設定</h3>
+                    <p>T(tempo)<br>
+                    [TEMPO (tempo)] where...
+                    </p>
+                    <ul>
+                        <li>tempo = 30~300 : テンポ</li>
+                    </ul>
+                </div>
+                <div class="grammar_spec">
+                    <div class="grammar_left">
+                        <p>テンポを設定します。上記の値はあくまで推奨値に過ぎず、この範囲外の値を設定しても一切エラーは発生しないことに
+                        注意してください。なお、初期値は120です。
+                        </p>
+                    </div>
+                    <div class="grammar_right">
+<pre>
+例.
+    t100
+    t60
+</pre>
+                    </div>
+                </div>
+                <div class="spec_header">
+                    <h3>音色変更</h3>
+                    <p>@(program_number)<br>
+                    [PROGRAM (program_number)] where...
+                    </p>
+                    <ul>
+                        <li>program_number = 0, 1, 2... : 音色の種類をあらわす番号</li>
+                    </ul>
+                </div>
+                <div class="grammar_spec">
+                    <div class="grammar_left">
+                        <p>演奏に使用する音色を変更します。標準状態では、5種類の音色が用意されています。後述するfunction命令を使うことで
+                        独自の音色を追加することもできます。
+                        </p>
+                    </div>
+                    <div class="grammar_right">
+<pre>
+例.
+    @0
+    [program 1]
+</pre>
+                    </div>
+                </div>
+                <div class="spec_header">
+                    <h3>連符</h3>
+                    <p>{some MML}([step]) where...
+                    </p>
+                    <ul>
+                        <li>step = 2<sup>n</sup>(n = 0, 1, 2...) or *0~32767 : ステップタイム</li>
+                    </ul>
+                </div>
+                <div class="grammar_spec">
+                    <div class="grammar_left">
+                        <p>カッコの中に指定したMMLをstepに収まるように演奏します。stepには音符などと同様、音楽的音長の他、絶対的音長や
+                        サーカムフレックスを使用した音長の足し算なども使用できます。<br>
+                        stepを省略するとデフォルト音長が適用される点も普通の音符と同様です。
+                        </p>
+                    </div>
+                    <div class="grammar_right">
+<pre>
+例.
+    {cde}4 /いわゆる3連符
+    {cdef}4.
+</pre>
+                    </div>
+                </div>
+                <div class="spec_header">
+                    <h3>和音</h3>
+                    <p>"some MML"([ticks, delay]) where...
+                    </p>
+                    <ul>
+                        <li>ticks = 0~32767 : 絶対音長による発音時間</li>
+                        <li>delay = 2<sup>n</sup>(n = 0, 1, 2...) or *0~32767 : 和音の構成音ごとのディレイ</li>
+                    </ul>
+                </div>
+                <div class="grammar_spec">
+                    <div class="grammar_left">
+                        <p>ダブルクォーテーションでくくった音を和音として同時に発音します。ダブルクォーテーション内では一度のみ音長を指定する
+                        ことができます。
+                        </p>
+                    </div>
+                    <div class="grammar_right">
+<pre>
+例.
+    "c4eg" /これは四分音符の"C","E","G"を構成音とする和音
+    "ceg"480 /上の例はこうも書ける
+    "c4eg", 10 /10ticksずつずらして"E","G"の音を発音する
+</pre>
+                    </div>
+                </div>
+                <div class="spec_header">
+                    <h3>マクロ定義</h3>
+                    <p>[define macro_name'(macro_body)'] where...
+                    </p>
+                    <ul>
+                        <li>macro_name = 数字、アルファベット、アンダーバーからなる文字列 : マクロの名前</li>
+                        <li>macro_body = some MML : 置換後のMML</li>
+                    </ul>
+                </div>
+                <div class="grammar_spec">
+                    <div class="grammar_left">
+                        <p>カッコの中に指定したMMLをstepに収まるように演奏します。stepには音符などと同様、音楽的音長の他、絶対的音長や
+                        サーカムフレックスを使用した音長の足し算なども使用できます。<br>
+                        stepを省略するとデフォルト音長が適用される点も普通の音符と同様です。
+                        </p>
+                    </div>
+                    <div class="grammar_right">
+<pre>
+例.
+    {cde}4 /いわゆる3連符
+    {cdef}4.
+</pre>
+                    </div>
+                </div>
+            </section>
+        </article>
+    </body>
+</html>
