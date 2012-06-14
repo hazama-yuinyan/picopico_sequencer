@@ -31,7 +31,7 @@
                         <li>() : 引数をあらわす。一般的なプログラミング言語と違い、MMLソースに記述する際には引数の()はいりません。<br>
                             また、コマンド名として使える文字のグループもあらわす
                         </li>
-                        <li>[] : 引数の括弧内ならば省略可能な引数をあらわす。それ以外の場合は、文字通りの表記</li>
+                        <li>[] : 省略可能な箇所をあらわす</li>
                         <li>"" : ダブルクォーテーションで囲われた記号はリテラルを意味し、ソース上にその記号を記述しなければならない</li>
                     </ul>
                 </div>
@@ -314,10 +314,11 @@
                 </div>
                 <div class="spec_header">
                     <h3>マクロ定義</h3>
-                    <p>"["define macro_name"'"(macro_body)"'""]" where...
+                    <p>"["define macro_name"("[args]")""'"(macro_body)"'""]" where...
                     </p>
                     <ul>
                         <li>macro_name = 数字、アルファベット、アンダーバーからなる文字列 : マクロの名前</li>
+                        <li>args = 数字、アルファベット、アンダーバーからなる文字列 : マクロの引数</li>
                         <li>macro_body = some MML : 置換後のMML</li>
                     </ul>
                 </div>
@@ -326,35 +327,61 @@
                         <p>いわゆるマクロです。しかし、C言語のそれとは異なり、単純なテキストプリプロセッサーによる処理ではありません。つまり、
                         MMLコンパイラーによるセマンティックチェックが行われるという事です。
                         </p>
+                        <p>マクロは引数を取ることもでき、マクロ本体内で"${仮引数名}"という形で使用することができます。
+                        </p>
                     </div>
                     <div class="grammar_right">
 <pre>
 例.
-    {cde}4 /いわゆる3連符
-    {cdef}4.
+    [define CMajor(l)'"c${l}eg"'] /コードネームCの和音に置換されるマクロを定義する
+</pre>
+                    </div>
+                </div>
+                <div class="spec_header">
+                    <h3>マクロ呼び出し</h3>
+                    <p>"$""{"(macro_name)[":"(args)]"}" where...
+                    </p>
+                    <ul>
+                        <li>macro_name = 数字、アルファベット、アンダーバーからなる文字列 : 呼び出すマクロの名前</li>
+                        <li>args = 数字、アルファベット、アンダーバーからなる文字列 : マクロの実引数</li>
+                    </ul>
+                </div>
+                <div class="grammar_spec">
+                    <div class="grammar_left">
+                        <p>上述のマクロ定義で定義したマクロを呼び出します。
+                        </p>
+                        <p>実引数は、カンマ区切りで複数指定できます。実引数の数が仮引数の数よりも少なくても構いません。その場合、指定されなかった
+                        仮引数には空文字列が指定されたことになります。
+                        </p>
+                    </div>
+                    <div class="grammar_right">
+<pre>
+例.
+    l8 cded ${CMajor:1} /上述のマクロを引数に1を設定して呼び出した。これは「l8 cded "c1eg"」に展開される
+    l8 cded ${CMajor}ded8^1 /このように使用することもできる。この場合、「l8 cded "ceg"ded8^1」に展開される
 </pre>
                     </div>
                 </div>
                 <div class="spec_header">
                     <h3>独自波形定義</h3>
-                    <p>"["function "("args..up to two")""{"(function_body)"}""]" where...
+                    <p>"["function "("args")""{"(function_body)"}""]" where...
                     </p>
                     <ul>
-                        <li>args = Javascript上で有効な識別子名 : 波形生成の<br>１つめの引数には発音するべき音の波長、２つめの引数には
-                        発音するタイミングを伴って呼び出されます。</li>
+                        <li>args = Javascript上で有効な識別子名 : 関数の仮引数名</li>
                         <li>function_body = some Javascript code : Javascriptで記述された独自波形の生成コード</li>
                     </ul>
                 </div>
                 <div class="grammar_spec">
                     <div class="grammar_left">
                         <p>シーケンサーの音色として使用できる独自波形を生成する関数を定義します。この関数は妥当なJavascriptコードとして記述する必要があり、
-                        Javascript側から発音するべき音の波長を１つ目、発音時の曲頭からの経過時間を２つ目の引数として呼び出されます。
+                        Javascript側から発音するべき音の波長を１つ目、発音時の曲頭からの経過時間を２つ目の引数として呼び出されます。<br>
+                        
                         </p>
                     </div>
                     <div class="grammar_right">
 <pre>
 例.
-    [function (freq, time){return Math.sin(freq * 2 * Math.PI * time;}] /組み込みの正弦波と同じ波形を生成する関数
+    [function (freq, time){return Math.sin(freq * 2 * Math.PI * time);}] /組み込みの正弦波と同じ波形を生成する関数
 </pre>
                     </div>
                 </div>
