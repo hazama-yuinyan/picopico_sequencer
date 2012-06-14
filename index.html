@@ -37,6 +37,23 @@
                 <button id="compile_button" type="button" data-dojo-type="dijit.form.Button">コンパイル</button>
                 <button id="controller" type="button" data-dojo-type="dijit.form.Button">再生</button>
                 <button id="stop_button" type="button" data-dojo-type="dijit.form.Button">ストップ</button>
+                <button id="new_button" type="button" data-dojo-type="dijit.form.Button">新規</button>
+                <button id="open_button" type="button" data-dojo-type="dijit.form.Button">開く</button>
+                <div id="save_button" data-dojo-type="dijit.form.DropDownButton">
+                    <span>保存</span>
+                    <div data-dojo-type="dijit.TooltipDialog" id="saveDialog">
+                        <p><label for="save_as" style="display: inline-block; width: 75px">保存先：</label>
+                        <select id="save_as" data-dojo-type="dijit.form.Select"
+                            name="stateSelect">
+                            <option value="" selected="selected">保存先を設定してください</option>
+                            <option value="LOCAL">ローカルストレージ</option>
+                            <option value="SERVER">サーバー</option>
+                            <option value="FILE">ローカルファイル</option>
+                        </select>
+                        </p>
+                        <button id="accept_button" type="button" data-dojo-type="dijit.form.Button">OK</button>
+                    </div>
+                </div>
                 <div id="music_info" data-dojo-type="dijit.form.NumberTextBox">0</div>
             </div>
             <div id="main_tab" data-dojo-type="dijit.layout.TabContainer"
@@ -59,7 +76,7 @@
                     <input data-dojo-type="dijit.form.NumberSpinner" data-dojo-props="constraints: {max: 32, min: 1}, value: 1" id="track_selector">
                     <br>
                     <label for="music_title">タイトル</label>
-                    <textarea data-dojo-type="dijit.form.Textarea" id="music_title"></textarea>
+                    <textarea data-dojo-type="dijit.form.Textarea" id="music_title">名無しのファイルさん</textarea>
                 </div>
                 <div data-dojo-type="dijit.layout.ContentPane" data-dojo-props="title: 'プロパティー'">
                     <label for="velocity">ベロシティー</label>

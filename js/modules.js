@@ -1,4 +1,5 @@
 define(["dijit/layout/BorderContainer", "dijit/layout/TabContainer", "custom/piano_roll/pianoRollWidget", "dijit/form/Textarea",
-            "dijit/layout/ContentPane", "dijit/form/NumberTextBox", "dijit/Toolbar", "dijit/form/SimpleTextarea", "dijit/layout/AccordionContainer",
-            "dijit/form/NumberSpinner", "dijit/Dialog", "dijit/ProgressBar", "dijit/Editor"], function(){
+    "dijit/layout/ContentPane", "dijit/form/NumberTextBox", "dijit/Toolbar", "dijit/form/SimpleTextarea", "dijit/layout/AccordionContainer",
+    "dijit/form/NumberSpinner", "dijit/Dialog", "dijit/TooltipDialog", "dijit/ProgressBar", "dijit/Editor", "dijit/form/Select",
+    "dijit/form/DropDownButton"], function(){
 });

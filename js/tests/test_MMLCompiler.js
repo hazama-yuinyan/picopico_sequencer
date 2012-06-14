@@ -26,10 +26,34 @@ define(["mml_compiler"], function(compiler){
                 8,
                 25,
                 13,
-                19,
+                19
+                ];
+            var tokens, sources = simple_mml_sources;
+            for(var i = 0; i < 4; ++i){
+                console.log("start " + (i + 1) + " th tokenization");
+                tokens = lexer.tokenize(sources[i]);
+                expect(tokens.length).toEqual(expected_lens[i]);
+                console.log(tokens);
+            };
+        });
+        it("chords", function(){
+            lexer.resetState();
+            var expected_lens = [
                 7,
                 10,
-                9,
+                9
+                ];
+            var tokens, sources = simple_mml_sources;
+            for(var i = 4; i < 7; ++i){
+                console.log("start " + (i - 3) + " th tokenization");
+                tokens = lexer.tokenize(sources[i]);
+                expect(tokens.length).toEqual(expected_lens[i - 4]);
+                console.log(tokens);
+            };
+        });
+        it("commands", function(){
+            lexer.resetState();
+            var expected_lens = [
                 7,
                 12,
                 5,
@@ -39,13 +63,27 @@ define(["mml_compiler"], function(compiler){
                 9,
                 17
                 ];
-            var tokens;
-            simple_mml_sources.forEach(function(source, i){
-                console.log("start " + (i + 1) + " th tokenization");
-                tokens = lexer.tokenize(source);
-                expect(tokens.length).toEqual(expected_lens[i]);
+            var tokens, sources = simple_mml_sources;
+            for(var i = 7; i < 13; ++i){
+                console.log("start " + (i - 6) + " th tokenization");
+                tokens = lexer.tokenize(sources[i]);
+                expect(tokens.length).toEqual(expected_lens[i - 7]);
                 console.log(tokens);
-            });
+            };
+        });
+        it("with macros", function(){
+            lexer.resetState();
+            var expected_lens = [
+                9,
+                17
+                ];
+            var tokens, sources = simple_mml_sources;
+            for(var i = 13; i < sources.length; ++i){
+                console.log("start " + (i - 12) + " th tokenization");
+                tokens = lexer.tokenize(sources[i]);
+                expect(tokens.length).toEqual(expected_lens[i - 13]);
+                console.log(tokens);
+            };
         });
     });
     describe("tests.MMLCompiler.PreParser", function(){
@@ -117,8 +155,26 @@ define(["mml_compiler"], function(compiler){
     });
     describe("tests.MMLCompiler.Parser", function(){
         var parser = compiler.mml_parser;
-        it("MMLParser tests", function(){
-            var tree, sources = simple_mml_sources.slice(0, simple_mml_sources.length - 2);
+        it("basics", function(){
+            var tree, sources = simple_mml_sources.slice(0, 4);
+            sources.forEach(function(source, i){
+                console.log("start " + (i + 1) + " th parse");
+                tree = parser.parse(source);
+                expect(tree).not.toEqual(null);
+                console.log(tree);
+            });
+        });
+        it("chords", function(){
+            var tree, sources = simple_mml_sources.slice(4, 7);
+            sources.forEach(function(source, i){
+                console.log("start " + (i + 1) + " th parse");
+                tree = parser.parse(source);
+                expect(tree).not.toEqual(null);
+                console.log(tree);
+            });
+        });
+        it("commands", function(){
+            var tree, sources = simple_mml_sources.slice(7, 13);
             sources.forEach(function(source, i){
                 console.log("start " + (i + 1) + " th parse");
                 tree = parser.parse(source);

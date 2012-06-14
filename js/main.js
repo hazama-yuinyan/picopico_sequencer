@@ -5,12 +5,20 @@
  */
 
 
-define(["mml_compiler", "sequencer", "dojo/dom-class", "dijit/registry", "dojox/timing", "mml_updater"],
-    function(compiler, Sequencer, dom_class, registry, timing, updater){
+define(["mml_compiler", "sequencer", "dojo/dom-class", "dojo/on", "dijit/registry", "dojox/timing", "mml_updater"],
+    function(compiler, Sequencer, dom_class, on, registry, timing, updater){
 
     var sequencer = null,
     data_store = null,
     timer = null,
+    source_changed = false,
+    reset = function(){
+        sequencer = null;
+        data_store = null;
+        timer = null;
+        source_changed = false;
+    },
+    
     compile = function(){
         processMMLSource();
         var tab_container = registry.byId("main_tab");
@@ -67,11 +75,15 @@ define(["mml_compiler", "sequencer", "dojo/dom-class", "dijit/registry", "dojox/
         sequencer.hold();
     },
     
+    toPlainString = function(html_source){
+        return html_source.replace(/<br[^>]+>|<\/div>/g, "\n").replace(/<[^>]+>/g, "").replace(/&quot;/g, "\"").replace(/&lt;/g, "<").replace(/&gt;/g, ">");
+    },
+    
     processMMLSource = function(){
         var tmp, error_console;
         try{
             var editor = registry.byId("editor");
-            var source = editor.get("value").replace(/<br[^>]+>|<\/div>/g, "\n").replace(/<[^>]+>/g, "").replace(/&quot;/g, "\"").replace(/&lt;/g, "<").replace(/&gt;/g, ">");
+            var source = toPlainString(editor.get("value"));
             tmp = updater.compile(source);
         }
         catch(e){
@@ -93,6 +105,61 @@ define(["mml_compiler", "sequencer", "dojo/dom-class", "dijit/registry", "dojox/
     switchController = function(){
         dom_class.toggle("controller", "play_button");
         dom_class.toggle("controller", "hold_button");
+    },
+    
+    newFile = function(){
+        if(source_changed){
+            if(confirm("未保存のファイルが開かれています。編集中のファイルを先に保存しますか？")){
+                saveFile();
+            }else{
+                return;
+            }
+        }
+        
+        var editor = registry.byId("editor"), status_bar = registry.byId("various_uses_pane");
+        var title_editor = registry.byId("music_title");
+        editor.set("value", "");
+        title_editor.set("value", "名無しのファイルさん");
+        reset();
+        status_bar.domNode.textContent = "新規ファイルに切り替えました。";
+    },
+    
+    openFile = function(){
+        if(source_changed){
+            if(confirm("未保存のファイルが開かれています。編集中のファイルを先に保存しますか？")){
+                saveFile();
+            }else{
+                return;
+            }
+        }
+    },
+    
+    saveFile = function(){
+        var loc_save = registry.byId("save_as").get("value");
+        var editor = registry.byId("editor"), source = toPlainString(editor.get("value"));
+        var title_editor = registry.byId("music_title"), music_title = title_editor.get("value");
+        switch(loc_save){
+        case "LOCAL":
+            localStorage.setItem(music_title, source);
+            break;
+            
+        case "SERVER":
+            throw new Error("Not implemented yet!");
+            break;
+            
+        case "FILE":
+            throw new Error("Not implemented yet!");
+            break;
+            
+        default:
+            alert("保存先を選択してください！");
+            return;
+        }
+        
+        source_changed = false;
+        dom_class.toggle("save_button_label", "not_saved", false);  //remove the "not saved" indicator
+        var status_bar = registry.byId("various_uses_pane");
+        status_bar.domNode.textContent = "正常に保存しました。";
     };
     
 return {
@@ -147,6 +214,18 @@ return {
         dom_class.add(target, "stop_button");
     },
     
+    "#new_button" : function(target){
+        on(target, "click", newFile);
+    },
+    
+    "#open_button" : function(target){
+        on(target, "click", openFile);
+    },
+    
+    "#accept_button" : function(target){
+        on(target, "click", saveFile);
+    },
+    
     "#main_tab" : function(){
         var tab_container = registry.byId("main_tab");
         tab_container.watch("selectedChildWidget", function(name, old, new_val){
@@ -168,7 +247,8 @@ return {
     },
     
     "#editor" : function(){
-        registry.byId("editor").set("value", "/[volume 127] [velocity 127]<br>" +
+        var editor = registry.byId("editor");
+        editor.set("value", "/[volume 127] [velocity 127]<br>" +
             "[function (freq, time){<br>" +
             "return Math.cos(2 * Math.PI * freq * time);<br>" +
             "}]<br>" +
@@ -190,6 +270,12 @@ return {
             'l8 ffdde2r4 ffdde4fee4^8,,60d,,50<br>' +
             '/ここからキーDbMajor<br>' +
             'v100 l1 o3 &quot;dfa&quot; l2 &quot;egb&quot; &quot;ea&lt;c&quot; &gt;&quot;dfa&quot;1920, 120<br>');
+        editor.watch("value", function(name, old, new_val){
+            if(old != new_val){
+                source_changed = true;
+                dom_class.toggle("save_button_label", "not_saved", true);
+            }
+        });
     }
 };
 

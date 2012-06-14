@@ -5,13 +5,10 @@ html, body {
     padding: 0;
 }
 
-.dijitToggleButtonChecked{
-    
-}
-
 #app_layout {
     height: 100%;
 }
+
 #leftCol {
     width: 14em;
 }
@@ -60,4 +57,38 @@ html, body {
 #tool_box > .button:active{
     border: inset 5px #aaa;
     box-shadow: -5px -5px 5px 5px rgba(0, 0, 0, 0.4) inset;
+}
+
+.not_saved{
+    background-color: #ff6161;
+}
+
+#contents{
+    width: 90%;
+}
+
+.spec_header{
+    width: 80%;
+}
+
+.grammar_spec{
+    display: -moz-box;
+    display: -webkit-box;
+    display: -o-box;
+    display: -ms-box;
+    -moz-box-orient: horizontal;
+    -webkit-box-orient: horizontal;
+    -o-box-orient: horizontal;
+    -ms-box-orient: horizontal;
+    border-top: solid 3px #000000;
+}
+
+.grammar_left{
+    width: 60%;
+    border-right: solid 3px #000000;
+}
+
+.grammar_right{
+    width: 40%;
+    border-left: solid 3px #000000;
 }
