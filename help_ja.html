@@ -25,9 +25,19 @@
                 ことが多いのが現状です。こちらで紹介するMML文法もあくまでも広く普及している記法のMMLのサブセットの一種であり、ピコピコシーケンサー
                 でしか使用できない方言の一種であることを予めご了承ください。
                 </p>
+                <div>
+                    <h3>凡例</h3>
+                    <ul>
+                        <li>() : 引数をあらわす。一般的なプログラミング言語と違い、MMLソースに記述する際には引数の()はいりません。<br>
+                            また、コマンド名として使える文字のグループもあらわす
+                        </li>
+                        <li>[] : 引数の括弧内ならば省略可能な引数をあらわす。それ以外の場合は、文字通りの表記</li>
+                        <li>"" : ダブルクォーテーションで囲われた記号はリテラルを意味し、ソース上にその記号を記述しなければならない</li>
+                    </ul>
+                </div>
                 <div class="spec_header">
                     <h3>音階・音長</h3>
-                    <p>[A-G][!#+-]([step, gate, velocity]) where...
+                    <p>(A-G)(!#+-)([step, gate, velocity]) where...
                     </p>
                     <ul>
                         <li>step = 2<sup>n</sup>(n = 0, 1, 2...) or *0~*32767 : ステップタイム</li>
@@ -49,8 +59,8 @@
                         デフォルトの音長が自動的に設定されます。<br>
                         音楽的な音長の代わりに絶対的音長(いわゆるtick数)で長さを指定することもできます。この場合、数字の前に"*"(アスタリスク)
                         を付けます。<br>
-                        数字の後に^(サーカムフレックス)をつけることで楽譜におけるタイのように音長を足し算することができます。<br>
-                        ステップタイムの直後に"."(ドット)をつけることでドットの前の音長の2<sup>ドットの数</sup>分だけ音長を伸ばすことができます。
+                        数字の後に"^"(サーカムフレックス)をつけることで楽譜におけるタイのように音長を足し算することができます。<br>
+                        ステップタイムの直後に"."(ドット)をつけることでドットの前の音長の1/2<sup>ドットの数</sup>分だけ音長を伸ばすことができます。
                         </p>
                         <p>つぎのgate引数は、その音符のゲートタイムを表し、こちらも語弊を恐れずに言うならばその音符の演奏上の継続時間を表します。
                         </p>
@@ -109,13 +119,13 @@
                 </div>
                 <div class="spec_header">
                     <h3>調号</h3>
-                    <p>[K.SIGN (key1, key2...)] or [K.SIGN (sign note1, note2...)]<br>
-                    [KEY SIGNATURE (key1, key2...)] or [KEY SIGNATURE (sign note1, note2...)] where...
+                    <p>"["K.SIGN (key1, key2...)"]" or "["K.SIGN (sign note1, note2...)"]"<br>
+                    "["KEY SIGNATURE (key1, key2...)"]" or "["KEY SIGNATURE (sign note1, note2...)"]" where...
                     </p>
                     <ul>
-                        <li>key1, key2... = [+-#][A-G] : 調号をつける音名とつける調号の種類</li>
+                        <li>key1, key2... = (+-#)(A-G) : 調号をつける音名とつける調号の種類</li>
                         <li>sign = [+-#] : 調号の種類</li>
-                        <li>note1, note2... = [A-G] : signで指定した調号をつける音名</li>
+                        <li>note1, note2... = (A-G) : signで指定した調号をつける音名</li>
                     </ul>
                 </div>
                 <div class="grammar_spec">
@@ -151,7 +161,7 @@
                     <div class="grammar_left">
                         <p>オクターブを設定します。初期値はO4であり、中央ハは、O4 cに該当します。
                         </p>
-                        <p>またこちらはコマンドではないが、<で+1,>で-1オクターブを変化させることができます。
+                        <p>またこちらはコマンドではありませんが、<で+1,>で-1だけオクターブを変化させることができます。
                         </p>
                     </div>
                     <div class="grammar_right">
@@ -188,9 +198,9 @@
                 <div class="spec_header">
                     <h3>音量設定</h3>
                     <p>V(velocity)<br>
-                    [VELOCITY (velocity)]<br>
+                    "["VELOCITY (velocity)"]"<br>
                     U(volume)<br>
-                    [VOLUME (volume)] where...
+                    "["VOLUME (volume)"]" where...
                     </p>
                     <ul>
                         <li>velocity, volume = 0~127 : 音量</li>
@@ -212,7 +222,7 @@
                 <div class="spec_header">
                     <h3>テンポ設定</h3>
                     <p>T(tempo)<br>
-                    [TEMPO (tempo)] where...
+                    "["TEMPO (tempo)"]" where...
                     </p>
                     <ul>
                         <li>tempo = 30~300 : テンポ</li>
@@ -235,7 +245,7 @@
                 <div class="spec_header">
                     <h3>音色変更</h3>
                     <p>@(program_number)<br>
-                    [PROGRAM (program_number)] where...
+                    "["PROGRAM (program_number)"]" where...
                     </p>
                     <ul>
                         <li>program_number = 0, 1, 2... : 音色の種類をあらわす番号</li>
@@ -257,7 +267,7 @@
                 </div>
                 <div class="spec_header">
                     <h3>連符</h3>
-                    <p>{some MML}([step]) where...
+                    <p>"{"some MML"}"([step]) where...
                     </p>
                     <ul>
                         <li>step = 2<sup>n</sup>(n = 0, 1, 2...) or *0~32767 : ステップタイム</li>
@@ -280,7 +290,7 @@
                 </div>
                 <div class="spec_header">
                     <h3>和音</h3>
-                    <p>"some MML"([ticks, delay]) where...
+                    <p>"""some MML"""([ticks, delay]) where...
                     </p>
                     <ul>
                         <li>ticks = 0~32767 : 絶対音長による発音時間</li>
@@ -304,7 +314,7 @@
                 </div>
                 <div class="spec_header">
                     <h3>マクロ定義</h3>
-                    <p>[define macro_name'(macro_body)'] where...
+                    <p>"["define macro_name"'"(macro_body)"'""]" where...
                     </p>
                     <ul>
                         <li>macro_name = 数字、アルファベット、アンダーバーからなる文字列 : マクロの名前</li>
@@ -313,9 +323,8 @@
                 </div>
                 <div class="grammar_spec">
                     <div class="grammar_left">
-                        <p>カッコの中に指定したMMLをstepに収まるように演奏します。stepには音符などと同様、音楽的音長の他、絶対的音長や
-                        サーカムフレックスを使用した音長の足し算なども使用できます。<br>
-                        stepを省略するとデフォルト音長が適用される点も普通の音符と同様です。
+                        <p>いわゆるマクロです。しかし、C言語のそれとは異なり、単純なテキストプリプロセッサーによる処理ではありません。つまり、
+                        MMLコンパイラーによるセマンティックチェックが行われるという事です。
                         </p>
                     </div>
                     <div class="grammar_right">
@@ -323,6 +332,29 @@
 例.
     {cde}4 /いわゆる3連符
     {cdef}4.
+</pre>
+                    </div>
+                </div>
+                <div class="spec_header">
+                    <h3>独自波形定義</h3>
+                    <p>"["function "("args..up to two")""{"(function_body)"}""]" where...
+                    </p>
+                    <ul>
+                        <li>args = Javascript上で有効な識別子名 : 波形生成の<br>１つめの引数には発音するべき音の波長、２つめの引数には
+                        発音するタイミングを伴って呼び出されます。</li>
+                        <li>function_body = some Javascript code : Javascriptで記述された独自波形の生成コード</li>
+                    </ul>
+                </div>
+                <div class="grammar_spec">
+                    <div class="grammar_left">
+                        <p>シーケンサーの音色として使用できる独自波形を生成する関数を定義します。この関数は妥当なJavascriptコードとして記述する必要があり、
+                        Javascript側から発音するべき音の波長を１つ目、発音時の曲頭からの経過時間を２つ目の引数として呼び出されます。
+                        </p>
+                    </div>
+                    <div class="grammar_right">
+<pre>
+例.
+    [function (freq, time){return Math.sin(freq * 2 * Math.PI * time;}] /組み込みの正弦波と同じ波形を生成する関数
 </pre>
                     </div>
                 </div>
