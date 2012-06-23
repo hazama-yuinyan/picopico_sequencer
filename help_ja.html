@@ -4,7 +4,8 @@
         <title>ヘルプ</title>
         <link rel="stylesheet" type="text/css" href="manual_style.css">
     </head>
-    <body id="contents">
+    <body>
+        <div id="content">
         <h1>ピコピコシーケンサーマニュアル</h1>
         <article>
             <section id="abstraction">
@@ -15,8 +16,17 @@
                 </p>
             </section>
             
+            <section id="notes">
+                <h2>注意事項</h2>
+                <p>使用しているAPIの関係上、今のところピコピコシーケンサーはGoogle Chromeでしか完全動作することを確認していません。
+                将来的には他のブラウザでも動作する可能性はありますが、今しばらくはご不便をおかけすることを予めご了承ください。
+                </p>
+            </section>
+            
             <section id="basics">
                 <h2>基本</h2>
+                <p>ピコピコシーケンサーは、MMLをもとに音楽を生成するミュージックシーケンサーです。
+                </p>
             </section>
             
             <section id="MML_grammar">
@@ -28,18 +38,23 @@
                 <div>
                     <h3>凡例</h3>
                     <ul>
-                        <li>() : 引数をあらわす。一般的なプログラミング言語と違い、MMLソースに記述する際には引数の()はいりません。<br>
+                        <li>() : 引数をあらわす。一般的なプログラミング言語と違い、MMLソースに記述する際には引数を囲む()はいりません。<br>
                             また、コマンド名として使える文字のグループもあらわす
                         </li>
                         <li>[] : 省略可能な箇所をあらわす</li>
-                        <li>"" : ダブルクォーテーションで囲われた記号はリテラルを意味し、ソース上にその記号を記述しなければならない</li>
+                        <li>"" : ダブルクォーテーションで囲われた記号はリテラルを意味し、ソース上にその記号をそのままの形で記述しなければならない</li>
+                        <li>xxx-xxx : アルファベットや数字などの範囲をあらわす</li>
+                        <li>XXX : 大文字の文字列はコマンド名をあらわす。これはそのままの形でソースに記述しなければならない。<br>
+                            なお、コマンド名は大文字小文字は無視される(XXXと書いてもxxxと書いても同じ意味)
+                        </li>
                     </ul>
                 </div>
                 <div class="spec_header">
                     <h3>音階・音長</h3>
-                    <p>(A-G)(!#+-)([step, gate, velocity]) where...
+                    <p>(A-G)([accidentals, step, gate, velocity]) where...
                     </p>
                     <ul>
+                        <li>accidentals = (!#+-) : 臨時記号</li>
                         <li>step = 2<sup>n</sup>(n = 0, 1, 2...) or *0~*32767 : ステップタイム</li>
                         <li>gate = 2<sup>n</sup>(n = 0, 1, 2...) or *0~*32767 : ゲートタイム</li>
                         <li>velocity = 0~127 : ベロシティー</li>
@@ -60,7 +75,7 @@
                         音楽的な音長の代わりに絶対的音長(いわゆるtick数)で長さを指定することもできます。この場合、数字の前に"*"(アスタリスク)
                         を付けます。<br>
                         数字の後に"^"(サーカムフレックス)をつけることで楽譜におけるタイのように音長を足し算することができます。<br>
-                        ステップタイムの直後に"."(ドット)をつけることでドットの前の音長の1/2<sup>ドットの数</sup>分だけ音長を伸ばすことができます。
+                        ステップタイムの直後に"."(ドット)をつけることでドットの前の音長の1/2<sup>ドットの数</sup>ずつだけ音長を伸ばすことができます。
                         </p>
                         <p>つぎのgate引数は、その音符のゲートタイムを表し、こちらも語弊を恐れずに言うならばその音符の演奏上の継続時間を表します。
                         </p>
@@ -68,29 +83,29 @@
                         </p>
                     </div>
                     <div class="grammar_right">
-<pre>
-例1.
-    cdef edc /これは全てデフォルト音長で「ドレミファ　ミレド」のメロディーになります。
-    c++++ /d+と同じ意味
-    c- /C♭、つまりbのこと
-    c!
-例2.
-    c /デフォルトの音長
-    c4 /Cの四分音符
-    c+8 /Cシャープの八分音符
-例3.
-    c*480 /c4と同じ意味
-    c*480.. /後述するドットを付加することも可能
-例4.
-    c1^1 /全音符２つ分（二全音符）の長さ
-    c4^*480^8 /絶対音長指定を挟んでもいい
-例5.
-    c4, 8 /楽譜表記上は四分音符だが、実際の演奏では八分音符の長さになる（いわゆるスタッカート）
-    c, 8 /このようにも書ける
-例6.
-    c4,,127 /音量最大で発音する
-    c,,-20 /前の音よりベロシティーを20下げて発音する
-</pre>
+                        <p>
+                        例1.<br>
+                        cdef edc /これは全てデフォルト音長で「ドレミファ　ミレド」のメロディーになります。<br>
+                        c++++ /d++(=e)と同じ意味<br>
+                        c- /C♭、つまりbのこと<br>
+                        c!<br>
+                        例2.<br>
+                        c /デフォルトの音長<br>
+                        c4 /Cの四分音符<br>
+                        c+8 /Cシャープの八分音符<br>
+                        例3.<br>
+                        c*480 /c4と同じ意味<br>
+                        c*480.. /後述するドットを付加することも可能<br>
+                        例4.<br>
+                        c1^1 /全音符２つ分（二全音符）の長さ<br>
+                        c4^*480^8 /絶対音長指定を挟んでもいい<br>
+                        例5.<br>
+                        c4, 8 /楽譜表記上は四分音符だが、実際の演奏では八分音符の長さになる（いわゆるスタッカート）<br>
+                        c, 8 /このようにも書ける<br>
+                        例6.<br>
+                        c4,,127 /音量最大で発音する<br>
+                        c,,-20 /前の音よりベロシティーを20下げて発音する
+                        </p>
                     </div>
                 </div>
                 <div class="spec_header">
@@ -108,13 +123,13 @@
                         </p>
                     </div>
                     <div class="grammar_right">
-<pre>
-例.
-    r4 /四分休符
-    r4.. /4+8+16分休符
-    r4^8^16 /上の例はこうも書ける
-    r*480 /もちろん絶対音長での指定も可能
-</pre>
+                        <p>
+                        例.<br>
+                        r4 /四分休符<br>
+                        r4.. /4+8+16分休符<br>
+                        r4^8^16 /上の例はこうも書ける<br>
+                        r*480 /もちろん絶対音長での指定も可能
+                        </p>
                     </div>
                 </div>
                 <div class="spec_header">
@@ -124,7 +139,7 @@
                     </p>
                     <ul>
                         <li>key1, key2... = (+-#)(A-G) : 調号をつける音名とつける調号の種類</li>
-                        <li>sign = [+-#] : 調号の種類</li>
+                        <li>sign = (+-#) : 調号の種類</li>
                         <li>note1, note2... = (A-G) : signで指定した調号をつける音名</li>
                     </ul>
                 </div>
@@ -141,12 +156,12 @@
                         </p>
                     </div>
                     <div class="grammar_right">
-<pre>
-例.
-    [K.SIGN +c, +f] f! /本来ならFにはシャープがつく調だが、この音符のみ調号を打ち消してFとして演奏する
-    [K.SIGN -bea] b- /この調では通常ならBにはフラットが付いているが、更にマイナスを指定しているためB--(=A)として演奏される
-    (通常ならこの調では使用されないが、ダブルフラットと同じ意味)
-</pre>
+                        <p>
+                        例.<br>
+                        [k.sign +c, +f] f! /本来ならFにはシャープがつく調だが、この音符のみ調号を打ち消してFとして演奏する<br>
+                        [k.sign -bea] b- /この調では通常ならBにはフラットが付いているが、更にマイナスを指定しているためB--(=A)として演奏される
+                        (通常ならこの調では使用されないが、ダブルフラットと同じ意味)
+                        </p>
                     </div>
                 </div>
                 <div class="spec_header">
@@ -165,13 +180,13 @@
                         </p>
                     </div>
                     <div class="grammar_right">
-<pre>
-例.
-    o3
-    o8
-    o4 c /中央ハを演奏する
-    o4 < /ここはo5相当になる
-</pre>
+                        <p>
+                        例.<br>
+                        o3<br>
+                        o8<br>
+                        o4 c /中央ハを演奏する<br>
+                        o4 < /ここはo5相当になる
+                        </p>
                     </div>
                 </div>
                 <div class="spec_header">
@@ -189,10 +204,10 @@
                         </p>
                     </div>
                     <div class="grammar_right">
-<pre>
-例.
-    L8
-</pre>
+                        <p>
+                        例.<br>
+                        l8
+                        </p>
                     </div>
                 </div>
                 <div class="spec_header">
@@ -208,15 +223,16 @@
                 </div>
                 <div class="grammar_spec">
                     <div class="grammar_left">
-                        <p>音量を設定します。通常のMMLに合わせて計4種類の表記法がありますが、全て機能的には等価です。
+                        <p>デフォルトの音量を設定します。通常のMMLに合わせて計4種類の表記法がありますが、全て機能的には等価です。
+                        音符コマンドでベロシティーを省略した場合、このコマンドで設定した値が使用されます。なお、初期値はv100です。
                         </p>
                     </div>
                     <div class="grammar_right">
-<pre>
-例.
-    v127
-    u127
-</pre>
+                        <p>
+                        例.<br>
+                        v127<br>
+                        u127
+                        </p>
                     </div>
                 </div>
                 <div class="spec_header">
@@ -235,11 +251,11 @@
                         </p>
                     </div>
                     <div class="grammar_right">
-<pre>
-例.
-    t100
-    t60
-</pre>
+                        <p>
+                        例.<br>
+                        t100<br>
+                        t60
+                        </p>
                     </div>
                 </div>
                 <div class="spec_header">
@@ -258,11 +274,11 @@
                         </p>
                     </div>
                     <div class="grammar_right">
-<pre>
-例.
-    @0
-    [program 1]
-</pre>
+                        <p>
+                        例.<br>
+                        @0<br>
+                        [program 1]
+                        </p>
                     </div>
                 </div>
                 <div class="spec_header">
@@ -281,11 +297,11 @@
                         </p>
                     </div>
                     <div class="grammar_right">
-<pre>
-例.
-    {cde}4 /いわゆる3連符
-    {cdef}4.
-</pre>
+                        <p>
+                        例.<br>
+                        {cde}4 /いわゆる3連符<br>
+                        {cdef}4.
+                        </p>
                     </div>
                 </div>
                 <div class="spec_header">
@@ -304,22 +320,22 @@
                         </p>
                     </div>
                     <div class="grammar_right">
-<pre>
-例.
-    "c4eg" /これは四分音符の"C","E","G"を構成音とする和音
-    "ceg"480 /上の例はこうも書ける
-    "c4eg", 10 /10ticksずつずらして"E","G"の音を発音する
-</pre>
+                        <p>
+                        例.<br>
+                        "c4eg" /これは四分音符のC, E, Gを構成音とする和音<br>
+                        "ceg"480 /上の例はこうも書ける<br>
+                        "c4eg", 10 /Cの音のあと、10ticksずつずらしてE, Gの音を発音する(いわゆるアルペジオ)
+                        </p>
                     </div>
                 </div>
                 <div class="spec_header">
                     <h3>マクロ定義</h3>
-                    <p>"["define macro_name"("[args]")""'"(macro_body)"'""]" where...
+                    <p>"["DEFINE macro_name"("[args]")""'"(macro_body)"'""]" where...
                     </p>
                     <ul>
                         <li>macro_name = 数字、アルファベット、アンダーバーからなる文字列 : マクロの名前</li>
-                        <li>args = 数字、アルファベット、アンダーバーからなる文字列 : マクロの引数</li>
-                        <li>macro_body = some MML : 置換後のMML</li>
+                        <li>args = 数字、アルファベット、アンダーバーからなる文字列 : マクロの仮引数名</li>
+                        <li>macro_body = MMLコード : 置換後のMML</li>
                     </ul>
                 </div>
                 <div class="grammar_spec">
@@ -331,10 +347,10 @@
                         </p>
                     </div>
                     <div class="grammar_right">
-<pre>
-例.
-    [define CMajor(l)'"c${l}eg"'] /コードネームCの和音に置換されるマクロを定義する
-</pre>
+                        <p>
+                        例.<br>
+                        [define CMajor(l)'"c${l}eg"'] /コードネームCの和音に置換されるマクロを定義する
+                        </p>
                     </div>
                 </div>
                 <div class="spec_header">
@@ -343,49 +359,54 @@
                     </p>
                     <ul>
                         <li>macro_name = 数字、アルファベット、アンダーバーからなる文字列 : 呼び出すマクロの名前</li>
-                        <li>args = 数字、アルファベット、アンダーバーからなる文字列 : マクロの実引数</li>
+                        <li>args = MMLとして妥当な文字列 : マクロの実引数</li>
                     </ul>
                 </div>
                 <div class="grammar_spec">
                     <div class="grammar_left">
                         <p>上述のマクロ定義で定義したマクロを呼び出します。
                         </p>
-                        <p>実引数は、カンマ区切りで複数指定できます。実引数の数が仮引数の数よりも少なくても構いません。その場合、指定されなかった
+                        <p>実引数は、カンマ区切りで複数指定できます。実引数の数が仮引数の数より少なくても構いません。その場合、指定されなかった
                         仮引数には空文字列が指定されたことになります。
                         </p>
                     </div>
                     <div class="grammar_right">
-<pre>
-例.
-    l8 cded ${CMajor:1} /上述のマクロを引数に1を設定して呼び出した。これは「l8 cded "c1eg"」に展開される
-    l8 cded ${CMajor}ded8^1 /このように使用することもできる。この場合、「l8 cded "ceg"ded8^1」に展開される
-</pre>
+                        <p>
+                        例.<br>
+                        l8 cded ${CMajor:1} /上述のマクロを引数に1を設定して呼び出した。これは「l8 cded "c1eg"」に展開される<br>
+                        l8 cded ${CMajor}ded8^1 /このように使用することもできる。この場合、「l8 cded "ceg"ded8^1」に展開される<br>
+                        l8 cded ${CMajor:4^8}>c8^2 /これは「l8 cded "c4^8eg">c8^2」に展開される。
+                        このようにマクロの引数にはMMLとして妥当な文字列なら何でも記述できる。ただし改行を含むことはできない
+                        </p>
                     </div>
                 </div>
                 <div class="spec_header">
                     <h3>独自波形定義</h3>
-                    <p>"["function "("args")""{"(function_body)"}""]" where...
+                    <p>"["FUNCTION "("args")""{"(function_body)"}""]" where...
                     </p>
                     <ul>
                         <li>args = Javascript上で有効な識別子名 : 関数の仮引数名</li>
-                        <li>function_body = some Javascript code : Javascriptで記述された独自波形の生成コード</li>
+                        <li>function_body = Javascriptのコード : Javascriptで記述された独自波形の生成コード</li>
                     </ul>
                 </div>
                 <div class="grammar_spec">
                     <div class="grammar_left">
                         <p>シーケンサーの音色として使用できる独自波形を生成する関数を定義します。この関数は妥当なJavascriptコードとして記述する必要があり、
-                        Javascript側から発音するべき音の波長を１つ目、発音時の曲頭からの経過時間を２つ目の引数として呼び出されます。<br>
-                        
+                        Javascript側から発音するべき音の波長を１つ目、発音時の曲頭からの経過時間を２つ目の引数として呼び出されます。
+                        </p>
+                        <p>{}の中にはJavascriptとして有効なあらゆるコードを記述することができますが、この関数自体がWebWorker上で実行されるため
+                        通常なら参照可能な一部のグローバル変数が使用できない場合があります。
                         </p>
                     </div>
                     <div class="grammar_right">
-<pre>
-例.
-    [function (freq, time){return Math.sin(freq * 2 * Math.PI * time);}] /組み込みの正弦波と同じ波形を生成する関数
-</pre>
+                        <p>
+                        例.<br>
+                        [function (freq, time){return Math.sin(freq * 2 * Math.PI * time);}] /組み込みの正弦波と同じ波形を生成する関数
+                        </p>
                     </div>
                 </div>
             </section>
         </article>
+        </div>
     </body>
 </html>

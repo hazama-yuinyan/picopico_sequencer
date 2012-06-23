@@ -5,8 +5,9 @@
  */
 
 
-define(["mml_compiler", "sequencer", "dojo/dom-class", "dojo/on", "dijit/registry", "dojox/timing", "mml_updater"],
-    function(compiler, Sequencer, dom_class, on, registry, timing, updater){
+define(["mml_compiler", "sequencer", "dojo/dom-class", "dojo/on", "dijit/registry", "dojox/timing", "dijit/form/Select", "dojo/store/Memory",
+    "mml_updater"],
+    function(compiler, Sequencer, dom_class, on, registry, timing, Select, Memory, updater){
 
     var sequencer = null,
     data_store = null,
@@ -79,6 +80,10 @@ define(["mml_compiler", "sequencer", "dojo/dom-class", "dojo/on", "dijit/registr
         return html_source.replace(/<br[^>]+>|<\/div>/g, "\n").replace(/<[^>]+>/g, "").replace(/&quot;/g, "\"").replace(/&lt;/g, "<").replace(/&gt;/g, ">");
     },
     
+    toDisplayedString = function(str){
+        return str.replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, "<br>");
+    },
+    
     processMMLSource = function(){
         var tmp, error_console;
         try{
@@ -124,7 +129,7 @@ define(["mml_compiler", "sequencer", "dojo/dom-class", "dojo/on", "dijit/registr
         status_bar.domNode.textContent = "新規ファイルに切り替えました。";
     },
     
-    openFile = function(){
+    openFile = function(data){
         if(source_changed){
             if(confirm("未保存のファイルが開かれています。編集中のファイルを先に保存しますか？")){
                 saveFile();
@@ -132,15 +137,32 @@ define(["mml_compiler", "sequencer", "dojo/dom-class", "dojo/on", "dijit/registr
                 return;
             }
         }
+        
+        var file_name = registry.byId("select_file").get("value"), status_bar = registry.byId("various_uses_pane");
+        var editor = registry.byId("editor"), title_editor = registry.byId("music_title");
+        var item = null;
+        data.every(function(datum){
+            if(datum.name == file_name){
+                item = datum;
+                return false;
+            }
+            return true;
+        });
+        
+        var source = item.source;
+        editor.set("value", source);
+        title_editor.set("value", item.name);
+        reset();
+        status_bar.domNode.textContent = "ファイルを開きました。";
     },
     
     saveFile = function(){
         var loc_save = registry.byId("save_as").get("value");
-        var editor = registry.byId("editor"), source = toPlainString(editor.get("value"));
+        var editor = registry.byId("editor"), source = editor.get("value");
         var title_editor = registry.byId("music_title"), music_title = title_editor.get("value");
         switch(loc_save){
         case "LOCAL":
-            localStorage.setItem(music_title, source);
+            localStorage.setItem(music_title, JSON.stringify({source : source, date : new Date()}));
             break;
             
         case "SERVER":
@@ -160,6 +182,16 @@ define(["mml_compiler", "sequencer", "dojo/dom-class", "dojo/on", "dijit/registr
         dom_class.toggle("save_button_label", "not_saved", false);  //remove the "not saved" indicator
         var status_bar = registry.byId("various_uses_pane");
         status_bar.domNode.textContent = "正常に保存しました。";
+    },
+    
+    retrieveAllDataFromStorage = function(){
+        var data = [];
+        for(var i = 0; i < localStorage.length; ++i){
+            var cur_key = localStorage.key(i);
+            var item = JSON.parse(localStorage.getItem(cur_key));
+            data.push({name : cur_key, source : item.source, date : item.date});
+        }
+        return data;
     };
     
 return {
@@ -218,12 +250,44 @@ return {
         on(target, "click", newFile);
     },
     
-    "#open_button" : function(target){
-        on(target, "click", openFile);
-    },
-    
     "#accept_button" : function(target){
         on(target, "click", saveFile);
+    },
+    
+    "#open_from" : function(){
+        var open_from = registry.byId("open_from");
+        open_from.watch("value", function(name, old, new_val){
+            var file_store;
+            switch(new_val){
+            case "LOCAL":
+                var data = retrieveAllDataFromStorage();
+                var names = data.map(function(item){return {value : item.name, label : item.name};});
+                names.unshift({value : "", label : "開くファイルを選択してください", selected : true});
+                break;
+            
+            case "SERVER":
+                throw new Error("Not implemented yet!");
+                break;
+                
+            case "FILE":
+                throw new Error("Not implemented yet!");
+                break;
+                
+            default:
+                alert("保存元が選択されていません！");
+                return;
+            }
+            
+            var select_file = new Select({
+                name : "selectFile",
+                options : names,
+                maxHeight : -1,
+                onChange : function(){
+                    openFile(data);
+                }
+            }, "select_file");
+            select_file.startup();
+        });
     },
     
     "#main_tab" : function(){

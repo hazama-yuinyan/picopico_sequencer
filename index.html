@@ -38,7 +38,22 @@
                 <button id="controller" type="button" data-dojo-type="dijit.form.Button">再生</button>
                 <button id="stop_button" type="button" data-dojo-type="dijit.form.Button">ストップ</button>
                 <button id="new_button" type="button" data-dojo-type="dijit.form.Button">新規</button>
-                <button id="open_button" type="button" data-dojo-type="dijit.form.Button">開く</button>
+                <div id="open_button" type="button" data-dojo-type="dijit.form.DropDownButton">
+                    <span>開く</span>
+                    <div data-dojo-type="dijit.TooltipDialog" id="openDialog">
+                        <p><label for="open_from" style="display: inline-block; width: 75px">保存元：</label>
+                        <select id="open_from" data-dojo-type="dijit.form.Select"
+                            name="sourceSelect">
+                            <option value="" selected="selected">保存元を選択してください</option>
+                            <option value="LOCAL">ローカルストレージ</option>
+                            <option value="SERVER">サーバー</option>
+                            <option value="FILE">ローカルファイル</option>
+                        </select>
+                        </p>
+                        <div id="select_file">
+                        </div>
+                    </div>
+                </div>
                 <div id="save_button" data-dojo-type="dijit.form.DropDownButton">
                     <span>保存</span>
                     <div data-dojo-type="dijit.TooltipDialog" id="saveDialog">
@@ -67,6 +82,8 @@
                 <div data-dojo-type="dijit.layout.ContentPane"
                      data-dojo-props="title:'構文木'">
                     <textarea id="ast" rows="30" data-dojo-type="dijit.form.SimpleTextarea"></textarea>
+                </div>
+                <div data-dojo-type="dijit.layout.ContentPane" data-dojo-props="title:'ヘルプ', href:'help_ja.html', loadingMessage:'Loading...'">
                 </div>
             </div>
             <div class="edgePanel" data-dojo-type="dijit.layout.AccordionContainer"

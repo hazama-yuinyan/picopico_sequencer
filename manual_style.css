@@ -1,10 +1,7 @@
-html, body {
+#content {
     height: 100%;
-    margin: 10px;
-}
-
-#contents{
     width: 90%;
+    margin: 10px;
 }
 
 .spec_header{
@@ -20,15 +17,19 @@ html, body {
     -webkit-box-orient: horizontal;
     -o-box-orient: horizontal;
     -ms-box-orient: horizontal;
-    border-top: solid 3px #000000;
+    border: ridge 3px #000000;
 }
 
 .grammar_left{
     width: 60%;
-    border-right: solid 3px #000000;
+    border-right: solid 1px #000000;
 }
 
 .grammar_right{
     width: 40%;
-    border-left: solid 3px #000000;
+    border-left: solid 1px #000000;
+}
+
+.grammar_right > p{
+    font: normal small "monaco", mono-space;
 }
