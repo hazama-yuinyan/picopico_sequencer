@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Help</title>
+        <link rel="stylesheet" type="text/css" href="manual_style.css">
+    </head>
+    <body>
+        <div id="content">
+        <h1>The Picopico Sequencer Manual</h1>
+        <article>
+            <section id="abstraction">
+                <h2>Abstraction</h2>
+                <p>Welcome to the Picopico Sequencer!<br>
+                Picopico sequencer is a Flash-free and purely HTML5 written music sequencer.肝心な音楽の記譜にはMMLをやや独自拡張した
+                オリジナル言語を使用し、ピアノロールによるGUIもあります。今のところ、未実装ですがいずれGUIによる編集機能もつく予定です。
+                </p>
+            </section>
+            
+            <section id="notes">
+                <h2>Notes</h2>
+                <p>Currently, due to the Web Audio API I gurantee that only the Google Chrome would run it completely as I expect.
+                将来的には他のブラウザでも動作する可能性はありますが、今しばらくはご不便をおかけすることを予めご了承ください。
+                </p>
+            </section>
+            
+            <section id="basics">
+                <h2>基本</h2>
+                <p>ピコピコシーケンサーは、MMLをもとに音楽を生成するミュージックシーケンサーです。
+                </p>
+            </section>
+            
+            <section id="MML_grammar">
+                <h2>Quick reference for MML grammar</h2>
+                <p>As you might know, MML has many dialects. It is often the case that although some two music sequencers are said to use the
+                same MML processor, they actually have slightly different syntaxes and commands.
+                ことが多いのが現状です。こちらで紹介するMML文法もあくまでも広く普及している記法のMMLのサブセットの一種であり、ピコピコシーケンサー
+                でしか使用できない方言の一種であることを予めご了承ください。
+                </p>
+                <div>
+                    <h3>Legends</h3>
+                    <ul>
+                        <li>() : Represents arguments. Unlike the programming languages you don't need to write the "()" in MML sources.<br>
+                            It also represents a group of characters referring to commands.
+                        </li>
+                        <li>[] : Represents that it can be ommited.</li>
+                        <li>"" : Double-quoted signs have to be explicitly written in MML sources.</li>
+                        <li>xxx-xxx : Indicates a range of letters, numbers etc.</li>
+                        <li>XXX : Letters in capital refer to commands and those letters have to be put in MML sources as it is.<br>
+                            Note that the case is not significant.(That is, xxx and XXX refer to the same command.)
+                        </li>
+                    </ul>
+                </div>
+                <div class="spec_header">
+                    <h3>Pitch and note duration</h3>
+                    <p>(A-G)([accidentals, step, gate, velocity]) where...
+                    </p>
+                    <ul>
+                        <li>accidentals = (!#+-) : accidentals</li>
+                        <li>step = 2<sup>n</sup>(n = 0, 1, 2...) or *0~*32767 : the step time</li>
+                        <li>gate = 2<sup>n</sup>(n = 0, 1, 2...) or *0~*32767 : the gate time</li>
+                        <li>velocity = 0~127 : velocity</li>
+                    </ul>
+                </div>
+                <div class="grammar_spec">
+                    <div class="grammar_left">
+                        <p>音楽を記述する際の基本、音階は音名の英語表記であるアルファベット1文字を使用して表します。具体的には、いわゆる「ド」
+                        の音に"c"、「レ」に"d"...というふうに「ソ」の"g"まではアルファベット順に、「ラ」と「シ」に関しては先頭に戻って
+                        "a"と"b"の1文字を割り当てます。
+                        </p>
+                        <p>With followed by any of the following signs "!","#","+","-", the note is treated like notes with sharps or flats.
+                        これらはそれぞれ"!"がナチュラル、"#"と"+"がシャープ、"-"がフラットを表しており、ひとつの音符に複数つけることもできます。
+                        </p>
+                        <p>The note command can take additional three arguments. The first represents the step time which is the duration in which
+                        the note should be played. It usually takes musical durations. And it is worth noting that if step is ommitted the default
+                        value set by a "L" command will be applied.<br>
+                        In addition, you can pass an AD(absolute duration) in step instead of a MD(musical duration). An AD can be specified with
+                        a preceding asterisk.<br>
+                        Furthermore you can modify the duration by adding extra numbers preceded by a "^"(サーカムフレックス).<br>
+                        And dots after the step time ステップタイムの直後に"."(ドット)をつけることでドットの前の音長の1/2<sup>ドットの数</sup>ずつだけ音長を伸ばすことができます。
+                        </p>
+                        <p>The second parameter called "gate" refers to the gate time which is the real duration in which the note will be played.
+                        </p>
+                        <p>Finally the last named "velocity" literally means the velocity which is equivalent to the volume in picopico sequencer.
+                        </p>
+                    </div>
+                    <div class="grammar_right">
+                        <p>
+                        example 1:<br>
+                        cdef edc /This plays the sequence "CDEF DEC" in the default length<br>
+                        c++++ /This is equivalent to d++(=e)<br>
+                        c- /This means a flat C, which is a B.<br>
+                        c!<br>
+                        example 2:<br>
+                        c /in default length<br>
+                        c4 /A quarter note of C<br>
+                        c+8 /A eighth note of sharp C<br>
+                        example 3:<br>
+                        c*480 /This is the same as writing "c4"<br>
+                        c*480.. /One can add dots, which is explained later on<br>
+                        example 4:<br>
+                        c1^1 /in the same length as two whole notes<br>
+                        c4^*480^8 /You can specify some of the durations in AD manner<br>
+                        example 5:<br>
+                        c4, 8 /It describes the note as a quarter note, but it actually sounds as a eighth note（so you can say it denotes a staccato)<br>
+                        c, 8 /same as above<br>
+                        example 6:<br>
+                        c4,,127 /Sounds in maximum volume<br>
+                        c,,-20 /前の音よりベロシティーを20下げて発音する
+                        </p>
+                    </div>
+                </div>
+                <div class="spec_header">
+                    <h3>Rests</h3>
+                    <p>R([step]) where...
+                    </p>
+                    <ul>
+                        <li>step = 2<sup>n</sup>(n = 0, 1, 2...) or *0~*32767 : the step time</li>
+                    </ul>
+                </div>
+                <div class="grammar_spec">
+                    <div class="grammar_left">
+                        <p>Rests, which are the other "atom" in music notation, can be notated as the letter "r". Because it is equivalent to
+                        the note command except that the rest command can take just one parameter, the detailed information on the rest command
+                        is cut off.
+                        </p>
+                    </div>
+                    <div class="grammar_right">
+                        <p>
+                        e.g.<br>
+                        r4 /A quarter rest<br>
+                        r4.. /It is 4+8+16 in duration<br>
+                        r4^8^16 /The above example can be written like this<br>
+                        r*480 /You can specify it in the AD manner
+                        </p>
+                    </div>
+                </div>
+                <div class="spec_header">
+                    <h3>Key signatures</h3>
+                    <p>"["K.SIGN (key1, key2...)"]" or "["K.SIGN (sign note1, note2...)"]"<br>
+                    "["KEY SIGNATURE (key1, key2...)"]" or "["KEY SIGNATURE (sign note1, note2...)"]" where...
+                    </p>
+                    <ul>
+                        <li>key1, key2... = (+-#)(A-G) : pitches</li>
+                        <li>sign = (+-#) : a sharp or flat</li>
+                        <li>note1, note2... = (A-G) : notes that will have accidentals</li>
+                    </ul>
+                </div>
+                <div class="grammar_spec">
+                    <div class="grammar_left">
+                        <p>このコマンド以降の調号を変更します。今のところ、調号をつける音名を一つ一つユーザーが指定しなければなりません。
+                        が、いずれCMajorやEbMajorなどの調名による指定もできるようにする予定です。
+                        </p>
+                        <p>最初の音符の説明で出てきたナチュラル記号は、このコマンドと組み合わせて使用します。さらに、"+"や"-"と組み合わせることで
+                        ナチュラルと臨時記号の両方を考慮した音程にすることができます。（楽譜の場合には、ナチュラル記号は明示しなくとも、
+                        シャープやフラットをつけるだけで調号の効果を消すことができますが、このMMLにおいては"+"や"-"の記号は実際には、
+                        半音上げ、半音下げを意味するのみで厳密に言えばシャープやフラットではありません。よって、楽譜と同じように調号の付いた
+                        音階に臨時記号をつける場合には、まずナチュラルを使用して調号の効果を打ち消す必要があります）
+                        </p>
+                    </div>
+                    <div class="grammar_right">
+                        <p>
+                        e.g.<br>
+                        [k.sign +c, +f] f! /Because of the key signature, F always has a sharp on it この音符のみ調号を打ち消してFとして演奏する<br>
+                        [k.sign -bea] b- /この調では通常ならBにはフラットが付いているが、更にマイナスを指定しているためB--(=A)として演奏される
+                        (通常ならこの調では使用されないが、ダブルフラットと同じ意味)
+                        </p>
+                    </div>
+                </div>
+                <div class="spec_header">
+                    <h3>Changing octave</h3>
+                    <p>O(octave) where...
+                    </p>
+                    <ul>
+                        <li>octave = 1~8 : the octave</li>
+                    </ul>
+                </div>
+                <div class="grammar_spec">
+                    <div class="grammar_left">
+                        <p>Sets the octave. The initial value is o4 and a Middle C can be written as O4 c.
+                        </p>
+                        <p>またこちらはコマンドではありませんが、<で+1,>で-1だけオクターブを変化させることができます。
+                        </p>
+                    </div>
+                    <div class="grammar_right">
+                        <p>
+                        e.g.<br>
+                        o3<br>
+                        o8<br>
+                        o4 c /Plays a Middle C<br>
+                        o4 < /Here is as high in octave as explicitly writing "o5"
+                        </p>
+                    </div>
+                </div>
+                <div class="spec_header">
+                    <h3>Controlling the default length</h3>
+                    <p>L(length) where...
+                    </p>
+                    <ul>
+                        <li>length = 2<sup>n</sup>(n = 0, 1, 2...) : the note length</li>
+                    </ul>
+                </div>
+                <div class="grammar_spec">
+                    <div class="grammar_left">
+                        <p>Sets the defalt duration(the value set to the step time when ommited). The initial value is "L4".今のところ、音楽的音長による
+                        実装のみとなっています。
+                        </p>
+                    </div>
+                    <div class="grammar_right">
+                        <p>
+                        e.g.<br>
+                        l8
+                        </p>
+                    </div>
+                </div>
+                <div class="spec_header">
+                    <h3>Changing the volume</h3>
+                    <p>V(velocity)<br>
+                    "["VELOCITY (velocity)"]"<br>
+                    U(volume)<br>
+                    "["VOLUME (volume)"]" where...
+                    </p>
+                    <ul>
+                        <li>velocity, volume = 0~127 : the volume</li>
+                    </ul>
+                </div>
+                <div class="grammar_spec">
+                    <div class="grammar_left">
+                        <p>It sets the default volume. Although there are four ways of notation, they are all equivalent in functionality.
+                        If you omit the valocity parameter in a note command, it is set to the value このコマンドで設定した値が使用されます。なお、初期値はv100です。
+                        </p>
+                    </div>
+                    <div class="grammar_right">
+                        <p>
+                        e.g.<br>
+                        v127<br>
+                        u127
+                        </p>
+                    </div>
+                </div>
+                <div class="spec_header">
+                    <h3>Setting the tempo</h3>
+                    <p>T(tempo)<br>
+                    "["TEMPO (tempo)"]" where...
+                    </p>
+                    <ul>
+                        <li>tempo = 30~300 : the tempo</li>
+                    </ul>
+                </div>
+                <div class="grammar_spec">
+                    <div class="grammar_left">
+                        <p>Sets the tempo.上記の値はあくまで推奨値に過ぎず、この範囲外の値を設定しても一切エラーは発生しないことに
+                        注意してください。なお、初期値は120です。
+                        </p>
+                    </div>
+                    <div class="grammar_right">
+                        <p>
+                        e.g.<br>
+                        t100<br>
+                        t60
+                        </p>
+                    </div>
+                </div>
+                <div class="spec_header">
+                    <h3>Changing the sound</h3>
+                    <p>@(program_number)<br>
+                    "["PROGRAM (program_number)"]" where...
+                    </p>
+                    <ul>
+                        <li>program_number = 0, 1, 2... : a number representing the type of sound</li>
+                    </ul>
+                </div>
+                <div class="grammar_spec">
+                    <div class="grammar_left">
+                        <p>Changes the sound type. By default there are 5 types of sound. And a function command, which will be explained later,
+                        introdecues a new sound type.
+                        </p>
+                    </div>
+                    <div class="grammar_right">
+                        <p>
+                        e.g.<br>
+                        @0<br>
+                        [program 1]
+                        </p>
+                    </div>
+                </div>
+                <div class="spec_header">
+                    <h3>Tuplets</h3>
+                    <p>"{"some MML"}"([step]) where...
+                    </p>
+                    <ul>
+                        <li>step = 2<sup>n</sup>(n = 0, 1, 2...) or *0~32767 : the step time</li>
+                    </ul>
+                </div>
+                <div class="grammar_spec">
+                    <div class="grammar_left">
+                        <p>カッコの中に指定したMMLをstepに収まるように演奏します。stepには音符などと同様、音楽的音長の他、絶対的音長や
+                        サーカムフレックスを使用した音長の足し算なども使用できます。<br>
+                        stepを省略するとデフォルト音長が適用される点も普通の音符と同様です。
+                        </p>
+                    </div>
+                    <div class="grammar_right">
+                        <p>
+                        e.g.<br>
+                        {cde}4 /the triplet<br>
+                        {cdef}4.
+                        </p>
+                    </div>
+                </div>
+                <div class="spec_header">
+                    <h3>Chords</h3>
+                    <p>"""some MML"""([ticks, delay]) where...
+                    </p>
+                    <ul>
+                        <li>ticks = 0~32767 : the duration in AD manner</li>
+                        <li>delay = 2<sup>n</sup>(n = 0, 1, 2...) or *0~32767 : the delay 和音の構成音ごとのディレイ</li>
+                    </ul>
+                </div>
+                <div class="grammar_spec">
+                    <div class="grammar_left">
+                        <p>ダブルクォーテーションでくくった音を和音として同時に発音します。ダブルクォーテーション内では一度のみ音長を指定する
+                        ことができます。
+                        </p>
+                    </div>
+                    <div class="grammar_right">
+                        <p>
+                        e.g.<br>
+                        "c4eg" /A chord of C, E and G<br>
+                        "ceg"480 /equivalent to the above<br>
+                        "c4eg", 10 /Cの音のあと、10ticksずつずらしてE, Gの音を発音する(いわゆるアルペジオ)
+                        </p>
+                    </div>
+                </div>
+                <div class="spec_header">
+                    <h3>Macro definitions</h3>
+                    <p>"["DEFINE macro_name"("[args]")""'"(macro_body)"'""]" where...
+                    </p>
+                    <ul>
+                        <li>macro_name = a character sequence in alphanumerics and underscores : the name of the macro</li>
+                        <li>args = same as macro_name : formal parameters for the macro</li>
+                        <li>macro_body = some MML code : the MML code which would be substituted for the macro</li>
+                    </ul>
+                </div>
+                <div class="grammar_spec">
+                    <div class="grammar_left">
+                        <p>It is a macro.しかし、C言語のそれとは異なり、単純なテキストプリプロセッサーによる処理ではありません。つまり、
+                        MMLコンパイラーによるセマンティックチェックが行われるという事です。
+                        </p>
+                        <p>マクロは引数を取ることもでき、マクロ本体内で"${仮引数名}"という形で使用することができます。
+                        </p>
+                    </div>
+                    <div class="grammar_right">
+                        <p>
+                        e.g.<br>
+                        [define CMajor(l)'"c${l}eg"'] /Defining a macroコードネームCの和音に置換されるマクロを定義する
+                        </p>
+                    </div>
+                </div>
+                <div class="spec_header">
+                    <h3>Using macros</h3>
+                    <p>"$""{"(macro_name)[":"(args)]"}" where...
+                    </p>
+                    <ul>
+                        <li>macro_name = a character sequence in alphanumerics and underscores : the name of the macro</li>
+                        <li>args = a valid string in MML : arguments for the macro</li>
+                    </ul>
+                </div>
+                <div class="grammar_spec">
+                    <div class="grammar_left">
+                        <p>Call macros introduced by the macro definitions.
+                        </p>
+                        <p>Macros can take the less or same number of arguments than that of the formal parameters. If there are less arguments
+                        than in the formal parameters, the compiler will detect it and automatically fill them with empty strings.<br>
+                        Macros can take any valid MML codes as arguments except line breaks and another macro call.
+                        </p>
+                    </div>
+                    <div class="grammar_right">
+                        <p>
+                        e.g.<br>
+                        l8 cded ${CMajor:1} /called the above macro, passing in 1. This will be expanded to `l8 cded "c1eg"'.<br>
+                        l8 cded ${CMajor}ded8^1 /The above macro can be used like this. In this case, it'll yield `l8 cded "ceg"ded8^1'.<br>
+                        l8 cded ${CMajor:4^8}>c8^2 /これは「l8 cded "c4^8eg">c8^2」に展開される。
+                        このようにマクロの引数にはMMLとして妥当な文字列なら何でも記述できる。ただし改行を含むことはできない
+                        </p>
+                    </div>
+                </div>
+                <div class="spec_header">
+                    <h3>Original sound wave definitions</h3>
+                    <p>"["FUNCTION "("args")""{"(function_body)"}""]" where...
+                    </p>
+                    <ul>
+                        <li>args = valid identifiers in Javascript : parameters of the function</li>
+                        <li>function_body = a code snippet in Javascript : a Javascript code which generates a sound wave</li>
+                    </ul>
+                </div>
+                <div class="grammar_spec">
+                    <div class="grammar_left">
+                        <p>シーケンサーの音色として使用できる独自波形を生成する関数を定義します。この関数は妥当なJavascriptコードとして記述する必要があり、
+                        Javascript側から発音するべき音の波長を１つ目、発音時の曲頭からの経過時間を２つ目の引数として呼び出されます。
+                        </p>
+                        <p>{}の中にはJavascriptとして有効なあらゆるコードを記述することができますが、この関数自体がWebWorker上で実行されるため
+                        通常なら参照可能な一部のグローバル変数が使用できない場合があります。
+                        </p>
+                    </div>
+                    <div class="grammar_right">
+                        <p>
+                        e.g.<br>
+                        [function (freq, time){return Math.sin(freq * 2 * Math.PI * time);}] /Defined another sine wave function.
+                        </p>
+                    </div>
+                </div>
+            </section>
+        </article>
+        </div>
+    </body>
+</html>
