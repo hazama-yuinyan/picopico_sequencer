@@ -35,7 +35,7 @@ return declare(null, {
         var _self = this;
         this.processAudio = function(e){
             var data = e.outputBuffer.getChannelData(0), track_num = _self.nodes.indexOf(e.currentTarget);
-            _self.processAudioCallback(data.length, data, e.outputBuffer.getChannelData(1), track_num);
+            _self.processAudioCallback(data.length, data, track_num);
         };
         
         this.cmd_manager.registerAll([
@@ -338,7 +338,7 @@ return declare(null, {
         return tag;
     },
     
-    processAudioCallback : function(data_length, left_data, right_data, track_num){
+    processAudioCallback : function(data_length, buffer, track_num){
         if(!this.can_play && this.actual_end_frame !== 0 && this.cur_frame >= this.actual_end_frame){
             this.main.stop();
             return;
@@ -347,8 +347,7 @@ return declare(null, {
         if(!tag){       //曲の終端に到達したので、メソッドを抜ける
             if(track_num === 0){this.cur_frame += data_length;}
             for(i = 0; i < data_length; ++i){    //後片付けをする
-                left_data[i] = 0;
-                right_data[i] = 0;
+                buffer[i] = 0;
             }
             return;
         }
@@ -362,8 +361,7 @@ return declare(null, {
                 playing_buffer = this.queues[track_num][tag.note_id];
             }
             
-            left_data[i] = playing_buffer[index];
-            right_data[i] = playing_buffer[index];
+            buffer[i] = playing_buffer[index];
         }
         
         track_info.frame_in_buf = index;
