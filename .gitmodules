@@ -1,0 +1,15 @@
+[submodule "js/lib/dijit"]
+	path = js/lib/dijit
+	url = git://github.com/dojo/dijit.git
+[submodule "js/lib/dojox"]
+	path = js/lib/dojox
+	url = git://github.com/dojo/dojox.git
+[submodule "js/lib/util"]
+	path = js/lib/util
+	url = git://github.com/dojo/util.git
+[submodule "js/lib/dojo"]
+	path = js/lib/dojo
+	url = git://github.com/dojo/dojo.git
+[submodule "js/tests/jasmine"]
+	path = js/tests/jasmine
+	url = git://github.com/pivotal/jasmine.git
