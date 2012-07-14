@@ -13,3 +13,6 @@
 [submodule "js/tests/jasmine"]
 	path = js/tests/jasmine
 	url = git://github.com/pivotal/jasmine.git
+[submodule "js/lib/treehugger"]
+	path = js/lib/treehugger
+	url = git://github.com/ajaxorg/treehugger.git
