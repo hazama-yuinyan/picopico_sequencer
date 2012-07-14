@@ -11,7 +11,7 @@
             <section id="abstraction">
                 <h2>Abstraction</h2>
                 <p>Welcome to the Picopico Sequencer!<br>
-                Picopico sequencer is a Flash-free and purely HTML5 written music sequencer.肝心な音楽の記譜にはMMLをやや独自拡張した
+                Picopico Sequencer is a Flash-free and purely HTML5 written music sequencer.肝心な音楽の記譜にはMMLをやや独自拡張した
                 オリジナル言語を使用し、ピアノロールによるGUIもあります。今のところ、未実装ですがいずれGUIによる編集機能もつく予定です。
                 </p>
             </section>
@@ -19,13 +19,12 @@
             <section id="notes">
                 <h2>Notes</h2>
                 <p>Currently, due to the Web Audio API I gurantee that only the Google Chrome would run it completely as I expect.
-                将来的には他のブラウザでも動作する可能性はありますが、今しばらくはご不便をおかけすることを予めご了承ください。
                 </p>
             </section>
             
             <section id="basics">
-                <h2>基本</h2>
-                <p>ピコピコシーケンサーは、MMLをもとに音楽を生成するミュージックシーケンサーです。
+                <h2>Basics</h2>
+                <p>Picopico Sequencer is a web-based music sequencer which uses MML for music notation.
                 </p>
             </section>
             
@@ -33,8 +32,6 @@
                 <h2>Quick reference for MML grammar</h2>
                 <p>As you might know, MML has many dialects. It is often the case that although some two music sequencers are said to use the
                 same MML processor, they actually have slightly different syntaxes and commands.
-                ことが多いのが現状です。こちらで紹介するMML文法もあくまでも広く普及している記法のMMLのサブセットの一種であり、ピコピコシーケンサー
-                でしか使用できない方言の一種であることを予めご了承ください。
                 </p>
                 <div>
                     <h3>Legends</h3>
@@ -63,9 +60,7 @@
                 </div>
                 <div class="grammar_spec">
                     <div class="grammar_left">
-                        <p>A note, which is an "atom" in musical notation, is notated as a letter.具体的には、いわゆる「ド」
-                        の音に"c"、「レ」に"d"...というふうに「ソ」の"g"まではアルファベット順に、「ラ」と「シ」に関しては先頭に戻って
-                        "a"と"b"の1文字を割り当てます。
+                        <p>A note, which is an "atom" in musical notation, is notated as a letter.
                         </p>
                         <p>With followed by any of the following signs "!","#","+","-", the note is treated like notes with sharps or flats.
                         Each sign represents a "natural", "sharp", "sharp" and "flat" respectively and can be followed by other accidentals.
@@ -75,12 +70,12 @@
                         value set by a "L" command will be applied.<br>
                         In addition, you can pass an AD(absolute duration) in step instead of a MD(musical duration). An AD can be specified with
                         a preceding asterisk.<br>
-                        Furthermore you can modify the duration by adding extra numbers preceded by a "^"(circumflex).<br>
+                        Furthermore you can modify the duration by adding "^"(circumflexes) followed by a extra number.<br>
                         And dots after the step time lengthen the note duration by half the preceded number.
                         </p>
                         <p>The second parameter called "gate" refers to the gate time which is the real duration in which the note will be played.
                         </p>
-                        <p>Finally the last named "velocity" literally means the velocity which is equivalent to the volume in picopico sequencer.
+                        <p>Finally the last named "velocity" literally means the velocity which is equivalent to the volume in Picopico Sequencer.
                         </p>
                     </div>
                     <div class="grammar_right">
@@ -91,21 +86,21 @@
                         c- /This means a flat C, which is actually a B.<br>
                         c!<br>
                         example 2:<br>
-                        c /in default length<br>
+                        c /in the default duration<br>
                         c4 /A quarter note of C<br>
-                        c+8 /A eighth note of sharp C<br>
+                        c+8 /An eighth note of sharp C<br>
                         example 3:<br>
                         c*480 /This is the same as writing "c4"<br>
-                        c*480.. /One can add dots, which is explained later on<br>
+                        c*480.. /You can add dots, which is explained later on<br>
                         example 4:<br>
-                        c1^1 /in the same length as two whole notes<br>
+                        c1^1 /in the same duration as two whole notes<br>
                         c4^*480^8 /You can specify some of the durations in AD manner<br>
                         example 5:<br>
-                        c4, 8 /It describes the note as a quarter note, but it actually sounds as a eighth note（so you can say it denotes a staccato)<br>
-                        c, 8 /same as above<br>
+                        c4, 8 /It describes the note as a quarter note, but it actually sounds as an eighth note（so you can say it denotes a staccato)<br>
+                        c, 8 /same as above(if the default length is set to 4)<br>
                         example 6:<br>
                         c4,,127 /Sounds at maximum volume<br>
-                        c,,-20 /Sounds at 20 less in velocity
+                        c,,-20 /Plays a C note at 20 less in velocity
                         </p>
                     </div>
                 </div>
@@ -119,7 +114,7 @@
                 </div>
                 <div class="grammar_spec">
                     <div class="grammar_left">
-                        <p>A rest, which is the other "atom" in music notation, can be notated as the letter "r". Because it is equivalent to
+                        <p>A rest, which is the other "atom" in music notation, is notated as the letter "r". Because it is equivalent to
                         the note command except that the rest command can take just one parameter, see the note command section for more details.
                         </p>
                     </div>
@@ -140,20 +135,17 @@
                     </p>
                     <ul>
                         <li>key1, key2... = (+-#)(A-G) : pitches</li>
-                        <li>sign = (+-#) : a sharp or flat</li>
+                        <li>sign = (+-#) : a sign representing sharps or flats</li>
                         <li>note1, note2... = (A-G) : notes that will have accidentals</li>
                     </ul>
                 </div>
                 <div class="grammar_spec">
                     <div class="grammar_left">
-                        <p>Changes the key signature.今のところ、調号をつける音名を一つ一つユーザーが指定しなければなりません。
-                        が、いずれCMajorやEbMajorなどの調名による指定もできるようにする予定です。
+                        <p>Changes the key signature. As of now it can't take the key names such as CMajor, EbMajor and AMinor.
+                        Maybe it can take those names in the future, though.
                         </p>
-                        <p>最初の音符の説明で出てきたナチュラル記号は、このコマンドと組み合わせて使用します。さらに、"+"や"-"と組み合わせることで
-                        ナチュラルと臨時記号の両方を考慮した音程にすることができます。（楽譜の場合には、ナチュラル記号は明示しなくとも、
-                        シャープやフラットをつけるだけで調号の効果を消すことができますが、このMMLにおいては"+"や"-"の記号は実際には、
-                        半音上げ、半音下げを意味するのみで厳密に言えばシャープやフラットではありません。よって、楽譜と同じように調号の付いた
-                        音階に臨時記号をつける場合には、まずナチュラルを使用して調号の効果を打ち消す必要があります）
+                        <p>The natural sign comes to play when combined with this command, because in MML accidentals don't cancell the key
+                        signatures(they actually raises, or lowers, the pitch by 1 semi-tone).
                         </p>
                     </div>
                     <div class="grammar_right">
@@ -175,9 +167,9 @@
                 </div>
                 <div class="grammar_spec">
                     <div class="grammar_left">
-                        <p>Sets the octave. The initial value is o4 and a Middle C can be written as O4 c.
+                        <p>Sets the octave. The initial value is 4 and a Middle C can be written as "O4 c".
                         </p>
-                        <p>またこちらはコマンドではありませんが、<で+1,>で-1だけオクターブを変化させることができます。
+                        <p>It is worth noting that operators "&lt;" and "&gt;" raise, or lower, the octave by 1.
                         </p>
                     </div>
                     <div class="grammar_right">
@@ -195,13 +187,13 @@
                     <p>L(length) where...
                     </p>
                     <ul>
-                        <li>length = 2<sup>n</sup>(n = 0, 1, 2...) : the note length</li>
+                        <li>length = 2<sup>n</sup>(n = 0, 1, 2...) : the default note length</li>
                     </ul>
                 </div>
                 <div class="grammar_spec">
                     <div class="grammar_left">
-                        <p>Sets the defalt duration(the value set to the step time when ommited). The initial value is "L4".今のところ、音楽的音長による
-                        実装のみとなっています。
+                        <p>Sets the default length(the value set to the step time when ommited). The initial value is "L4". Currently
+                        the "length" parameter can be only specified in the MD manner.
                         </p>
                     </div>
                     <div class="grammar_right">
@@ -224,8 +216,8 @@
                 </div>
                 <div class="grammar_spec">
                     <div class="grammar_left">
-                        <p>It sets the default volume. Although there are four ways of notation, they are all equivalent in functionality.
-                        If you omit the valocity parameter in a note command, it is set to the value このコマンドで設定した値が使用されます。なお、初期値はv100です。
+                        <p>Sets the default volume. Although there are four ways of notation, they are all equivalent in functionality.
+                        If you omit the velocity parameter in a note command, it is set to the default volume. The initial value is 100.
                         </p>
                     </div>
                     <div class="grammar_right">
@@ -247,8 +239,8 @@
                 </div>
                 <div class="grammar_spec">
                     <div class="grammar_left">
-                        <p>Sets the tempo.上記の値はあくまで推奨値に過ぎず、この範囲外の値を設定しても一切エラーは発生しないことに
-                        注意してください。The initial value is 120.
+                        <p>Sets the tempo in beats per minute. Note that the above values are the reference values and therefore no error will
+                        be seen if out of the range. The initial value is 120.
                         </p>
                     </div>
                     <div class="grammar_right">
@@ -292,9 +284,9 @@
                 </div>
                 <div class="grammar_spec">
                     <div class="grammar_left">
-                        <p>カッコの中に指定したMMLをstepに収まるように演奏します。stepには音符などと同様、音楽的音長の他、絶対的音長や
-                        サーカムフレックスを使用した音長の足し算なども使用できます。<br>
-                        stepを省略するとデフォルト音長が適用される点も普通の音符と同様です。
+                        <p>It plays the MML in curly braces within the "step". The "step" can be specified in the same way as that of a note
+                        command.<br>
+                        If the step is ommited the default duration will be applied as in the note command.
                         </p>
                     </div>
                     <div class="grammar_right">
@@ -340,8 +332,8 @@
                 </div>
                 <div class="grammar_spec">
                     <div class="grammar_left">
-                        <p>It is a macro.しかし、C言語のそれとは異なり、単純なテキストプリプロセッサーによる処理ではありません。つまり、
-                        MMLコンパイラーによるセマンティックチェックが行われるという事です。
+                        <p>It is a macro. But unlike the one in the C programming language, the compiler will check the semantics before actually
+                        replacing the texts.
                         </p>
                         <p>Macros can take parameters and they can be referred to as "${a parameter name}" in the macro body.
                         </p>
@@ -349,7 +341,7 @@
                     <div class="grammar_right">
                         <p>
                         e.g.<br>
-                        [define CMajor(l)'"c${l}eg"'] /Defining a macro which yields a chord of C
+                        [define CMajor(l)'"c${l}eg"'] /Defining a macro which yields a chord of "C"
                         </p>
                     </div>
                 </div>
@@ -374,9 +366,9 @@
                     <div class="grammar_right">
                         <p>
                         e.g.<br>
-                        l8 cded ${CMajor:1} /called the above macro, passing in 1. This will be expanded to `l8 cded "c1eg"'.<br>
+                        l8 cded ${CMajor:1} /called the above macro, passing in 1 as the argument. This will be expanded to `l8 cded "c1eg"'.<br>
                         l8 cded ${CMajor}ded8^1 /The above macro can be used like this. In this case, it'll yield `l8 cded "ceg"ded8^1'.<br>
-                        l8 cded ${CMajor:4^8}>c8^2 /This will be expanded to`l8 cded "c4^8eg">c8^2'.
+                        l8 cded ${CMajor:4^8}>c8^2 /This will be expanded to `l8 cded "c4^8eg">c8^2'.
                         </p>
                     </div>
                 </div>
@@ -391,8 +383,8 @@
                 </div>
                 <div class="grammar_spec">
                     <div class="grammar_left">
-                        <p>Defines a function which generates a new sound wave.この関数は妥当なJavascriptコードとして記述する必要があり、
-                        Javascript側から発音するべき音の波長を１つ目、発音時の曲頭からの経過時間を２つ目の引数として呼び出されます。
+                        <p>Defines a function which generates a new sound wave. The function have to obey the Javascript grammar and will be
+                        called, with the first argument being the desired frequency and the second being the elapsed time from the beginning.
                         </p>
                         <p>Although you can write any valid Javascript code in the curly brackets, there are times when you cann't use some
                         global variables.
