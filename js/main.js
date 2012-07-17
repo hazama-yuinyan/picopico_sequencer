@@ -192,6 +192,10 @@ define(["mml_compiler", "sequencer", "dojo/dom-class", "dojo/on", "dijit/registr
             data.push({name : cur_key, source : item.source, date : item.date});
         }
         return data;
+    },
+    
+    handleLanguageSwitch = function(lang_name){
+        
     };
     
 return {

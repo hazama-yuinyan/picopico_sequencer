@@ -1,7 +1,7 @@
 define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin", "dojox/gfx", "dojo/on",
-    "dojo/_base/lang", "dojo/text!custom/piano_roll/templates/piano_roll_template.html", "dijit/Tooltip", "dijit/registry",
+    "dojo/_base/lang", "dojo/text!custom/piano_roll/templates/piano_roll_template.html", "dijit/Tooltip", "dijit/registry", "dojo/i18n!./nls/resources",
     "dijit/layout/BorderContainer", "dijit/layout/BorderContainer", "dijit/form/Button"],
-    function(declare, WidgetBase, TemplatedMixin, WidgetsInTemplateMixin, gfx, on, lang, template, Tooltip, registry){
+    function(declare, WidgetBase, TemplatedMixin, WidgetsInTemplateMixin, gfx, on, lang, template, Tooltip, registry, resources){
         return declare("myCustomWidgets.PianoRoll", [WidgetBase, TemplatedMixin, WidgetsInTemplateMixin], {
             templateString : template,
             widgetsInTemplate : true,
@@ -47,6 +47,7 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
             _ticks_per_quarter_note : 480,
             _cur_selected_note : null,
             _predefined_inst_names : ["正弦波", "矩形波", "ノコギリ波", "三角波", "M字型", "ノイズ"],
+            _translations : resources,
             // _metaevent_list
             //      info_bar領域に特殊なアイコンを描画すべきメタイベントのリスト
             //      中身はSVGの画像
@@ -133,6 +134,10 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
             _set_bar_heightsAttr : function(bar_heights){
                 this._bar_heights = bar_heights;
             },
+            
+            /*constructor : function(){
+                this.translations = i18n.translations;
+            },*/
             
             postCreate : function(){
                 this._surface = gfx.createSurface("piano_roll", 400, this.keyboard_size.height * 7);

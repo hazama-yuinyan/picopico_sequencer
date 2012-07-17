@@ -13,6 +13,9 @@
                 baseUrl : location.pathname.replace(/\/[^/]+$/, "/js/"),
                 tlmSiblingOfDojo : false,
                 parseOnLoad : false,
+                modulePaths : {"custom/piano_roll" : "custom/piano_roll",
+                    mainApp : "../"
+                },
                 packages : [
                     {name : "dojo", location : "lib/dojo"},
                     {name : "dijit", location : "lib/dijit"},
@@ -35,20 +38,20 @@
                                             data-dojo-props="design: 'headline'">
             <div id="tool_bar" data-dojo-type="dijit.Toolbar"
                                data-dojo-props="region: 'top'">
-                <button id="compile_button" type="button" data-dojo-type="dijit.form.Button">コンパイル</button>
-                <button id="controller" type="button" data-dojo-type="dijit.form.Button">再生</button>
-                <button id="stop_button" type="button" data-dojo-type="dijit.form.Button">ストップ</button>
-                <button id="new_button" type="button" data-dojo-type="dijit.form.Button">新規</button>
+                <button id="compile_button" type="button" data-dojo-type="dijit.form.Button">${compile_btn_text}</button>
+                <button id="controller" type="button" data-dojo-type="dijit.form.Button">${play_btn_text}</button>
+                <button id="stop_button" type="button" data-dojo-type="dijit.form.Button">${stop_btn_text}</button>
+                <button id="new_button" type="button" data-dojo-type="dijit.form.Button">${new_btn_text}</button>
                 <div id="open_button" type="button" data-dojo-type="dijit.form.DropDownButton">
-                    <span>開く</span>
+                    <span>${open_btn_text}</span>
                     <div data-dojo-type="dijit.TooltipDialog" id="openDialog">
-                        <p><label for="open_from" style="display: inline-block; width: 75px">保存元：</label>
+                        <p><label for="open_from" style="display: inline-block; width: 75px">${open_label_text}</label>
                         <select id="open_from" data-dojo-type="dijit.form.Select"
                             name="sourceSelect">
-                            <option value="" selected="selected">保存元を選択してください</option>
-                            <option value="LOCAL">ローカルストレージ</option>
-                            <option value="SERVER">サーバー</option>
-                            <option value="FILE">ローカルファイル</option>
+                            <option value="" selected="selected">${open_explanation}</option>
+                            <option value="LOCAL">${type_local_storage}</option>
+                            <option value="SERVER">${type_server}</option>
+                            <option value="FILE">${type_local_file}</option>
                         </select>
                         </p>
                         <div id="select_file">
@@ -56,15 +59,15 @@
                     </div>
                 </div>
                 <div id="save_button" data-dojo-type="dijit.form.DropDownButton">
-                    <span>保存</span>
+                    <span>${save_btn_text}</span>
                     <div data-dojo-type="dijit.TooltipDialog" id="saveDialog">
-                        <p><label for="save_as" style="display: inline-block; width: 75px">保存先：</label>
+                        <p><label for="save_as" style="display: inline-block; width: 75px">${save_label_text}</label>
                         <select id="save_as" data-dojo-type="dijit.form.Select"
                             name="stateSelect">
-                            <option value="" selected="selected">保存先を設定してください</option>
-                            <option value="LOCAL">ローカルストレージ</option>
-                            <option value="SERVER">サーバー</option>
-                            <option value="FILE">ローカルファイル</option>
+                            <option value="" selected="selected">${save_explanation}</option>
+                            <option value="LOCAL">${type_local_storage}</option>
+                            <option value="SERVER">${type_server}</option>
+                            <option value="FILE">${type_local_file}</option>
                         </select>
                         </p>
                         <button id="accept_button" type="button" data-dojo-type="dijit.form.Button">OK</button>
@@ -101,8 +104,12 @@
                     <input data-dojo-type="dijit.form.NumberSpinner" data-dojo-props="constarints: {max: 127, min: 0}, value: 100" id="velocity">
                 </div>
                 <div data-dojo-type="dijit.layout.ContentPane" data-dojo-props="title: '設定'">
-                    <label for="a">nanntoka</label>
-                    <input data-dojo-type="dijit.form.NumberSpinner" data-dojo-props="constarints: {max: 127, min: 0}, value: 100" id="a">
+                    <label for="language_selector">言語</label>
+                    <select id="language_selector" data-dojo-type="dijit.form.Select"
+                        name="stateSelect">
+                        <option value="EN" selected="selected">English</option>
+                        <option value="JA">Japanese</option>
+                    </select>
                 </div>
             </div>
             <div id="various_uses_pane" data-dojo-type="dijit.layout.ContentPane"

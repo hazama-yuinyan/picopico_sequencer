@@ -11,6 +11,12 @@ Notice that the program can't be run out-of-the-box because it lacks some depend
 dependent files.
 See the __How to run the program__ section for more details.
 
+## Features
+  * MML editing
+  * A visual representation in piano roll
+  * Total of 6 types of "primitive" sound waves
+  * MML editing with GUI(not yet implemented)
+
 ## How to run the program
 As mentioned above, you can't run the program out of the box. To run the program, you need to have the __dojo__ library in proper directory.
 There are two ways to do that. One is to download __dojo__ files and move the files to the proper directory by hand.

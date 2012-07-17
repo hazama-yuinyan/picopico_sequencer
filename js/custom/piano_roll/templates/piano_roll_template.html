@@ -3,19 +3,17 @@
     <div data-dojo-attach-point="tool_box" data-dojo-type="dijit.Toolbar"
          data-dojo-props="region: 'top'">
          <div data-dojo-attach-point="whole_note" data-dojo-type="dijit.form.Button"
-              data-dojo-props="title: '全音符', iconClass: 'iconWholeNote', showLabel: false">全音符</div>
-         <div data-dojo-attach-point="whole_note" data-dojo-type="dijit.form.Button"
-              data-dojo-props="title: '2分音符', iconClass: 'iconHalfNote', showLabel: false">2分音符</div>
-         <div data-dojo-attach-point="whole_note" data-dojo-type="dijit.form.Button"
-              data-dojo-props="title: '4分音符', iconClass: 'iconQuarterNote', showLabel: false">4分音符</div>
-         <div data-dojo-attach-point="whole_note" data-dojo-type="dijit.form.Button"
-              data-dojo-props="title: '8分音符', iconClass: 'iconEighthNote', showLabel: false">8分音符</div>
-         <div data-dojo-attach-point="whole_note" data-dojo-type="dijit.form.Button"
-              data-dojo-props="title: '16分音符', iconClass: 'iconSixteenthNote', showLabel: false">16分音符</div>
-         <div data-dojo-attach-point="whole_note" data-dojo-type="dijit.form.Button"
-              data-dojo-props="title: '32分音符', iconClass: 'iconThirtysecondNote', showLabel: false">32分音符</div>
-         <div data-dojo-attach-point="whole_note" data-dojo-type="dijit.form.Button"
-              data-dojo-props="title: '64分音符', iconClass: 'dijitIconNewTask', showLabel: false">64分音符</div>
+              data-dojo-props="title: '${_translations.whole_note}', iconClass: 'iconWholeNote', showLabel: false">${_translations.whole_note}</div>
+         <div data-dojo-attach-point="half_note" data-dojo-type="dijit.form.Button"
+              data-dojo-props="title: '${_translations.half_note}', iconClass: 'iconHalfNote', showLabel: false">${_translations.half_note}</div>
+         <div data-dojo-attach-point="4th_note" data-dojo-type="dijit.form.Button"
+              data-dojo-props="title: '${_translations.quarter_note}', iconClass: 'iconQuarterNote', showLabel: false">${_translations.quarter_note}</div>
+         <div data-dojo-attach-point="8th_note" data-dojo-type="dijit.form.Button"
+              data-dojo-props="title: '${_translations.eighth_note}', iconClass: 'iconEighthNote', showLabel: false">${_translations.eighth_note}</div>
+         <div data-dojo-attach-point="16th_note" data-dojo-type="dijit.form.Button"
+              data-dojo-props="title: '${_translations.sixteenth_note}', iconClass: 'iconSixteenthNote', showLabel: false">${_translations.sixteenth_note}</div>
+         <div data-dojo-attach-point="32nd_note" data-dojo-type="dijit.form.Button"
+              data-dojo-props="title: '${_translations.thirtysecond_note}', iconClass: 'iconThirtysecondNote', showLabel: false">${_translations.thirtysecond_note}</div>
     </div>
     <div data-dojo-type="dijit.layout.ContentPane"
          data-dojo-props="region: 'center'" style="padding: 0" data-dojo-attach-point="body_wrapper">
