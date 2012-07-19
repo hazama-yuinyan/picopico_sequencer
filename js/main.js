@@ -6,8 +6,8 @@
 
 
 define(["mml_compiler", "sequencer", "dojo/dom-class", "dojo/on", "dijit/registry", "dojox/timing", "dijit/form/Select", "dojo/store/Memory",
-    "mml_updater"],
-    function(compiler, Sequencer, dom_class, on, registry, timing, Select, Memory, updater){
+    "mml_updater", "dojo/i18n!nls/resources"],
+    function(compiler, Sequencer, dom_class, on, registry, timing, Select, Memory, updater, resources){
 
     var sequencer = null,
     data_store = null,
@@ -43,7 +43,7 @@ define(["mml_compiler", "sequencer", "dojo/dom-class", "dojo/on", "dijit/registr
     
     play = function(){
         if(!sequencer){
-            alert("まだ曲のデータの解析が終わっていません。\n初めて曲を再生する場合は、\"コンパイル\"ボタンを使ってください。");
+            alert(resources.msg_prompt_compiling);
             return;
         }
         sequencer.play();
@@ -114,10 +114,8 @@ define(["mml_compiler", "sequencer", "dojo/dom-class", "dojo/on", "dijit/registr
     
     newFile = function(){
         if(source_changed){
-            if(confirm("未保存のファイルが開かれています。編集中のファイルを先に保存しますか？")){
+            if(confirm(resources.warning_not_saved)){
                 saveFile();
-            }else{
-                return;
             }
         }
         
@@ -126,15 +124,13 @@ define(["mml_compiler", "sequencer", "dojo/dom-class", "dojo/on", "dijit/registr
         editor.set("value", "");
         title_editor.set("value", "名無しのファイルさん");
         reset();
-        status_bar.domNode.textContent = "新規ファイルに切り替えました。";
+        status_bar.domNode.textContent = resources.msg_new_file_opened;
     },
     
     openFile = function(data){
         if(source_changed){
-            if(confirm("未保存のファイルが開かれています。編集中のファイルを先に保存しますか？")){
+            if(confirm(resources.warning_not_saved)){
                 saveFile();
-            }else{
-                return;
             }
         }
         
@@ -153,7 +149,7 @@ define(["mml_compiler", "sequencer", "dojo/dom-class", "dojo/on", "dijit/registr
         editor.set("value", source);
         title_editor.set("value", item.name);
         reset();
-        status_bar.domNode.textContent = "ファイルを開きました。";
+        status_bar.domNode.textContent = resources.msg_file_opened;
     },
     
     saveFile = function(){
@@ -181,7 +177,7 @@ define(["mml_compiler", "sequencer", "dojo/dom-class", "dojo/on", "dijit/registr
         source_changed = false;
         dom_class.toggle("save_button_label", "not_saved", false);  //remove the "not saved" indicator
         var status_bar = registry.byId("various_uses_pane");
-        status_bar.domNode.textContent = "正常に保存しました。";
+        status_bar.domNode.textContent = resources.file_saved;
     },
     
     retrieveAllDataFromStorage = function(){
@@ -199,152 +195,170 @@ define(["mml_compiler", "sequencer", "dojo/dom-class", "dojo/on", "dijit/registr
     };
     
 return {
-    ".compile_button" : {
-        onclick : function(e){
-            e.stopImmediatePropagation();
-            compile();
-            var controller = dojo.byId("controller");
-            switchController();
-            controller.value = "一時停止";
-        }
-    },
-    
-    ".hold_button" : {
-        onclick : function(e){
-            e.stopImmediatePropagation();
-            hold();
-            e.target.value = "プレイ";
-            switchController();
-        }
-    },
-    
-    ".stop_button" : {
-        onclick : function(e){
-            e.stopImmediatePropagation();
-            stop();
-            var controller = dojo.byId("controller");
-            dom_class.toggle(controller, "hold_button", false);
-            dom_class.toggle(controller, "play_button", true);
-            controller.value = "プレイ";
-        }
-    },
-    
-    ".play_button" : {
-        onclick : function(e){
-            e.stopImmediatePropagation();
-            play();
-            e.target.value = "一時停止";
-            switchController();
-        }
-    },
-    
-    "#compile_button" : function(target){
-        dom_class.add(target, "compile_button");
-    },
-    
-    "#controller" : function(target){
-        dom_class.add(target, "play_button");
-    },
-    
-    "#stop_button" : function(target){
-        dom_class.add(target, "stop_button");
-    },
-    
-    "#new_button" : function(target){
-        on(target, "click", newFile);
-    },
-    
-    "#accept_button" : function(target){
-        on(target, "click", saveFile);
-    },
-    
-    "#open_from" : function(){
-        var open_from = registry.byId("open_from");
-        open_from.watch("value", function(name, old, new_val){
-            var file_store;
-            switch(new_val){
-            case "LOCAL":
-                var data = retrieveAllDataFromStorage();
-                var names = data.map(function(item){return {value : item.name, label : item.name};});
-                names.unshift({value : "", label : "開くファイルを選択してください", selected : true});
-                break;
-            
-            case "SERVER":
-                throw new Error("Not implemented yet!");
-                break;
-                
-            case "FILE":
-                throw new Error("Not implemented yet!");
-                break;
-                
-            default:
-                alert("保存元が選択されていません！");
-                return;
+    behaviors : {
+        ".compile_button" : {
+            onclick : function(e){
+                e.stopImmediatePropagation();
+                compile();
+                var controller = dojo.byId("controller");
+                switchController();
+                controller.value = "一時停止";
             }
-            
-            var select_file = new Select({
-                name : "selectFile",
-                options : names,
-                maxHeight : -1,
-                onChange : function(){
-                    openFile(data);
+        },
+        
+        ".hold_button" : {
+            onclick : function(e){
+                e.stopImmediatePropagation();
+                hold();
+                e.target.value = "プレイ";
+                switchController();
+            }
+        },
+        
+        ".stop_button" : {
+            onclick : function(e){
+                e.stopImmediatePropagation();
+                stop();
+                var controller = dojo.byId("controller");
+                dom_class.toggle(controller, "hold_button", false);
+                dom_class.toggle(controller, "play_button", true);
+                controller.value = "プレイ";
+            }
+        },
+        
+        ".play_button" : {
+            onclick : function(e){
+                e.stopImmediatePropagation();
+                play();
+                e.target.value = "一時停止";
+                switchController();
+            }
+        },
+        
+        "#compile_button" : function(target){
+            dom_class.add(target, "compile_button");
+        },
+        
+        "#controller" : function(target){
+            dom_class.add(target, "play_button");
+        },
+        
+        "#stop_button" : function(target){
+            dom_class.add(target, "stop_button");
+        },
+        
+        "#new_button" : function(target){
+            on(target, "click", newFile);
+        },
+        
+        "#accept_button" : function(target){
+            on(target, "click", saveFile);
+        },
+        
+        "#open_from" : function(){
+            var open_from = registry.byId("open_from");
+            var resource_names = ["open_explanation", "type_LOCAL", "type_SERVER", "type_FILE"], i = 0;
+            open_from.options.forEach(function(option){
+                option.label = resources[resource_names[i]];
+                ++i;
+            });
+            open_from.startup();
+            open_from.watch("value", function(name, old, new_val){
+                switch(new_val){
+                case "LOCAL":
+                    var data = retrieveAllDataFromStorage();
+                    var names = data.map(function(item){return {value : item.name, label : item.name};});
+                    names.unshift({value : "", label : resources.open_prompt, selected : true});
+                    break;
+                
+                case "SERVER":
+                    throw new Error("Not implemented yet!");
+                    break;
+                    
+                case "FILE":
+                    throw new Error("Not implemented yet!");
+                    break;
+                    
+                default:
+                    alert("保存元が選択されていません！");
+                    return;
                 }
-            }, "select_file");
-            select_file.startup();
-        });
-    },
+                
+                var select_file = new Select({
+                    name : "selectFile",
+                    options : names,
+                    maxHeight : -1,
+                    onChange : function(){
+                        openFile(data);
+                    }
+                }, "select_file");
+                select_file.startup();
+            });
+        },
+        
+        "#save_as" : function(){
+            var save_as = registry.byId("save_as");
+            var resource_names = ["save_explanation", "type_LOCAL", "type_SERVER", "type_FILE"], i = 0;
+            save_as.options.forEach(function(option){
+                option.label = resources[resource_names[i]];
+                ++i;
+            });
+            save_as.startup();
+        },
+        
+        "#main_tab" : function(){
+            var tab_container = registry.byId("main_tab");
+            tab_container.watch("selectedChildWidget", function(name, old, new_val){
+                if(new_val.id == "piano_roll"){
+                    processMMLSource();
+                    new_val.set("_metaevent_list", data_store.metaevents);
+                    new_val.set("_tree", data_store.list);
+                }else if(old.id == "piano_roll"){
+                    old.set("_tree", null);
+                }
+            });
+        },
+        
+        "#track_selector" : function(){
+            var track_selector = registry.byId("track_selector"), piano_roll = registry.byId("piano_roll");
+            track_selector.watch("value", function(name, old, new_val){
+                piano_roll.set("_track_num", new_val);
+            });
+        },
+        
+        "#editor" : function(){
+            var editor = registry.byId("editor");
+            editor.set("value", "/[volume 127] [velocity 127]<br>" +
+                "[function (freq, time){<br>" +
+                "return Math.cos(2 * Math.PI * freq * time);<br>" +
+                "}]<br>" +
+                "(t1)@6 v40 c4c8d8 e8e8g4 e8e8d8d8 c1<br>" +
+                "[key_signature +f]<br>" +
+                "t132 l4 d edg f2d eda g2d &lt;d&gt;bg<br>" +
+                "f t66 e t132 &lt;c&gt;bga t80 g2<br>" +
+                "[key_signature +fc][volume 80]<br>" +
+                "t80 l8 bbffa2r4 bbffa4baa4^8,,80g,,-20<br>" +
+                "[key_signature -b, -e, -a, -d, -g]<br>" +
+                "l4 o4 u30 {dde}e2d4,*240,+30 cc&gt;b4&lt;c4d1<br><br>" +
     
-    "#main_tab" : function(){
-        var tab_container = registry.byId("main_tab");
-        tab_container.watch("selectedChildWidget", function(name, old, new_val){
-            if(new_val.title == "ピアノロール"){
-                processMMLSource();
-                new_val.set("_metaevent_list", data_store.metaevents);
-                new_val.set("_tree", data_store.list);
-            }else if(old.title == "ピアノロール"){
-                old.set("_tree", null);
-            }
-        });
+                '(t2)@0 v65 l2 &quot;ceg&quot; &quot;ceg&quot; &quot;cfa&quot; &quot;d1gb&quot;<br>' +
+                '/ここからキーGMajor<br>' +
+                'l4 d &quot;&gt;b&lt;e&quot;d&quot;&gt;b&lt;g&quot; &quot;a2f&quot;d &quot;ce&quot;d&quot;ca&quot;<br>' +
+                '&quot;&gt;b&lt;g&quot;960&quot;&gt;b&lt;d&quot; &quot;d2g&lt;d&quot;&quot;dg&quot; &quot;df&quot;&quot;ce&quot;&quot;c&lt;c&quot;<br>' +
+                '&gt;&quot;db&quot;960&quot;ca&quot; &quot;&gt;b2&lt;g&quot;<br>' +
+                '/ここからキーDMajor<br>' +
+                'l8 ffdde2r4 ffdde4fee4^8,,60d,,50<br>' +
+                '/ここからキーDbMajor<br>' +
+                'v100 l1 o3 &quot;dfa&quot; l2 &quot;egb&quot; &quot;ea&lt;c&quot; &gt;&quot;dfa&quot;1920, 120<br>');
+            editor.watch("value", function(name, old, new_val){
+                if(old != new_val){
+                    source_changed = true;
+                    dom_class.toggle("save_button_label", "not_saved", true);
+                }
+            });
+        }
     },
-    
-    "#track_selector" : function(){
-        var track_selector = registry.byId("track_selector"), piano_roll = registry.byId("piano_roll");
-        track_selector.watch("value", function(name, old, new_val){
-            piano_roll.set("_track_num", new_val);
-        });
-    },
-    
-    "#editor" : function(){
-        var editor = registry.byId("editor");
-        editor.set("value", "/[volume 127] [velocity 127]<br>" +
-            "[function (freq, time){<br>" +
-            "return Math.cos(2 * Math.PI * freq * time);<br>" +
-            "}]<br>" +
-            "(t1)@6 v40 c4c8d8 e8e8g4 e8e8d8d8 c1<br>" +
-            "[key_signature +f]<br>" +
-            "t132 l4 d edg f2d eda g2d &lt;d&gt;bg<br>" +
-            "f t66 e t132 &lt;c&gt;bga t80 g2<br>" +
-            "[key_signature +fc][volume 80]<br>" +
-            "t80 l8 bbffa2r4 bbffa4baa4^8,,80g,,-20<br>" +
-            "[key_signature -b, -e, -a, -d, -g]<br>" +
-            "l4 o4 u30 {dde}e2d4,*240,+30 cc&gt;b4&lt;c4d1<br><br>" +
-
-            '(t2)@0 v65 l2 &quot;ceg&quot; &quot;ceg&quot; &quot;cfa&quot; &quot;d1gb&quot;<br>' +
-            '/ここからキーGMajor<br>' +
-            'l4 d &quot;&gt;b&lt;e&quot;d&quot;&gt;b&lt;g&quot; &quot;a2f&quot;d &quot;ce&quot;d&quot;ca&quot;<br>' +
-            '&quot;&gt;b&lt;g&quot;960&quot;&gt;b&lt;d&quot; &quot;d2g&lt;d&quot;&quot;dg&quot; &quot;df&quot;&quot;ce&quot;&quot;c&lt;c&quot;<br>' +
-            '&gt;&quot;db&quot;960&quot;ca&quot; &quot;&gt;b2&lt;g&quot;<br>' +
-            '/ここからキーDMajor<br>' +
-            'l8 ffdde2r4 ffdde4fee4^8,,60d,,50<br>' +
-            '/ここからキーDbMajor<br>' +
-            'v100 l1 o3 &quot;dfa&quot; l2 &quot;egb&quot; &quot;ea&lt;c&quot; &gt;&quot;dfa&quot;1920, 120<br>');
-        editor.watch("value", function(name, old, new_val){
-            if(old != new_val){
-                source_changed = true;
-                dom_class.toggle("save_button_label", "not_saved", true);
-            }
-        });
-    }
+    resources : resources
 };
 
 });

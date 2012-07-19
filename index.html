@@ -13,9 +13,6 @@
                 baseUrl : location.pathname.replace(/\/[^/]+$/, "/js/"),
                 tlmSiblingOfDojo : false,
                 parseOnLoad : false,
-                modulePaths : {"custom/piano_roll" : "custom/piano_roll",
-                    mainApp : "../"
-                },
                 packages : [
                     {name : "dojo", location : "lib/dojo"},
                     {name : "dijit", location : "lib/dijit"},
@@ -27,8 +24,8 @@
         <script src="js/lib/dojo/dojo.js"></script>
         <script>
             require(["main", "dojo/behavior", "dojo/parser", "modules", "dojo/domReady!"], function(main, behavior, parser){
-                parser.parse();
-                behavior.add(main);
+                parser.parse({propsThis : main.resources, template : true});
+                behavior.add(main.behaviors);
                 behavior.apply();
             });
         </script>
@@ -38,36 +35,36 @@
                                             data-dojo-props="design: 'headline'">
             <div id="tool_bar" data-dojo-type="dijit.Toolbar"
                                data-dojo-props="region: 'top'">
-                <button id="compile_button" type="button" data-dojo-type="dijit.form.Button">${compile_btn_text}</button>
-                <button id="controller" type="button" data-dojo-type="dijit.form.Button">${play_btn_text}</button>
-                <button id="stop_button" type="button" data-dojo-type="dijit.form.Button">${stop_btn_text}</button>
-                <button id="new_button" type="button" data-dojo-type="dijit.form.Button">${new_btn_text}</button>
-                <div id="open_button" type="button" data-dojo-type="dijit.form.DropDownButton">
-                    <span>${open_btn_text}</span>
+                <button id="compile_button" type="button" data-dojo-type="dijit.form.Button" data-dojo-props="label:this.compile_btn_text"></button>
+                <button id="controller" type="button" data-dojo-type="dijit.form.Button" data-dojo-props="label:this.play_btn_text"></button>
+                <button id="stop_button" type="button" data-dojo-type="dijit.form.Button" data-dojo-props="label:this.stop_btn_text"></button>
+                <button id="new_button" type="button" data-dojo-type="dijit.form.Button" data-dojo-props="label:this.new_btn_text"></button>
+                <div id="open_button" type="button" data-dojo-type="dijit.form.DropDownButton" data-dojo-props="label:this.open_btn_text">
+                    <span></span>
                     <div data-dojo-type="dijit.TooltipDialog" id="openDialog">
-                        <p><label for="open_from" style="display: inline-block; width: 75px">${open_label_text}</label>
+                        <p>
                         <select id="open_from" data-dojo-type="dijit.form.Select"
                             name="sourceSelect">
-                            <option value="" selected="selected">${open_explanation}</option>
-                            <option value="LOCAL">${type_local_storage}</option>
-                            <option value="SERVER">${type_server}</option>
-                            <option value="FILE">${type_local_file}</option>
+                            <option value="" selected="true"></option>
+                            <option value="LOCAL"></option>
+                            <option value="SERVER"></option>
+                            <option value="FILE"></option>
                         </select>
                         </p>
                         <div id="select_file">
                         </div>
                     </div>
                 </div>
-                <div id="save_button" data-dojo-type="dijit.form.DropDownButton">
-                    <span>${save_btn_text}</span>
+                <div id="save_button" data-dojo-type="dijit.form.DropDownButton" data-dojo-props="label:this.save_btn_text">
+                    <span></span>
                     <div data-dojo-type="dijit.TooltipDialog" id="saveDialog">
-                        <p><label for="save_as" style="display: inline-block; width: 75px">${save_label_text}</label>
+                        <p>
                         <select id="save_as" data-dojo-type="dijit.form.Select"
                             name="stateSelect">
-                            <option value="" selected="selected">${save_explanation}</option>
-                            <option value="LOCAL">${type_local_storage}</option>
-                            <option value="SERVER">${type_server}</option>
-                            <option value="FILE">${type_local_file}</option>
+                            <option value="" selected="true"></option>
+                            <option value="LOCAL"></option>
+                            <option value="SERVER"></option>
+                            <option value="FILE"></option>
                         </select>
                         </p>
                         <button id="accept_button" type="button" data-dojo-type="dijit.form.Button">OK</button>
@@ -78,33 +75,32 @@
             <div id="main_tab" data-dojo-type="dijit.layout.TabContainer"
                 data-dojo-props="region: 'center', tabPosition: 'bottom'">
                 <div id="piano_roll" data-dojo-type="myCustomWidgets.PianoRoll"
-                                  data-dojo-props="title: 'ピアノロール'">
+                                  data-dojo-props="title: this.piano_roll_pane_title">
                 </div>
                 <div id="editor" data-dojo-type="dijit.Editor"
-                     data-dojo-props="title:'MMLソース', plugins:['undo', 'redo', '|', 'cut', 'copy', 'paste']">
+                     data-dojo-props="title: this.editor_pane_title, plugins:['undo', 'redo', '|', 'cut', 'copy', 'paste']">
                 </div>
-                <div data-dojo-type="dijit.layout.ContentPane"
-                     data-dojo-props="title:'構文木'">
+                <div id="AST_visualization" data-dojo-type="dijit.layout.ContentPane"
+                     data-dojo-props="title: this.AST_pane_title">
                     <textarea id="ast" rows="30" data-dojo-type="dijit.form.SimpleTextarea"></textarea>
                 </div>
-                <div data-dojo-type="dijit.layout.ContentPane" data-dojo-props="title:'ヘルプ', href:'help_ja.html', loadingMessage:'Loading...'">
+                <div id="help_pane" data-dojo-type="dijit.layout.ContentPane" data-dojo-props="title:this.help_pane_title, href:this.help_file_url, loadingMessage:'Loading...'">
                 </div>
             </div>
             <div class="edgePanel" data-dojo-type="dijit.layout.AccordionContainer"
                 data-dojo-props="region: 'left', splitter: true, minSize: 100">
-                <div data-dojo-type="dijit.layout.ContentPane" data-dojo-props="title: '曲情報'">
-                    <label for="track_selector">トラックナンバー</label>
+                <div data-dojo-type="dijit.layout.ContentPane" data-dojo-props="title: this.music_info_pane_title">
+                    <div data-dojo-type="dijit.InlineEditBox" data-dojo-props="value:this.track_selector_label, disabled:true"></div>
                     <input data-dojo-type="dijit.form.NumberSpinner" data-dojo-props="constraints: {max: 32, min: 1}, value: 1" id="track_selector">
                     <br>
-                    <label for="music_title">タイトル</label>
+                    <div data-dojo-type="dijit.InlineEditBox" data-dojo-props="value:this.music_title_label, disabled:true"></div>
                     <textarea data-dojo-type="dijit.form.Textarea" id="music_title">名無しのファイルさん</textarea>
                 </div>
-                <div data-dojo-type="dijit.layout.ContentPane" data-dojo-props="title: 'プロパティー'">
-                    <label for="velocity">ベロシティー</label>
+                <div data-dojo-type="dijit.layout.ContentPane" data-dojo-props="title: this.note_property_pane_title">
+                    <div data-dojo-type="dijit.InlineEditBox" data-dojo-props="value:this.velocity_label, disabled:true"></div>
                     <input data-dojo-type="dijit.form.NumberSpinner" data-dojo-props="constarints: {max: 127, min: 0}, value: 100" id="velocity">
                 </div>
-                <div data-dojo-type="dijit.layout.ContentPane" data-dojo-props="title: '設定'">
-                    <label for="language_selector">言語</label>
+                <div data-dojo-type="dijit.layout.ContentPane" data-dojo-props="title: this.settings_pane_title">
                     <select id="language_selector" data-dojo-type="dijit.form.Select"
                         name="stateSelect">
                         <option value="EN" selected="selected">English</option>
@@ -118,7 +114,7 @@
         </div>
         
         <div class="dijitHidden">
-            <div data-dojo-type="dijit.Dialog" style="width:300px;" data-dojo-props="title:'進捗状況'" id="progress">
+            <div data-dojo-type="dijit.Dialog" style="width:300px;" data-dojo-props="title:this.progress_bar_dialog_title" id="progress">
                 <div data-dojo-type="dijit.ProgressBar" data-dojo-props="value: 0, maximum: 100" id="main_progress_bar"></div>
             </div>
         </div>
