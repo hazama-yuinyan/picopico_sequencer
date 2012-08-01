@@ -26,7 +26,7 @@ define({
         "settings_pane_title" : "Preferences",
         "progress_bar_dialog_title" : "Progress",
         "help_file_url" : "help_en.html",
-        "msg_prompt_compiling" : "The source text is not compiled yet.\n Please use the \"Compile\" button on the first attempt of playing.",
+        "msg_prompt_compiling" : "The source text is not compiled yet.\n Please use the \"Compile\" button on the first attempt to play.",
         "warning_not_saved" : "The file currently opened found to be not saved. Would you like to save that file first?",
         "msg_new_file_opened" : "Successfully created a new file.",
         "msg_file_opened" : "Successfully opened a file.",

@@ -1,4 +1,4 @@
-define(["dojo/_base/lang", "mml_compiler"], function(lang, mml_compiler){
+define(["dojo/_base/lang", "./mml_compiler"], function(lang, mml_compiler){
     
     // module: mml_updater
     // summary: 

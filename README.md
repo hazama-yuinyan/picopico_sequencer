@@ -1,11 +1,11 @@
 # Picopico Sequencer
 ====================
 __picopico sequencer__ is a web-based and Flash-free music sequencer.
-It employs the brand new __WebAudio API__ for playing the sounds(now writing...)
+It employs the brand new __WebAudio API__ for playing the sounds. So it's very likely that Picopico Sequencer only works properly on Google Chrome.
 
 The Japanese term "Picopico" generally refers to the sounds produced by the traditional video game consoles such as the Family Computer and
-Super Family Computer(SFC), also known as SNES in English-speaking countries. So the name "Picopico Sequencer" suggests that the program can only
-produce such 
+Super Family Computer(SFC), also known as NES and SNES in English-speaking countries. So the name "Picopico Sequencer" suggests that the program
+can only produce such eh...(I don't know how it can be described in English) primitive sounds.
 
 Notice that the program can't be run out-of-the-box because it lacks some dependencies by default. So you must first explicitly install extra
 dependent files.
@@ -19,9 +19,10 @@ See the __How to run the program__ section for more details.
 
 ## How to run the program
 As mentioned above, you can't run the program out of the box. To run the program, you need to have the __dojo__ library in proper directory.
-There are two ways to do that. One is to download __dojo__ files and move the files to the proper directory by hand.
+There are two ways to do that. One is to download __dojo__ files and move the files to the proper directory by yourself.
 And the other is to simply use the `git submodule` commands. In detail you must first execute `git submodule init` on the root directory of the
-project and then just type `git submodule update`.
+project and then just type `git submodule update`. Then it will collect all the modules the program needs and take you to the immediate launch of
+the program.
 
 ## Dependent Open Source Projects
   * [dojo] for the great graphical user interfaces

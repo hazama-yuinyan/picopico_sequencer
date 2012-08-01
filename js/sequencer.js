@@ -1,4 +1,4 @@
-define(["utils", "dojo/_base/declare", "dojo/_base/lang", "dijit/registry"], function(util, declare, lang, registry){
+define(["./utils", "dojo/_base/declare", "dojo/_base/lang", "dijit/registry"], function(util, declare, lang, registry){
 
 return declare(null, {
     constructor : function(main){
