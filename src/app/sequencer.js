@@ -100,7 +100,7 @@ return declare(null, {
         this.nodes = [this.context.createJavaScriptNode(this.buffer_size, 1, 1)];
         this.gain_nodes = [this.context.createGainNode()];
         this.last_vol = 127;
-        this.sound_producer = new Worker("js/sound_producer.js");
+        this.sound_producer = new Worker("app/sound_producer.js");
         
         this.env.for_worker.restoreDefault();
         this.env.for_worker.setTrackNum(0);
