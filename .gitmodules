@@ -10,3 +10,9 @@
 [submodule "src/lib/dojo"]
 	path = src/lib/dojo
 	url = git://github.com/dojo/dojo.git
+[submodule "src/lib/treehugger"]
+	path = src/lib/treehugger
+	url = git://github.com/ajaxorg/treehugger.git
+[submodule "src/tests/jasmine"]
+	path = src/tests/jasmine
+	url = git://github.com/pivotal/jasmine.git
