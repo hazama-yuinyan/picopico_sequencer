@@ -46,7 +46,8 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
             _width_quarter_note : 48,
             _ticks_per_quarter_note : 480,
             _cur_selected_note : null,
-            _predefined_inst_names : ["正弦波", "矩形波", "ノコギリ波", "三角波", "M字型", "ノイズ"],
+            _predefined_inst_names : [resources.sine_wave, resources.square_wave, resources.sawtooth_wave, resources.triangle_wave, 
+                resources.m_shaped_wave, resources.noise],
             _translations : resources,
             // _metaevent_list
             //      info_bar領域に特殊なアイコンを描画すべきメタイベントのリスト
@@ -59,17 +60,17 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
                 var prettifyEventParams = function(info){
                     var name, params;
                     if(info.name.search(/^(t|tempo)/) != -1){
-                        name = "テンポチェンジ";
+                        name = resources.e_tempo_change;
                         params = info.arg1;
                     }else if(info.name.search(/^(k.sign|key_signature)/) != -1){
-                        name = "キー変更";
+                        name = resources.e_key_change;
                         info.arg1 = info.arg1.replace(/^\+/, "#").replace(/^-/, "♭");
                         var sign = info.arg1[0];
                         params = info.arg2.match(/[a-g]/gi).map(function(note_name){
                             return note_name + sign;
                         }).join(", ");
                     }else{
-                        name = "プログラムチェンジ";
+                        name = resources.e_program_change;
                         var inst_names = _self._predefined_inst_names;
                         params = (info.arg1 < inst_names.length) ? inst_names[info.arg1] : "ユーザー定義波形" + info.arg1 - inst_names.length + 1;
                     }

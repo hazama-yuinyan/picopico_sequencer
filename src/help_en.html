@@ -9,10 +9,10 @@
         <h1>The Picopico Sequencer Manual</h1>
         <article>
             <section id="abstraction">
-                <h2>Abstraction</h2>
+                <h2>Introduction</h2>
                 <p>Welcome to the Picopico Sequencer!<br>
                 Picopico Sequencer is a Flash-free and purely HTML5 written music sequencer. It describes music in MML and has a piano-roll-style
-                visualization.今のところ、未実装ですがいずれGUIによる編集機能もつく予定です。
+                visualization. Even though it is not implemented as of now, it will have the ability to edit music with GUI.
                 </p>
             </section>
             
@@ -31,7 +31,8 @@
             <section id="MML_grammar">
                 <h2>Quick reference for MML grammar</h2>
                 <p>As you might know, MML has many dialects. It is often the case that although some two music sequencers are said to use the
-                same MML processor, they actually have slightly different syntaxes and commands.
+                same MML processor, they actually have slightly different syntaxes and commands. So the following refereces may contain information
+                only valid for Picopico Sequencer.
                 </p>
                 <div>
                     <h3>Legends</h3>
@@ -66,12 +67,12 @@
                         Each sign represents a "natural", "sharp", "sharp" and "flat" respectively and can be followed by other accidentals.
                         </p>
                         <p>The note command can take additional three arguments. The first represents the step time which is the duration in which
-                        the note should be played. It usually takes musical durations. And it is worth noting that if step is ommitted the default
+                        the note should be played. It usually takes a note value. And it is worth noting that if step is ommitted the default
                         value set by a "L" command will be applied.<br>
-                        In addition, you can pass an AD(absolute duration) in step instead of a MD(musical duration). An AD can be specified with
-                        a preceding asterisk.<br>
-                        Furthermore you can modify the duration by adding "^"(circumflexes) followed by a extra number.<br>
-                        And dots after the step time lengthen the note duration by half the preceded number.
+                        In addition, you can express "step" in ticks instead of a note value. What is notated in ticks can be written like
+                        "*some_number".<br>
+                        Furthermore you can lengthen the duration by adding "^"(circumflexes) and an extra duration.<br>
+                        And dots after the step time lengthen the note duration by half the preceding number.
                         </p>
                         <p>The second parameter called "gate" refers to the gate time which is the real duration in which the note will be played.
                         </p>
@@ -81,7 +82,7 @@
                     <div class="grammar_right">
                         <p>
                         example 1:<br>
-                        cdef edc /This plays the sequence "CDEF DEC" in the default length<br>
+                        cdef edc /This plays the sequence "CDEF DEC" with each note in the default length<br>
                         c++++ /This is equivalent to d++(=e)<br>
                         c- /This means a flat C, which is actually a B.<br>
                         c!<br>
@@ -94,7 +95,7 @@
                         c*480.. /You can add dots, which is explained later on<br>
                         example 4:<br>
                         c1^1 /in the same duration as two whole notes<br>
-                        c4^*480^8 /You can specify some of the durations in AD manner<br>
+                        c4^*480^8 /You can specify some of the durations in ticks<br>
                         example 5:<br>
                         c4, 8 /It describes the note as a quarter note, but it actually sounds as an eighth note（so you can say it denotes a staccato)<br>
                         c, 8 /same as above(if the default length is set to 4)<br>
@@ -145,7 +146,7 @@
                         <p>Changes the key signature. As of now it can't take the key names such as CMajor, EbMajor and AMinor.
                         Maybe it can take those names in the future, though.
                         </p>
-                        <p>The natural sign comes to play when combined with this command, because in MML accidentals don't cancell the key
+                        <p>The natural sign comes to play when combined with this command, because in MML accidentals don't cancel the key
                         signatures(they actually raises, or lowers, the pitch by 1 semi-tone).
                         </p>
                     </div>
@@ -153,8 +154,8 @@
                         <p>
                         e.g.<br>
                         [k.sign +c, +f] f! /Because of the key signature, F always has a sharp on it but the sign cancels the effect.<br>
-                        [k.sign -bea] b- /この調では通常ならBにはフラットが付いているが、更にマイナスを指定しているためB--(=A)として演奏される
-                        (通常ならこの調では使用されないが、ダブルフラットと同じ意味)
+                        [k.sign -bea] b- /Because the key signature already has a flat on B, the minus sign lowers the pitch by another 1.
+                        (So it can be considered as a double-flat)
                         </p>
                     </div>
                 </div>
@@ -178,7 +179,7 @@
                         e.g.<br>
                         o3<br>
                         o8<br>
-                        o4 c /Plays a Middle C<br>
+                        o4 c /Plays a middle C<br>
                         o4 < /Here is as high in octave as explicitly writing "o5"
                         </p>
                     </div>
@@ -263,8 +264,8 @@
                 </div>
                 <div class="grammar_spec">
                     <div class="grammar_left">
-                        <p>Changes the sound type. By default there are 5 types of sound. And a function command, which will be explained later,
-                        introdecues a new sound type.
+                        <p>Changes the sound type. By default there are 6 types of sound. And a function command, which will be explained later,
+                        introduces a new sound type.
                         </p>
                     </div>
                     <div class="grammar_right">

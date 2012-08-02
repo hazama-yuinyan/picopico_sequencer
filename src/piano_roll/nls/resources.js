@@ -11,7 +11,10 @@ define({
         "sawtooth_wave" : "Sawtooth wave",
         "triangle_wave" : "Triangle wave",
         "m_shaped_wave" : "M-shaped wave",
-        "noise" : "Noise"
+        "noise" : "Noise",
+        "e_tempo_change" : "Tempo Change",
+        "e_key_change" : "Key Change",
+        "e_program_change" : "Program Change"
     },
     
     ja : true
