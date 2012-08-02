@@ -1,0 +1,6 @@
+{
+    "name" : "Piano roll",
+    "description" : "A simple music visualization wedget",
+    "version" : "1.0",
+    "dojoBuild" : "piano_roll.profile.js"
+}

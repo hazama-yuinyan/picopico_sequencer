@@ -1,0 +1,6 @@
+{
+    "name" : "Picopico Sequencer",
+    "description" : "A web-based music sequencer and synthesizer",
+    "version" : "1.0",
+    "dojoBuild" : "picopico_sequencer.profile.js"
+}

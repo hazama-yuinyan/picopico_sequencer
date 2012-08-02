@@ -5,8 +5,8 @@
  */
 
 
-define(["mml_compiler", "sequencer", "dojo/dom-class", "dojo/on", "dijit/registry", "dojox/timing", "dijit/form/Select", "dojo/store/Memory",
-    "mml_updater", "dojo/i18n!nls/resources"],
+define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit/registry", "dojox/timing", "dijit/form/Select", "dojo/store/Memory",
+    "app/mml_updater", "dojo/i18n!app/nls/resources"],
     function(compiler, Sequencer, dom_class, on, registry, timing, Select, Memory, updater, resources){
 
     var sequencer = null,

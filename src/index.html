@@ -4,31 +4,11 @@
         <meta charset="utf-8">
         <title>ぴこぴこ・しーけんさー</title>
         <link rel="stylesheet" href="style.css"></link>
-        <link rel="stylesheet" href="js/lib/dijit/themes/claro/claro.css"></link>
-        <link rel="stylesheet" href="js/custom/piano_roll/pianoRollWidget.css"></link>
-        <script>
-            dojoConfig = {
-                async : true,
-                isDebug : true,
-                baseUrl : location.pathname.replace(/\/[^/]*$/, "/js/"),
-                tlmSiblingOfDojo : false,
-                parseOnLoad : false,
-                packages : [
-                    {name : "dojo", location : "lib/dojo"},
-                    {name : "dijit", location : "lib/dijit"},
-                    {name : "dojox", location : "lib/dojox"},
-                    {name : "treehugger", location : "lib/treehugger/lib/treehugger"}
-                ]
-            };
-        </script>
-        <script src="js/lib/dojo/dojo.js"></script>
-        <script>
-            require(["main", "dojo/behavior", "dojo/parser", "modules", "dojo/domReady!"], function(main, behavior, parser){
-                parser.parse({propsThis : main.resources, template : true});
-                behavior.add(main.behaviors);
-                behavior.apply();
-            });
-        </script>
+        <link rel="stylesheet" href="lib/dijit/themes/claro/claro.css"></link>
+        <link rel="stylesheet" href="piano_roll/pianoRollWidget.css"></link>
+        <script src="app/config.js"></script>
+        <script src="lib/dojo/dojo.js"></script>
+        <script src="app/run.js"></script>
     </head>
     <body class="claro">
         <div id="app_layout" class="layout" data-dojo-type="dijit.layout.BorderContainer"

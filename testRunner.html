@@ -4,17 +4,17 @@
 <head>
   <title>Jasmine Spec Runner</title>
 
-  <link rel="shortcut icon" type="image/png" href="js/tests/jasmine/lib/jasmine-core/jasmine_favicon.png">
-  <link rel="stylesheet" type="text/css" href="js/tests/jasmine/lib/jasmine-core/jasmine.css">
-  <script type="text/javascript" src="js/tests/jasmine/lib/jasmine-core/jasmine.js"></script>
-  <script type="text/javascript" src="js/tests/jasmine/lib/jasmine-core/jasmine-html.js"></script>
+  <link rel="shortcut icon" type="image/png" href="src/tests/jasmine/lib/jasmine-core/jasmine_favicon.png">
+  <link rel="stylesheet" type="text/css" href="src/tests/jasmine/lib/jasmine-core/jasmine.css">
+  <script type="text/javascript" src="src/tests/jasmine/lib/jasmine-core/jasmine.js"></script>
+  <script type="text/javascript" src="src/tests/jasmine/lib/jasmine-core/jasmine-html.js"></script>
 
   <!-- include source files here... -->
   <script>
     dojoConfig = {
         async : true,
         isDebug : true,
-        baseUrl : location.pathname.replace(/\/[^/]+$/, "/js/"),
+        baseUrl : location.pathname.replace(/\/[^/]+$/, "/src/"),
         tlmSiblingOfDojo : false,
         parseOnLoad : false,
         packages : [
@@ -25,7 +25,7 @@
         ]
     };
     </script>
-    <script type="text/javascript" src="js/lib/dojo/dojo.js"></script>
+    <script type="text/javascript" src="src/lib/dojo/dojo.js"></script>
 
   <!-- include spec files here... -->
   <script type="text/javascript">

@@ -1,4 +1,4 @@
-define(["./lexer", "./parser", "./utils", "treehugger/tree", "treehugger/traverse", "dojo/_base/declare", "dojo/_base/lang"],
+define(["app/lexer", "app/parser", "app/utils", "treehugger/tree", "treehugger/traverse", "dojo/_base/declare", "dojo/_base/lang"],
     function(Lexer, Parse, util, tree, traverse, declare, lang){
     var MMLLexer = declare([Lexer], {
         constructor : function(){

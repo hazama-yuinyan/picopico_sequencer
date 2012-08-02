@@ -1,4 +1,4 @@
-define(["mml_compiler"], function(compiler){
+define(["app/mml_compiler"], function(compiler){
     var simple_mml_sources = [
         "abcdefg\n",
         "a4,10,100c8,,80d,80,80e,,127f,,0\n",

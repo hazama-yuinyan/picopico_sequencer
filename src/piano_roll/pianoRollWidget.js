@@ -1,5 +1,5 @@
 define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin", "dojox/gfx", "dojo/on",
-    "dojo/_base/lang", "dojo/text!custom/piano_roll/templates/piano_roll_template.html", "dijit/Tooltip", "dijit/registry", "dojo/i18n!./nls/resources",
+    "dojo/_base/lang", "dojo/text!piano_roll/templates/piano_roll_template.html", "dijit/Tooltip", "dijit/registry", "dojo/i18n!./nls/resources",
     "dijit/layout/BorderContainer", "dijit/layout/BorderContainer", "dijit/form/Button"],
     function(declare, WidgetBase, TemplatedMixin, WidgetsInTemplateMixin, gfx, on, lang, template, Tooltip, registry, resources){
         return declare("myCustomWidgets.PianoRoll", [WidgetBase, TemplatedMixin, WidgetsInTemplateMixin], {
@@ -270,7 +270,7 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
                         return true;
                     }, this);
                     metaevent.img = this._surface.createImage({x : offset, y : 2, width : 12, height : 12,
-                        src : "js/custom/piano_roll/images/metaevent.png"});
+                        src : "piano_roll/images/metaevent.png"});
                     metaevent.tooltip.set("connectId", metaevent.img.rawNode);
                 }, this);
             },
@@ -407,7 +407,7 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
                 //鍵盤を左端に表示する
                 var TOTAL_KEYBOARD_HEIGHT = 7 * this.keyboard_size.height;
                 this._surface.createImage({x : 0, y : this._keyboard_pos, width : this.keyboard_size.width,
-                    height : TOTAL_KEYBOARD_HEIGHT, src : "js/custom/piano_roll/images/keyboard.svg"});
+                    height : TOTAL_KEYBOARD_HEIGHT, src : "piano_roll/images/keyboard.svg"});
             },
             
             clip : function(lower, upper, val){
