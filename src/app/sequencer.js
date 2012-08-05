@@ -368,7 +368,7 @@ return declare(null, {
         if(track_num === 0){
             this.cur_frame += data_length;
             var music_info = registry.byId("music_info");
-            music_info.set("value", this.cur_frame);
+            music_info.set("value", ""+this.cur_frame);
             this.cur_ticks = this.next_ticks;
             var sample_frame_per_tick = this.actual_sample_rate / (this.getCurTempo() * 480.0 / 60.0);
             var ticks = data_length / sample_frame_per_tick;

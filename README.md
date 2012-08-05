@@ -5,8 +5,8 @@ It employs the brand new __WebAudio API__ for playing the sounds. So as of now i
 Google Chrome.
 
 The Japanese term "Picopico" generally refers to the sounds produced by the traditional video game consoles such as the Family Computer and
-Super Family Computer(SFC), also known as NES and SNES in English-speaking countries. So the name "Picopico Sequencer" suggests that the program
-can only produce such eh...(I don't know how it can be described in English) primitive sounds.
+Super Family Computer(SFC), which are also known as NES and SNES in English-speaking countries. So the name "Picopico Sequencer" suggests that
+the program can only produce such eh...(I don't know how it can be described in English) primitive sounds.
 
 Notice that the program can't be run out-of-the-box because it lacks some dependencies by default. So you must first explicitly install extra
 dependent files.
@@ -22,15 +22,19 @@ See the __How to run the program__ section for more details.
 As mentioned above, you can't run the program out of the box. To run the program, you need to have the __dojo__ library in proper directory.
 There are two ways to do that. One is to download __dojo__ files and move the files to the proper directory by yourself.
 And the other is to simply use the `git submodule` commands. In detail you must first execute `git submodule init` on the root directory of the
-project and then just type `git submodule update`. Then it will collect all the modules the program needs and take you to the immediate launch of
+project and then just type `git submodule update`. Then it will collect all modules the program needs and will immediately take you to the tour of
 the program.
+
+## Just before the release...
+At the very end of development, you must build the program to reduce HTTPRequests and program size. To do that, you must just invoke the build.sh
+at the root directory of the project.
 
 ## Dependent Open Source Projects
   * [dojo] for the great graphical user interfaces
   * [treehugger] for the AST of MML parsing
   * [jasmine] for testing framework
 
-## Links to dependent projects
+## Links to dependency projects
 I'd like to say a big "Thank you" to all developers and contributors of these projects!
 
 [dojo]: http://dojotoolkit.org/

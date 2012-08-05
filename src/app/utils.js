@@ -12,8 +12,8 @@ define(["dojo/_base/declare"], function(declare){
             this.program_nums = [0];
             
             var diff_pitches = {c : 0, d : 2, e : 4, f : 5, g : 7, a : 9, b : 11};
-            this.getPitchDifference = function(char){
-                return diff_pitches[char];
+            this.getPitchDifference = function(chara){
+                return diff_pitches[chara];
             };
         },
         

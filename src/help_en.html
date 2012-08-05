@@ -100,7 +100,7 @@
                         c4, 8 /It describes the note as a quarter note, but it actually sounds as an eighth note（so you can say it denotes a staccato)<br>
                         c, 8 /same as above(if the default length is set to 4)<br>
                         example 6:<br>
-                        c4,,127 /Sounds at maximum volume<br>
+                        c4,,127 /Played at maximum volume<br>
                         c,,-20 /Plays a C note at 20 less in velocity
                         </p>
                     </div>
@@ -126,7 +126,7 @@
                         r4 /A quarter rest<br>
                         r4.. /It is 4+8+16 in duration<br>
                         r4^8^16 /The above example can be written like this<br>
-                        r*480 /You can specify it in the AD manner
+                        r*480 /You can specify it in ticks
                         </p>
                     </div>
                 </div>
@@ -195,7 +195,7 @@
                 <div class="grammar_spec">
                     <div class="grammar_left">
                         <p>Sets the default length(the value set to the step time when ommited). The initial value is "L4". Currently
-                        the "length" parameter can be only specified in the MD manner.
+                        the "length" parameter can be only specified with a note value.
                         </p>
                     </div>
                     <div class="grammar_right">
@@ -241,7 +241,7 @@
                 </div>
                 <div class="grammar_spec">
                     <div class="grammar_left">
-                        <p>Sets the tempo in beats per minute. Note that the above values are the reference values and therefore no error will
+                        <p>Sets the tempo in beats per minute. Note that the above values are just the reference values and therefore no error will
                         be seen if out of the range. The initial value is 120.
                         </p>
                     </div>
@@ -264,8 +264,22 @@
                 </div>
                 <div class="grammar_spec">
                     <div class="grammar_left">
-                        <p>Changes the sound type. By default there are 6 types of sound. And a function command, which will be explained later,
-                        introduces a new sound type.
+                        <p>Changes the sound type. By default there are 6 types of sound.
+                        <table>
+                            <caption>Table of program numbers and sound types</caption>
+                            <thead>
+                                <tr><th>Program number</th><th>Sound type</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>0</td><td>Sine Wave</td></tr>
+                                <tr><td>1</td><td>Square Wave</td></tr>
+                                <tr><td>2</td><td>Sawtooth Wave</td></tr>
+                                <tr><td>3</td><td>Triangle Wave</td></tr>
+                                <tr><td>4</td><td>M-Shaped Wave</td></tr>
+                                <tr><td>5</td><td>Noise</td></tr>
+                            </tbody>
+                        </table>
+                        And a function command, which will be explained later, introduces a new sound type.
                         </p>
                     </div>
                     <div class="grammar_right">
@@ -304,7 +318,7 @@
                     <p>"""some MML"""([ticks, delay]) where...
                     </p>
                     <ul>
-                        <li>ticks = 0~32767 : the duration in AD manner</li>
+                        <li>ticks = 0~32767 : the duration in ticks</li>
                         <li>delay = 2<sup>n</sup>(n = 0, 1, 2...) or *0~32767 : the delay in which each note will play</li>
                     </ul>
                 </div>
@@ -318,7 +332,7 @@
                         e.g.<br>
                         "c4eg" /A chord of C, E and G<br>
                         "ceg"480 /equivalent to the above<br>
-                        "c4eg", 10 /plays a C, E, G with the delay of 10 ticks between the notes(so it can be thought of as arpeggio)
+                        "c4eg", 10 /plays a C, E and G with the delay of 10 ticks between the notes(so it can be thought of as an arpeggio)
                         </p>
                     </div>
                 </div>

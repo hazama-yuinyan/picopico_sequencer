@@ -5,14 +5,15 @@
  */
 
 
-define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit/registry", "dojox/timing", "dijit/form/Select", "dojo/store/Memory",
-    "app/mml_updater", "dojo/i18n!app/nls/resources"],
-    function(compiler, Sequencer, dom_class, on, registry, timing, Select, Memory, updater, resources){
+define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit/registry", "dojox/timing", "dijit/form/Select","app/mml_updater",
+    "dojo/i18n!app/nls/resources", "dojo/aspect"],
+    function(compiler, Sequencer, dom_class, on, registry, timing, Select, updater, resources, aspect){
 
     var sequencer = null,
     data_store = null,
     timer = null,
     source_changed = false,
+    old_value = "",
     reset = function(){
         sequencer = null;
         data_store = null;
@@ -67,7 +68,7 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit
             }
             piano_roll.onSoundPlaying(ticks);
             var error_console = registry.byId("various_uses_pane");
-            error_console.domNode.textContent = piano_roll._cur_ticks * 100;
+            error_console.domNode.textContent = piano_roll._cur_ticks;
         };
         timer.start();
     },
@@ -122,6 +123,7 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit
         var editor = registry.byId("editor"), status_bar = registry.byId("various_uses_pane");
         var title_editor = registry.byId("music_title");
         editor.set("value", "");
+        old_value = "";
         title_editor.set("value", "名無しのファイルさん");
         reset();
         status_bar.domNode.textContent = resources.msg_new_file_opened;
@@ -147,6 +149,8 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit
         
         var source = item.source;
         editor.set("value", source);
+        old_value = source;
+        dom_class.toggle("save_button_label", "not_saved", false);  //remove the "not saved" indicator in case of it being already changed
         title_editor.set("value", item.name);
         reset();
         status_bar.domNode.textContent = resources.msg_file_opened;
@@ -175,9 +179,10 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit
         }
         
         source_changed = false;
+        old_value = source;
         dom_class.toggle("save_button_label", "not_saved", false);  //remove the "not saved" indicator
         var status_bar = registry.byId("various_uses_pane");
-        status_bar.domNode.textContent = resources.file_saved;
+        status_bar.domNode.textContent = resources.msg_file_saved;
     },
     
     retrieveAllDataFromStorage = function(){
@@ -350,12 +355,17 @@ return {
                 'l8 ffdde2r4 ffdde4fee4^8,,60d,,50<br>' +
                 '/ここからキーDbMajor<br>' +
                 'v100 l1 o3 &quot;dfa&quot; l2 &quot;egb&quot; &quot;ea&lt;c&quot; &gt;&quot;dfa&quot;1920, 120<br>');
-            editor.watch("value", function(name, old, new_val){
-                if(old != new_val){
+            aspect.after(editor, "onKeyUp", function(){
+                var new_val = editor.get("value");
+                if(old_value != new_val){
                     source_changed = true;
                     dom_class.toggle("save_button_label", "not_saved", true);
+                }else{
+                    source_changed = false;
+                    dom_class.toggle("save_button_label", "not_saved", false);
                 }
             });
+            old_value = editor.get("value");
         }
     },
     resources : resources

@@ -135,7 +135,7 @@ Parse.Parser = declare(null, {
                     return {
                         value: tokens[0].value,
                         rests: tokens.slice(1),
-                        group: group,
+                        group: group
                     };
                 }
                 if(tokens.length){
@@ -170,7 +170,7 @@ Parse.Parser = declare(null, {
                     return {
                         rests:tokens,
                         value:value,
-                        group:group,
+                        group:group
                     };
                 }
             }
