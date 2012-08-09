@@ -6,8 +6,8 @@
 
 
 define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit/registry", "dojox/timing", "dijit/form/Select","app/mml_updater",
-    "dojo/i18n!app/nls/resources", "dojo/aspect"],
-    function(compiler, Sequencer, dom_class, on, registry, timing, Select, updater, resources, aspect){
+    "dojo/i18n!app/nls/resources", "dojo/aspect", "dojo/_base/xhr"],
+    function(compiler, Sequencer, dom_class, on, registry, timing, Select, updater, resources, aspect, xhr){
 
     var sequencer = null,
     data_store = null,
@@ -67,8 +67,7 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit
                 piano_roll.set("_cur_ticks", cur_ticks_in_seq);
             }
             piano_roll.onSoundPlaying(ticks);
-            var error_console = registry.byId("various_uses_pane");
-            error_console.domNode.textContent = piano_roll._cur_ticks;
+            setMsgOnStatusBar(piano_roll._cur_ticks);
         };
         timer.start();
     },
@@ -86,31 +85,29 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit
     },
     
     processMMLSource = function(){
-        var tmp, error_console;
+        var tmp;
         try{
             var editor = registry.byId("editor");
             var source = toPlainString(editor.get("value"));
             tmp = updater.compile(source);
         }
         catch(e){
-            error_console = registry.byId("various_uses_pane");
-            error_console.domNode.textContent = e.message;
+            setMsgOnStatusBar(e.message);
             return;
         }
         
-        error_console = registry.byId("various_uses_pane");
         if(!tmp.tree){
-            error_console.domNode.textContent = tmp;
+            setMsgOnStatusBar(tmp);
             return;
         }else{
-            error_console.domNode.textContent = "compiled successfully!";
+            setMsgOnStatusBar("compiled successfully!");
         }
         data_store = tmp;
     },
     
     switchController = function(){
-        dom_class.toggle("controller", "play_button");
-        dom_class.toggle("controller", "hold_button");
+        dom_class.toggle(".controller", "play_button");
+        dom_class.toggle(".controller", "hold_button");
     },
     
     newFile = function(){
@@ -120,53 +117,115 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit
             }
         }
         
-        var editor = registry.byId("editor"), status_bar = registry.byId("various_uses_pane");
-        var title_editor = registry.byId("music_title");
+        var editor = registry.byId("editor");
+        var title_editor = registry.byId("music_title"), last_modified_display = registry.byId("last_modified_display");
         editor.set("value", "");
         old_value = "";
-        title_editor.set("value", "名無しのファイルさん");
+        title_editor.set("value", resources.no_file_name);
+        last_modified_display.set("value", "");
         reset();
-        status_bar.domNode.textContent = resources.msg_new_file_opened;
+        setMsgOnStatusBar(resources.msg_new_file_opened);
     },
     
-    openFile = function(data){
+    openFile = function(location){
         if(source_changed){
             if(confirm(resources.warning_not_saved)){
                 saveFile();
             }
         }
         
-        var file_name = registry.byId("select_file").get("value"), status_bar = registry.byId("various_uses_pane");
-        var editor = registry.byId("editor"), title_editor = registry.byId("music_title");
-        var item = null;
-        data.every(function(datum){
-            if(datum.name == file_name){
-                item = datum;
-                return false;
-            }
-            return true;
-        });
+        var file_name = registry.byId("select_file").get("value");
+        var editor = registry.byId("editor"), title_editor = registry.byId("music_title"), author_editor = registry.byId("author_editor");
+        var item = null, last_modified_display = registry.byId("last_modified_display");
+        switch(location){
+        case "LOCAL" :
+            item = JSON.parse(localStorage.getItem(file_name));
+            item.name = file_name;
+            break;
+        
+        case "SERVER" :
+            xhr.get({
+                url : "sequencer",
+                handleAs : "json",
+                content : {
+                    method : "get_content",
+                    target : file_name
+                },
+                load : function(json_data){
+                    item = {name : file_name, source : json_data.source};
+                },
+                error : function(msg){
+                    alert(msg);
+                }
+            });
+            break;
+            
+        case "FILE" : 
+            break;
+            
+        default :
+            alert("Unknown location!");
+        }
         
         var source = item.source;
         editor.set("value", source);
         old_value = source;
         dom_class.toggle("save_button_label", "not_saved", false);  //remove the "not saved" indicator in case of it being already changed
         title_editor.set("value", item.name);
+        author_editor.set("value", item.author);
+        last_modified_display.set("value", item.date);
         reset();
-        status_bar.domNode.textContent = resources.msg_file_opened;
+        setMsgOnStatusBar(resources.msg_file_opened)
     },
     
     saveFile = function(){
-        var loc_save = registry.byId("save_as").get("value");
-        var editor = registry.byId("editor"), source = editor.get("value");
+        var loc_save = registry.byId("save_as").get("value"), last_modified_display = registry.byId("last_modified_display");
+        var editor = registry.byId("editor"), source = editor.get("value"), author_editor = registry.byId("author_editor"), author_name = author_editor.get("value");
         var title_editor = registry.byId("music_title"), music_title = title_editor.get("value");
+        var now = new Date();
         switch(loc_save){
         case "LOCAL":
-            localStorage.setItem(music_title, JSON.stringify({source : source, date : new Date()}));
+            localStorage.setItem(music_title, JSON.stringify({source : source, date : now.toString(), author : author_name}));
+            setMsgOnStatusBar(resources.msg_file_saved);
+            source_changed = false;
+            old_value = source;
+            dom_class.toggle("save_button_label", "not_saved", false);  //remove the "not saved" indicator
             break;
             
         case "SERVER":
-            throw new Error("Not implemented yet!");
+            var http_obj = new XMLHttpRequest();
+            http_obj.open("post", "sequencer", true);
+            http_obj.setRequestHeader("Content-Type", "application/json; char-set=UTF-8");
+            http_obj.onreadystatechange = function(){
+                if(this.readyState == 4 && this.status == 200){
+                    setMsgOnStatusBar(resources.msg_file_saved);
+                    source_changed = false;
+                    old_value = source;
+                    dom_class.toggle("save_button_label", "not_saved", false);  //remove the "not saved" indicator
+                }else if(this.readyState == 4){
+                    setMsgOnStatusBar(resources.msg_save_failed);
+                }
+            };
+            http_obj.send('{"source":"'+source+'","date":"'+now.toString()+'","name":"'+music_title+'","author":"'+author_name+'"}');
+            /*xhr.post({
+                url : "/picopicosequencer",
+                content : {
+                    source : source,
+                    date : new Date(),
+                    name : music_title,
+                    author : author_name
+                },
+                handleAs : "json",
+                load : function(){
+                    status_bar.domNode.textContent = resources.msg_file_saved;
+                    source_changed = false;
+                    old_value = source;
+                    dom_class.toggle("save_button_label", "not_saved", false);  //remove the "not saved" indicator
+                },
+                error : function(){
+                    status_bar.domNode.textContent = resources.msg_save_failed;
+                }
+            });*/
             break;
             
         case "FILE":
@@ -177,12 +236,7 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit
             alert("保存先を選択してください！");
             return;
         }
-        
-        source_changed = false;
-        old_value = source;
-        dom_class.toggle("save_button_label", "not_saved", false);  //remove the "not saved" indicator
-        var status_bar = registry.byId("various_uses_pane");
-        status_bar.domNode.textContent = resources.msg_file_saved;
+        last_modified_display.set("value", now.toString());
     },
     
     retrieveAllDataFromStorage = function(){
@@ -195,8 +249,9 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit
         return data;
     },
     
-    handleLanguageSwitch = function(lang_name){
-        
+    setMsgOnStatusBar = function(msg){
+        var status_bar = registry.byId("various_uses_pane");
+        status_bar.domNode.textContent = msg;
     };
     
 return {
@@ -269,15 +324,33 @@ return {
             });
             open_from.startup();
             open_from.watch("value", function(name, old, new_val){
+                var names;
                 switch(new_val){
                 case "LOCAL":
                     var data = retrieveAllDataFromStorage();
-                    var names = data.map(function(item){return {value : item.name, label : item.name};});
+                    names = data.map(function(item){return {value : item.name, label : item.name};});
                     names.unshift({value : "", label : resources.open_prompt, selected : true});
                     break;
                 
                 case "SERVER":
-                    throw new Error("Not implemented yet!");
+                    xhr.get({
+                        url : "sequencer",
+                        handleAs : "json",
+                        content : {
+                            method : "get_list"
+                        },
+                        load : function(json_data){
+                            setMsgOnStatusBar(resources.recieved_responce);
+                            names = json_data.map(function(item){return {value : item.title, label : item.title};});
+                            names.unshift({value : "", label : resources.open_prompt, selected : true});
+                            select_file.set("options", names);
+                            select_file.startup();
+                        },
+                        error : function(msg){
+                            alert(msg);
+                        }
+                    });
+                    setMsgOnStatusBar(resources.connect_to_server);
                     break;
                     
                 case "FILE":
@@ -289,14 +362,19 @@ return {
                     return;
                 }
                 
-                var select_file = new Select({
-                    name : "selectFile",
-                    options : names,
-                    maxHeight : -1,
-                    onChange : function(){
-                        openFile(data);
-                    }
-                }, "select_file");
+                var select_file = registry.byId("select_file");
+                if(!select_file){
+                    select_file = new Select({
+                        name : "selectFile",
+                        options : names,
+                        maxHeight : -1,
+                        onChange : function(){
+                            openFile(new_val);
+                        }
+                    }, "select_file");
+                }else{
+                    select_file.set("options", names);
+                }
                 select_file.startup();
             });
         },
@@ -333,6 +411,7 @@ return {
         
         "#editor" : function(){
             var editor = registry.byId("editor");
+            newFile();
             editor.set("value", "/[volume 127] [velocity 127]<br>" +
                 "[function (freq, time){<br>" +
                 "return Math.cos(2 * Math.PI * freq * time);<br>" +

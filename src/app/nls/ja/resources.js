@@ -20,6 +20,7 @@ define({
     "music_info_pane_title" : "曲情報",
     "track_selector_label" : "トラックナンバー",
     "music_title_label" : "タイトル",
+    "author_label" : "作成者",
     "note_property_pane_title" : "プロパティー",
     "velocity_label" : "ベロシティー",
     "settings_pane_title" : "設定",
@@ -29,5 +30,10 @@ define({
     "warning_not_saved" : "未保存のファイルが開かれています。編集中のファイルを先に保存しますか？",
     "msg_new_file_opened" : "新規ファイルに切り替えました。",
     "msg_file_opened" : "ファイルを開きました。",
-    "msg_file_saved" : "正常に保存しました。"
+    "msg_file_saved" : "正常に保存しました。",
+    "msg_save_failed" : "保存に失敗しました。",
+    "no_file_name" : "名無しのファイルさん",
+    "last_modified" : "最終更新日時",
+    "connect_to_server" : "サーバーの応答を待っています...",
+    "received_responce" : "サーバーからの応答を受け付けました。"
 });

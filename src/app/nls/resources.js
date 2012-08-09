@@ -21,6 +21,7 @@ define({
         "music_info_pane_title" : "Music infos",
         "track_selector_label" : "Track Num",
         "music_title_label" : "Title",
+        "author_label" : "Author",
         "note_property_pane_title" : "Properties",
         "velocity_label" : "Velocity",
         "settings_pane_title" : "Preferences",
@@ -30,7 +31,12 @@ define({
         "warning_not_saved" : "The file currently opened found to be not saved. Would you like to save that file first?",
         "msg_new_file_opened" : "Successfully created a new file.",
         "msg_file_opened" : "Successfully opened a file.",
-        "msg_file_saved" : "Successfully saved the file."
+        "msg_file_saved" : "Successfully saved the file.",
+        "msg_save_failed" : "Failed to save.",
+        "no_file_name" : "Untitled",
+        "last_modified" : "Last modified at",
+        "connect_to_server" : "Connecting to the server...",
+        "received_responce" : "Received responce from the server"
     },
     
     ja : true

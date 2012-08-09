@@ -26,8 +26,8 @@ project and then just type `git submodule update`. Then it will collect all modu
 the program.
 
 ## Just before the release...
-At the very end of development, you must build the program to reduce HTTPRequests and program size. To do that, you must just invoke the build.sh
-at the root directory of the project.
+At the very end of development, you must build the program to reduce the number of HTTPRequests and the program size. To do that, you must just
+invoke the build.sh at the root directory of the project.
 
 ## Dependent Open Source Projects
   * [dojo] for the great graphical user interfaces

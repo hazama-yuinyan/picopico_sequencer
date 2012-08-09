@@ -74,7 +74,13 @@
                     <input data-dojo-type="dijit.form.NumberSpinner" data-dojo-props="constraints: {max: 32, min: 1}, value: 1" id="track_selector">
                     <br>
                     <div data-dojo-type="dijit.InlineEditBox" data-dojo-props="value:this.music_title_label, disabled:true"></div>
-                    <textarea data-dojo-type="dijit.form.Textarea" id="music_title">名無しのファイルさん</textarea>
+                    <textarea data-dojo-type="dijit.form.Textarea" id="music_title"></textarea>
+                    <br>
+                    <div data-dojo-type="dijit.InlineEditBox" data-dojo-props="value:this.author_label, disabled:true"></div>
+                    <textarea data-dojo-type="dijit.form.Textarea" id="author_editor"></textarea>
+                    <br>
+                    <div data-dojo-type="dijit.InlineEditBox" data-dojo-props="value:this.last_modified, disabled:true"></div>
+                    <div data-dojo-type="dijit.InlineEditBox" data-dojo-props="disabled:true" id="last_modified_display"></div>
                 </div>
                 <div data-dojo-type="dijit.layout.ContentPane" data-dojo-props="title: this.note_property_pane_title">
                     <div data-dojo-type="dijit.InlineEditBox" data-dojo-props="value:this.velocity_label, disabled:true"></div>
