@@ -2,6 +2,8 @@ define({
     root: {
         "compile_btn_text" : "Compile",
         "play_btn_text" : "Play",
+        "resume_btn_text" : "Resume",
+        "hold_btn_text" : "Hold",
         "stop_btn_text" : "Stop",
         "new_btn_text" : "New",
         "open_btn_text" : "Open",
@@ -22,6 +24,7 @@ define({
         "track_selector_label" : "Track Num",
         "music_title_label" : "Title",
         "author_label" : "Author",
+        "comment_label" : "Comment",
         "note_property_pane_title" : "Properties",
         "velocity_label" : "Velocity",
         "settings_pane_title" : "Preferences",

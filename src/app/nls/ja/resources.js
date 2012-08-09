@@ -1,6 +1,8 @@
 define({
     "compile_btn_text" : "コンパイル",
     "play_btn_text" : "再生",
+    "resume_btn_text" : "再開",
+    "hold_btn_text" : "一時停止",
     "stop_btn_text" : "ストップ",
     "new_btn_text" : "新規",
     "open_btn_text" : "開く",
@@ -21,6 +23,7 @@ define({
     "track_selector_label" : "トラックナンバー",
     "music_title_label" : "タイトル",
     "author_label" : "作成者",
+    "comment_label" : "説明",
     "note_property_pane_title" : "プロパティー",
     "velocity_label" : "ベロシティー",
     "settings_pane_title" : "設定",

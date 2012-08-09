@@ -397,6 +397,11 @@ return declare(null, {
         this.can_play = false;
     },
     
+    resume : function(){
+        this.compressor.connect(this.context.destination);
+        this.can_play = true;
+    },
+    
     play : function(){
         this.reinitialize();
         this.compressor.connect(this.context.destination);
