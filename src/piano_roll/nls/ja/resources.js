@@ -13,5 +13,6 @@ define({
     "noise" : "ノイズ",
     "e_tempo_change" : "テンポチェンジ",
     "e_key_change" : "キー変更",
-    "e_program_change" : "プログラムチェンジ"
+    "e_program_change" : "プログラムチェンジ",
+    "user_defined_wave" : "ユーザー定義波形"
 });

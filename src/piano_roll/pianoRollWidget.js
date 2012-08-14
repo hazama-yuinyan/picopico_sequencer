@@ -6,7 +6,7 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
             templateString : template,
             widgetsInTemplate : true,
             baseClass : "pianoRollWidget",
-            keyboard_size : {width : 60, height : 257},
+            keyboard_size : {w : 60, h : 257},
             // cur_uppermost_note: Number
             //      左端の鍵盤上で一番上に表示されている鍵盤のノートナンバー
             cur_uppermost_note : 71,
@@ -21,15 +21,18 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
             //      1がベース。つまり配列のインデックスとして使うには1を引かなければならない
             _track_num : 1,
             // _viewport_info: Object
-            //      ピアノロールの左端の鍵盤を除いた部分の大きさ
+            //      ビューポートの大きさ
             _viewport_size : {w : 0, h : 0},
+            // _pianoroll_height: Number
+            //      ピアノロール自体の高さ
+            _pianoroll_height : 0,
             // _viewport_pos: Object
             //      ピアノロールの左端の鍵盤を除いた部分の位置
             //      xは鍵盤の右端を、yは鍵盤の上端を基準とした相対座標
             _viewport_pos : {x : 0, y : 0},
             // _keyboard_pos: Number
             //      鍵盤の上端の位置
-            //      ビューポートの初期位置が基準なので値域は-7 * keyboard_size.height <= y <= 0
+            //      ビューポートの初期位置が基準なので値域は-7 * keyboard_size.h + this._viewport_size.h <= y <= 0
             _keyboard_pos : 0,
             // _cur_ticks: Number
             //      現在のtick数
@@ -38,6 +41,7 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
             //      音符を配置するバー一本分の幅
             //      upperはF-Bまで、lowerはC-Eまでの音に対応する音符領域の高さ
             _bar_heights : {upper : 0, lower : 0},
+            _lowest_uppermost_note_num : 0,
             _velocity_colors : {weak : [0, 0, 255], strong : [255, 0, 0]},
             _tree : null,
             _surface : null,
@@ -72,7 +76,7 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
                     }else{
                         name = resources.e_program_change;
                         var inst_names = _self._predefined_inst_names;
-                        params = (info.arg1 < inst_names.length) ? inst_names[info.arg1] : "ユーザー定義波形" + info.arg1 - inst_names.length + 1;
+                        params = (info.arg1 < inst_names.length) ? inst_names[info.arg1] : resources.user_defined_wave + info.arg1 - inst_names.length + 1;
                     }
                     
                     return '<p>Event name : ' + name + '<br>' + params + "</p>";
@@ -106,7 +110,15 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
                 this.onUpdate();
             },
             
-            _getviewport_sizeAttr : function(){
+            _get_pianoroll_heightAttr : function(){
+                return this._pianoroll_height;
+            },
+            
+            _set_pianoroll_heightAttr : function(height){
+                this._pianoroll_height = height;
+            },
+            
+            _get_viewport_sizeAttr : function(){
                 return this._viewport_size;
             },
             
@@ -136,26 +148,35 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
                 this._bar_heights = bar_heights;
             },
             
-            /*constructor : function(){
-                this.translations = i18n.translations;
-            },*/
-            
             postCreate : function(){
-                this._surface = gfx.createSurface("piano_roll", 400, this.keyboard_size.height * 7);
+                this._surface = gfx.createSurface("piano_roll", 400, this.keyboard_size.h * 7);
                 this._set("_bar_heights", {upper : Math.round(1028.0 / 49.0),   //(257/7)*(4/7) F-Bまでの領域が黒鍵と白鍵で等分されていると仮定した場合
                     lower : Math.round(771.0 / 35.0)});                         //(257/7)*(3/5) C-Eまでの領域が黒鍵と白鍵で等分されていると仮定した場合
-                this.cur_uppermost_note_pos = 3 * this.keyboard_size.height;
-                this._viewport_pos.y = 3 * this.keyboard_size.height;
-                this._keyboard_pos = -3 * this.keyboard_size.height;
+                this.cur_uppermost_note_pos = 3 * this.keyboard_size.h;
+                this._viewport_pos.y = 3 * this.keyboard_size.h;
+                this._keyboard_pos = -3 * this.keyboard_size.h;
                 
                 on(this._surface.getEventSource(), "mousedown", lang.hitch(this, this.onmousedown));
                 on(this._surface.getEventSource(), "mouseup", lang.hitch(this, this.onmouseup));
                 on(this._surface.getEventSource(), "mousemove", lang.hitch(this, this.onmousemove));
             },
             
-            resize : function(changeSize/*, resultSize*/){
-                this._surface.setDimensions(changeSize.w, this.keyboard_size.height * 7);
-                this._set("_viewport_size", changeSize);
+            resize : function(new_size){
+                this._surface.setDimensions(new_size.w, this.keyboard_size.h * 7);
+                this._set("_pianoroll_height", new_size.h - this.tool_box.domNode.offsetHeight);
+                this._set("_viewport_size", new_size);
+                var viewport_height = this._viewport_size.h, i = 12, y = 0, bar_heights = this.get("_bar_heights");
+                for(; y < viewport_height; ++i){
+                    y += (this.isInLowerOfOctave(i)) ? bar_heights.lower : bar_heights.upper;
+                }
+                this._lowest_uppermost_note_num = i;
+                
+                if(!this.isBetween(-7 * this.keyboard_size.h + this._pianoroll_height, 0, this._keyboard_pos)){
+                    this.cur_uppermost_note_pos = 3 * this.keyboard_size.h;
+                    this._viewport_pos.y = 3 * this.keyboard_size.h;
+                    this._keyboard_pos = -3 * this.keyboard_size.h;
+                    this.cur_uppermost_note = 71;
+                }
                 
                 this.onUpdate();
             },
@@ -171,7 +192,7 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
                 var i = 107, y = 0, bar_heights = this.get("_bar_heights");
                 while(i - note_num > 12){
                     i -= 12;
-                    y += this.keyboard_size.height;
+                    y += this.keyboard_size.h;
                 }
                 
                 for(; i > note_num; --i){
@@ -213,7 +234,7 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
                 // summary:
                 //      背景に小節線や拍子の区切りをあらわす線を描く
                 
-                var WIDTH_QUARTER_NOTE = this._width_quarter_note, WIDTH_MEASURE = 4 * WIDTH_QUARTER_NOTE, KEYBOARD_WIDTH = this.keyboard_size.width;
+                var WIDTH_QUARTER_NOTE = this._width_quarter_note, WIDTH_MEASURE = 4 * WIDTH_QUARTER_NOTE, KEYBOARD_WIDTH = this.keyboard_size.w;
                 var viewport_size = this.get("_viewport_size"), viewport_pos = this.get("_viewport_pos");
                 
                 //まず音高の区切りをあらわす横線を描く
@@ -239,7 +260,7 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
                 // summary:
                 //      小節番号を含む領域を描画する
                 
-                var WIDTH_MEASURE = 4 * this._width_quarter_note, KEYBOARD_WIDTH = this.keyboard_size.width, BOTTOM_MEASURE_NUM_BAR = 18;
+                var WIDTH_MEASURE = 4 * this._width_quarter_note, KEYBOARD_WIDTH = this.keyboard_size.w, BOTTOM_MEASURE_NUM_BAR = 18;
                 var viewport_size = this.get("_viewport_size"), viewport_pos = this.get("_viewport_pos"), x;
                 this._surface.createRect({x : KEYBOARD_WIDTH, y : 0, width : viewport_size.w, height : BOTTOM_MEASURE_NUM_BAR})
                     .setFill("white");
@@ -258,7 +279,7 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
                 this._metaevent_list.filter(function(metaevent){    //メタイベントのアイコンを描画する
                     return this.isBetween(viewport_pos.x, viewport_pos.x + viewport_size.w, metaevent.x);
                 }, this).forEach(function(metaevent){
-                    var offset = metaevent.x - viewport_pos.x + this.keyboard_size.width;
+                    var offset = metaevent.x - viewport_pos.x + this.keyboard_size.w;
                     measure_num_texts.every(function(text){
                         var width = text.rawNode.offsetWidth;
                         if(this.isBetween(text.shape.x, text.shape.x + width, offset)){
@@ -320,7 +341,7 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
                     }
                     
                     info.event = tmp;
-                    info.x = tmp.start_time / MULTIPLIERS_NOTE_LEN - viewport_pos.x + _self.keyboard_size.width;
+                    info.x = tmp.start_time / MULTIPLIERS_NOTE_LEN - viewport_pos.x + _self.keyboard_size.w;
                     if(inner_index !== 0){info.x += (inner_index - 1) * tmp.gate_time / MULTIPLIERS_NOTE_LEN;}
                     info.y = _self.calcNoteNumPos(tmp.pitch) + _self._keyboard_pos;
                     info.width = (inner_index === 0) ? tmp.length / MULTIPLIERS_NOTE_LEN - tmp.gate_time / MULTIPLIERS_NOTE_LEN :
@@ -373,7 +394,7 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
                            .setStroke("black");
                     on(note_rect.rawNode, "click", function(e){
                         var node = e.currentTarget, pos = {x : node.x.baseVal.value, y : node.y.baseVal.value};
-                        var ticks = _self.convertPosToTicks(pos.x + viewport_pos.x - _self.keyboard_size.width);
+                        var ticks = _self.convertPosToTicks(pos.x + viewport_pos.x - _self.keyboard_size.w);
                         var target = findNoteAt(ticks, pos.y), velocity_display = registry.byId("velocity");
                         velocity_display.set("value", target.velocity);
                         
@@ -406,8 +427,8 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
                 this._drawInfobar();
                 
                 //鍵盤を左端に表示する
-                var TOTAL_KEYBOARD_HEIGHT = 7 * this.keyboard_size.height;
-                this._surface.createImage({x : 0, y : this._keyboard_pos, width : this.keyboard_size.width,
+                var TOTAL_KEYBOARD_HEIGHT = 7 * this.keyboard_size.h;
+                this._surface.createImage({x : 0, y : this._keyboard_pos, width : this.keyboard_size.w,
                     height : TOTAL_KEYBOARD_HEIGHT, src : "piano_roll/images/keyboard.svg"});
             },
             
@@ -423,8 +444,12 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
             onSoundPlaying : function(ticks){
                 this._cur_ticks += ticks;
                 var original_offset = this.convertTicksToPos(this._cur_ticks), viewport_size = this.get("_viewport_size");
-                var PIANO_ROLL_WIDTH = viewport_size.w - this.keyboard_size.width;
-                var offset = original_offset % PIANO_ROLL_WIDTH + this.keyboard_size.width;
+                var PIANO_ROLL_WIDTH = viewport_size.w - this.keyboard_size.w;
+                var offset = original_offset % PIANO_ROLL_WIDTH + this.keyboard_size.w;
+                if(!this.isBetween(this._viewport_pos.x, this._viewport_pos.x + PIANO_ROLL_WIDTH, original_offset)){ //再生中のノートが表示されていなければそこまで移動する
+                    this._viewport_pos.x = Math.floor(original_offset / PIANO_ROLL_WIDTH) * PIANO_ROLL_WIDTH;
+                    this.onUpdate();
+                }
                 if(this._viewport_pos.x + PIANO_ROLL_WIDTH < original_offset){
                     this._viewport_pos.x += PIANO_ROLL_WIDTH;
                     this.onUpdate();
@@ -443,13 +468,14 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
                 if(this._touched){
                     e.preventDefault();
                     var diff_x = e.x - this._last_mouse_pos.x, diff_y = e.y - this._last_mouse_pos.y, changed = false, viewport_pos = this._viewport_pos;
-                    if(Math.abs(diff_y) > 0 && this.isBetween(0, 7 * this.keyboard_size.height - this._viewport_size.h, viewport_pos.y + diff_y) &&
-                        this.isBetween(-7 * this.keyboard_size.height + this._viewport_size.h, 0, this._keyboard_pos + diff_y)){
+                    var pianoroll_height = this.get("_pianoroll_height");
+                    if(Math.abs(diff_y) > 0 && this.isBetween(0, 7 * this.keyboard_size.h, viewport_pos.y + diff_y) &&
+                        this.isBetween(-7 * this.keyboard_size.h + pianoroll_height, 0, this._keyboard_pos + diff_y)){
                         viewport_pos.y += diff_y;
                         this._keyboard_pos += diff_y;
-                        viewport_pos.y = this.clip(0, 7 * this.keyboard_size.height - this._viewport_size.h, viewport_pos.y);
-                        this._keyboard_pos = this.clip(-7 * this.keyboard_size.height + this._viewport_size.h, 0, this._keyboard_pos);
-                        this.cur_uppermost_note = this.clip(12, 107, this.cur_uppermost_note);
+                        viewport_pos.y = this.clip(0, 7 * this.keyboard_size.h, viewport_pos.y);
+                        this._keyboard_pos = this.clip(-7 * this.keyboard_size.h + pianoroll_height, 0, this._keyboard_pos);
+                        this.cur_uppermost_note = this.clip(this._lowest_uppermost_note_num, 107, this.cur_uppermost_note);
                         
                         var bar_heights = this.get("_bar_heights"), bar_height = (this.isInLowerOfOctave(this.cur_uppermost_note)) ? bar_heights.lower : bar_heights.upper;
                         if(this.cur_uppermost_note_pos + bar_height < Math.abs(this._keyboard_pos)){

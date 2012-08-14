@@ -14,7 +14,8 @@ define({
         "noise" : "Noise",
         "e_tempo_change" : "Tempo Change",
         "e_key_change" : "Key Change",
-        "e_program_change" : "Program Change"
+        "e_program_change" : "Program Change",
+        "user_defined_wave" : "User defined sound"
     },
     
     ja : true
