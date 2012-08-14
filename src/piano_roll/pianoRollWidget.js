@@ -29,7 +29,7 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
             _viewport_pos : {x : 0, y : 0},
             // _keyboard_pos: Number
             //      鍵盤の上端の位置
-            //      ビューポートの初期位置が基準なので値域は-3 * keyboard_size.height <= y <= 4 * keyboard_size.height
+            //      ビューポートの初期位置が基準なので値域は-7 * keyboard_size.height <= y <= 0
             _keyboard_pos : 0,
             // _cur_ticks: Number
             //      現在のtick数
