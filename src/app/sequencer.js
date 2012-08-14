@@ -30,6 +30,7 @@ return declare(null, {
         this.sound_producer = null;                         //バックグラウンドで波形生成を担当する
         this.progress_bar = registry.byId("main_progress_bar");   //進捗状況を表示するダイアログ
         this.can_play = true;
+        this.hold_btn_pressed = false;
         this.func_definition = null;                        //波形生成スレッドに送る関数の定義
         
         var _self = this;
@@ -59,7 +60,7 @@ return declare(null, {
             }},
             {shorter_name : null, longer_name : ["program_change"], func : function(args){
                 var env = _self.env[args[2]];
-                env.setProgramNumForTrack(env.getCurrentTrackNum(), args[0].value);
+                env.setProgramNumForTrack(env.getCurrentTrackNum(), lang.isArray(args[0].value) ? args[0].value[0] : args[0].value);
             }},
             {shorter_name : "v", longer_name : ["volume"], func : function(/*args*/){
                 //var env = _self.env[args[2]];
@@ -219,10 +220,11 @@ return declare(null, {
                 this.note_tags.push([]);
                 this.cur_ast_node = {};     //トラックが変わったので、適当なノードを着目ノードに設定する
                 this.env.for_worker.restoreDefault();
-                this.env.for_worker.setVolume(this.env.for_worker.getCurrentTrackNum(), 127);
+                this.env.for_worker.setVolume(this.env.for_worker.getCurrentTrackNum(), 100);
                 this.env.for_worker.setProgramNumForTrack(this.env.for_worker.getCurrentTrackNum(), 0);
                 this.next_metaevent = this.find(this.note_tags[0], function(tag){
-                    return((tag.name == "t" || tag.name == "tempo" || tag.name == "k.sign" || tag.name == "key_signature") && tag.start_frame >= 0);
+                    return((tag.name == "t" || tag.name == "tempo" || tag.name == "k.sign" || tag.name == "key_signature") &&
+                        tag.start_frame >= 0);
                 });
             }else if(node[0].value === "function"){
                 this.func_definition = {params : node[1].value, body : node[2].value};
@@ -263,7 +265,10 @@ return declare(null, {
             var cur_frame = this.cur_ast_node.end_frame || 0;
             while(this.next_metaevent && this.next_metaevent.start_frame <= cur_frame){
                 if(this.next_metaevent.start_frame != cur_frame){
-                    alert("Warning! The current note will play over a metaevent! It might cause the track to delay against the track #0.");
+                    var tmp = this.next_metaevent;
+                    var msg = (tmp.name == "t" || tmp.name == "tempo") ? "It might cause the track to delay against the track #0." :
+                        "The current note wouldn't be affected by the new key signature.";
+                    alert("Warning! The current note will play over a metaevent around " + cur_frame + " frames!\n" + msg);
                 }
                 
                 var event = this.next_metaevent, prev_index = this.note_tags[0].indexOf(this.next_metaevent);
@@ -374,6 +379,10 @@ return declare(null, {
             var ticks = data_length / sample_frame_per_tick;
             this.next_ticks += ticks;
         }
+        if(this.hold_btn_pressed && track_num === 0){      //一時停止命令が出たので、一旦再生をやめる
+            this.compressor.disconnect();
+            return;
+        }
     },
     
     reinitialize : function(){
@@ -389,17 +398,17 @@ return declare(null, {
     },
     
     stop : function(){
-        this.hold();
-    },
-    
-    hold : function(){
         this.compressor.disconnect();
         this.can_play = false;
     },
     
+    hold : function(){
+        this.hold_btn_pressed = true;
+    },
+    
     resume : function(){
         this.compressor.connect(this.context.destination);
-        this.can_play = true;
+        this.hold_btn_pressed = false;
     },
     
     play : function(){

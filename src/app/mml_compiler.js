@@ -286,7 +286,7 @@ define(["app/lexer", "app/parser", "app/utils", "treehugger/tree", "treehugger/t
                     }
                     
                     if(tokens[i + 2].type != "identifier"){
-                        this.macro_error(tokens[i + 2].line_num, tokens[i + 2].col, "Macros need to have a name to refer to them later!");
+                        this.macro_error(tokens[i + 2].line_num, tokens[i + 2].col, "Macros need to have a name to be referred to later!");
                     }
                     var new_macro = {name : tokens[i + 2].value};
                     i += 3;
@@ -391,7 +391,8 @@ define(["app/lexer", "app/parser", "app/utils", "treehugger/tree", "treehugger/t
             
             this.parse = function(input_str){
                 this.env = new util.Enviroment();
-                var tokens = lexer.tokenize(input_str);
+                var target_str = input_str + "\n";
+                var tokens = lexer.tokenize(target_str);
                 if(!tokens.length){return;}
                 var preparsed_tokens = this.preparse(tokens);
                 var result = parser.parse(preparsed_tokens, "mml");

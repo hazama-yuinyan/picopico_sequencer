@@ -48,7 +48,7 @@ var cur_sample_frame = 0, len_suppressing = 1000, note_id = 0, cur_track_num = 0
 onmessage = function(e){
     var data = e.data;
     if(data.func){
-        functions.push(new Function(data.func.params[0], data.func.params[2], data.func.body));
+        eval("functions.push(function("+data.func.params[0]+","+data.func.params[2]+"){"+data.func.body+"})");
     }
     var freq_list = data.freq_list, func = functions[data.program_num], note_len = data.note_len, buffer = new Float32Array(note_len);
     var gate_time = data.gate_time, is_chord = (freq_list.length > 1);

@@ -22,7 +22,7 @@ var profile = (function(){
         
         layers: {
             "dojo/dojo": {
-                include: [ "dojo/dojo", "app/main" ],
+                include: [ "dojo/dojo", "app/main", "app/modules" ],
                 customBase: true,
                 boot: true
             }
@@ -37,10 +37,10 @@ var profile = (function(){
             'dojo-publish-privates':0,
     
             // We’re fully async, so get rid of the legacy loader
-            //'dojo-sync-loader':0,
+            'dojo-sync-loader':0,
             
             // dojo-xhr-factory relies on dojo-sync-loader
-            //'dojo-xhr-factory':0,
+            'dojo-xhr-factory':0,
     
             // We aren’t loading tests in production
             'dojo-test-sniff':0

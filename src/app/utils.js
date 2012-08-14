@@ -7,7 +7,7 @@ define(["dojo/_base/declare"], function(declare){
             this.cur_default_length = 480;
             this.cur_default_octave = 4;
             this.cur_gate_time = 0;
-            this.cur_volumes = [127];
+            this.cur_volumes = [100];
             this.cur_track_num = 0;
             this.program_nums = [0];
             
@@ -32,7 +32,7 @@ define(["dojo/_base/declare"], function(declare){
         setCurrentKey : function(key_def){
             this.notes_with_signature = {};
             if(typeof key_def == "string"){
-                throw SyntaxError("Sorry, but currently you can't set key signatures by keyword! Please specify which notes should " + 
+                throw new SyntaxError("Sorry, but currently you can't set key signatures by keyword! Please specify which notes should " + 
                     "be sharpend or flattened one by one.");
             }else{
                 var notes = key_def[1], signs = key_def[0];
@@ -106,7 +106,7 @@ define(["dojo/_base/declare"], function(declare){
         },
         
         invoke : function(name, args){
-            if(!this.command_names[name]){throw Error("Command not found named: " + name);}
+            if(!this.command_names[name]){throw new Error("Command not found : " + name);}
             this.command_names[name](args);
         },
         

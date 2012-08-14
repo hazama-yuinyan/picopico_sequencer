@@ -38,7 +38,7 @@ define({
         "msg_save_failed" : "Failed to save.",
         "no_file_name" : "Untitled",
         "last_modified" : "Last modified at",
-        "connect_to_server" : "Connecting to the server...",
+        "connect_to_server" : "Connecting to the server",
         "received_responce" : "Received responce from the server"
     },
     

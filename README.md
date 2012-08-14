@@ -16,13 +16,14 @@ See the __How to run the program__ section for more details.
   * MML editing
   * A visual representation in piano roll
   * Total of 6 types of "primitive" sound waves
+  * The potential of generating any type of sound
   * MML editing with GUI(not yet implemented)
 
 ## How to run the program
-As mentioned above, you can't run the program out of the box. To run the program, you need to have the __dojo__ library in proper directory.
+As mentioned above, you can't run the program out of the box. To run the program, you need to have the __dojo__ library in the proper directory.
 There are two ways to do that. One is to download __dojo__ files and move the files to the proper directory by yourself.
 And the other is to simply use the `git submodule` commands. In detail you must first execute `git submodule init` on the root directory of the
-project and then just type `git submodule update`. Then it will collect all modules the program needs and will immediately take you to the tour of
+project and then just type `git submodule update` or just use `git submodule update --init --recursive`. Then it will collect all modules the program needs and will immediately take you to the tour of
 the program.
 
 ## Just before the release...

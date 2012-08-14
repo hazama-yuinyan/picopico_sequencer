@@ -8,11 +8,15 @@
         <div id="content">
         <h1>The Picopico Sequencer Manual</h1>
         <article>
-            <section id="abstraction">
+            <section id="introduction">
                 <h2>Introduction</h2>
                 <p>Welcome to the Picopico Sequencer!<br>
                 Picopico Sequencer is a Flash-free and purely HTML5 written music sequencer. It describes music in MML and has a piano-roll-style
-                visualization. Even though it is not implemented as of now, it will have the ability to edit music with GUI.
+                visualization. Even though it is not implemented as of now, it will have the ability to edit music with GUI.<br>
+                The Japanese term "Picopico" generally refers to the sounds produced by the traditional video game consoles such as the Family Computer and
+                Super Family Computer(SFC), which are also known as NES and SNES in English-speaking countries. So the name "Picopico Sequencer" suggests that
+                the program can only produce such eh...(I don't know how it can be described in English) primitive sounds.<br>
+                However, there is a way to break the limit, which is explained later.
                 </p>
             </section>
             
@@ -26,24 +30,26 @@
                 <h2>Basics</h2>
                 <p>Picopico Sequencer is a web-based music sequencer which uses MML for music notation.
                 </p>
+                <h3>Interfaces</h3>
+                <p></p>
             </section>
             
             <section id="MML_grammar">
                 <h2>Quick reference for MML grammar</h2>
                 <p>As you might know, MML has many dialects. It is often the case that although some two music sequencers are said to use the
-                same MML processor, they actually have slightly different syntaxes and commands. So the following refereces may contain information
+                same MML processor, they actually have slightly different syntaxes and commands. So the following refereces may contain informations
                 only valid for Picopico Sequencer.
                 </p>
                 <div>
                     <h3>Legends</h3>
                     <ul>
-                        <li>() : Represents arguments. Unlike the programming languages you don't need to write the parentheses in MML sources.<br>
+                        <li>() : Represents arguments. Unlike the programming languages, you don't need to write the parentheses in MML sources.<br>
                             It also represents a group of characters referring to commands.
                         </li>
-                        <li>[] : Represents that it can be ommited.</li>
+                        <li>[] : Suggests that it can be ommited.</li>
                         <li>"" : Double-quoted signs have to be explicitly written in MML sources.</li>
                         <li>xxx-xxx : Indicates a range of letters, numbers etc.</li>
-                        <li>XXX : Letters in capital refer to commands and those letters have to be put in MML sources as it is.<br>
+                        <li>XXX : Letters in capital refer to commands and those letters have to be put in MML sources as they are.<br>
                             Note that the case is not significant.(So xxx and XXX refer to the same command.)
                         </li>
                     </ul>
@@ -82,7 +88,7 @@
                     <div class="grammar_right">
                         <p>
                         example 1:<br>
-                        cdef edc /This plays the sequence "CDEF DEC" with each note in the default length<br>
+                        cdef edc /It plays the sequence "CDEF DEC" with each note in the default length<br>
                         c++++ /This is equivalent to d++(=e)<br>
                         c- /This means a flat C, which is actually a B.<br>
                         c!<br>
@@ -219,7 +225,7 @@
                 <div class="grammar_spec">
                     <div class="grammar_left">
                         <p>Sets the default volume. Although there are four ways of notation, they are all identical in functionality.
-                        If you omit the velocity parameter in a note command, it is set to the default volume. The initial value is 100.
+                        If you omit the velocity parameter in a note command, it is set to the default volume.
                         </p>
                     </div>
                     <div class="grammar_right">
@@ -241,7 +247,7 @@
                 </div>
                 <div class="grammar_spec">
                     <div class="grammar_left">
-                        <p>Sets the tempo in beats per minute. Note that the above values are just the reference values and therefore no error will
+                        <p>Sets the tempo in beats per minute. Note that the above values are just the preferable values and therefore no error will
                         be seen if out of the range. The initial value is 120.
                         </p>
                     </div>
@@ -264,7 +270,8 @@
                 </div>
                 <div class="grammar_spec">
                     <div class="grammar_left">
-                        <p>Changes the sound type. By default there are 6 types of sound.
+                        <p>Changes the sound type. By default there are 6 types of sound. The following table shows the relations between
+                        program numbers and sound types.
                         <table>
                             <caption>Program numbers and the corresponding sound types</caption>
                             <thead>
@@ -300,8 +307,7 @@
                 </div>
                 <div class="grammar_spec">
                     <div class="grammar_left">
-                        <p>It plays the MML in curly braces within the "step". The "step" can be specified in the same way as that of a note
-                        command.<br>
+                        <p>It plays the MML in curly braces within the "step". The "step" can be specified in the same way as the note command.<br>
                         If the step is ommited the default duration will be applied as in the note command.
                         </p>
                     </div>
@@ -324,7 +330,7 @@
                 </div>
                 <div class="grammar_spec">
                     <div class="grammar_left">
-                        <p>It treats the double-quoted notes as a chord. And you can write a duration in the double quotation marks only once.
+                        <p>It treats the double-quoted notes as a chord. You can write a duration in the double quotation marks only once.
                         </p>
                     </div>
                     <div class="grammar_right">
@@ -374,8 +380,9 @@
                     <div class="grammar_left">
                         <p>Call macros introduced by the macro definitions.
                         </p>
-                        <p>Macros can take the less or same number of arguments than that of the formal parameters. If there are less arguments
-                        than in the formal parameters, the compiler will detect it and automatically fill them with empty strings.<br>
+                        <p>Macros can take the less or same number of arguments than that of the formal parameters. If the argument list has
+                        the less number of arguments than the formal parameter list does, the compiler will detect it and automatically fill
+                        them with empty strings.<br>
                         Macros can take any valid MML codes as arguments except line breaks and another macro call.
                         </p>
                     </div>

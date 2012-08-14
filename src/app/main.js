@@ -157,6 +157,18 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit
         }
     },
     
+    addDotToStatusBar = function(interval, str){
+        var tmp = str;
+        var timer_id = setInterval(function(){
+            tmp = tmp + ".";
+            setMsgOnStatusBar(tmp);
+        }, interval);
+        setMsgOnStatusBar(str);
+        return function(){
+            clearInterval(timer_id);
+        };
+    },
+    
     newFile = function(){
         if(contents_changed.source){
             if(confirm(resources.warning_not_saved)){
@@ -210,6 +222,7 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit
                     target : file_name
                 },
                 load : function(json_data){
+                    clear();
                     editor.set("value", json_data.source);
                     old_value = json_data.source;
                     title_editor.set("value", file_name);
@@ -224,10 +237,11 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit
                     alert(msg);
                 }
             });
-            setMsgOnStatusBar(resources.connect_to_server);
+            var clear = addDotToStatusBar(1000, resources.connect_to_server);
             break;
             
         case "FILE" : 
+            throw new Error("Not implemented yet!");
             break;
             
         default :
@@ -286,16 +300,18 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit
             http_obj.setRequestHeader("Content-Type", "application/json; charset=UTF-8");
             http_obj.onreadystatechange = function(){
                 if(this.readyState == 4 && this.status == 200){
+                    clear();
                     setMsgOnStatusBar(resources.msg_file_saved);
                     resetContentsStatus();
                     old_value = item.source;
                     dom_class.toggle("save_button_label", "not_saved", false);  //remove the "not saved" indicator
                 }else if(this.readyState == 4){
+                    clear();
                     setMsgOnStatusBar(resources.msg_save_failed);
                 }
             };
             http_obj.send(JSON.stringify(item));
-            setMsgOnStatusBar(resources.connect_to_server);
+            var clear = addDotToStatusBar(1000, resources.connect_to_server);
             break;
             
         case "FILE":
@@ -393,6 +409,7 @@ return {
                             method : "get_list"
                         },
                         load : function(json_data){
+                            clear();
                             setMsgOnStatusBar(resources.received_responce);
                             data = json_data;
                             names = json_data.map(function(item){return {value : item.name, label : item.name};});
@@ -404,7 +421,7 @@ return {
                             alert(msg);
                         }
                     });
-                    setMsgOnStatusBar(resources.connect_to_server);
+                    var clear = addDotToStatusBar(1000, resources.connect_to_server);
                     break;
                     
                 case "FILE":
@@ -523,7 +540,7 @@ return {
                 "f t66 e t132 &lt;c&gt;bga t80 g2<br>" +
                 "[key_signature +fc][volume 80]<br>" +
                 "t80 l8 bbffa2r4 bbffa4baa4^8,,80g,,-20<br>" +
-                "[key_signature -b, -e, -a, -d, -g]<br>" +
+                "[key_signature -b, -e, -a, -d, -g][program 1]<br>" +
                 "l4 o4 u30 {dde}e2d4,*240,+30 cc&gt;b4&lt;c4d1<br><br>" +
     
                 '(t2)@0 v65 l2 &quot;ceg&quot; &quot;ceg&quot; &quot;cfa&quot; &quot;d1gb&quot;<br>' +

@@ -37,6 +37,6 @@ define({
     "msg_save_failed" : "保存に失敗しました。",
     "no_file_name" : "名無しのファイルさん",
     "last_modified" : "最終更新日時",
-    "connect_to_server" : "サーバーの応答を待っています...",
+    "connect_to_server" : "サーバーの応答を待っています",
     "received_responce" : "サーバーからの応答を受け付けました。"
 });
