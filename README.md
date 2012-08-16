@@ -1,6 +1,6 @@
 # Picopico Sequencer
 ====================
-__picopico sequencer__ is a web-based and Flash-free music sequencer.
+__picopico sequencer__ is a web-based and Flash-free music sequencer and sythesizer.
 It employs the brand new __WebAudio API__ for playing the sounds. So as of now it's very likely that Picopico Sequencer only works properly on
 Google Chrome.
 
@@ -23,8 +23,8 @@ See the __How to run the program__ section for more details.
 As mentioned above, you can't run the program out of the box. To run the program, you need to have the __dojo__ library in the proper directory.
 There are two ways to do that. One is to download __dojo__ files and move the files to the proper directory by yourself.
 And the other is to simply use the `git submodule` commands. In detail you must first execute `git submodule init` on the root directory of the
-project and then just type `git submodule update` or just use `git submodule update --init --recursive`. Then it will collect all modules the program needs and will immediately take you to the tour of
-the program.
+project and then just type `git submodule update` or just use `git submodule update --init --recursive`. Then it will collect all modules the
+program needs and will immediately take you to the tour of the program.
 
 ## Just before the release...
 At the very end of development, you must build the program to reduce the number of HTTPRequests and the program size. To do that, you must just
@@ -32,7 +32,7 @@ invoke the build.sh at the root directory of the project.
 
 ## Dependent Open Source Projects
   * [dojo] for the great graphical user interfaces
-  * [treehugger] for the AST of MML parsing
+  * [treehugger] for the AST of parsed MML
   * [jasmine] for testing framework
 
 ## Links to dependency projects

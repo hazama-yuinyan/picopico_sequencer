@@ -100,7 +100,7 @@ return declare(null, {
         }
         this.nodes = [this.context.createJavaScriptNode(this.buffer_size, 1, 1)];
         this.gain_nodes = [this.context.createGainNode()];
-        this.last_vol = 127;
+        this.last_vol = 100;
         this.sound_producer = new Worker("app/sound_producer.js");
         
         this.env.for_worker.restoreDefault();
@@ -229,9 +229,9 @@ return declare(null, {
             }else if(node[0].value === "function"){
                 this.func_definition = {params : node[1].value, body : node[2].value};
             }else{
-                var start_frame = this.cur_ast_node.end_frame || 0;
+                var start_frame = this.cur_ast_node.end_frame || 0, start_ticks = this.cur_ast_node.end_ticks || 0;
                 this.note_tags[track_num].push({
-                    type : "command", name : node[0].value, arg1 : node[1], arg2 : node[2], start_frame : start_frame
+                    type : "command", name : node[0].value, arg1 : node[1], arg2 : node[2], start_frame : start_frame, start_ticks : start_ticks
                 });
             }
         }
@@ -262,26 +262,28 @@ return declare(null, {
         }
         
         if(this.next_metaevent){
-            var cur_frame = this.cur_ast_node.end_frame || 0;
-            while(this.next_metaevent && this.next_metaevent.start_frame <= cur_frame){
-                if(this.next_metaevent.start_frame != cur_frame){
+            var cur_ticks = this.cur_ast_node.end_ticks || 0;
+            while(this.next_metaevent && this.next_metaevent.start_ticks <= cur_ticks){
+                if(this.next_metaevent.start_ticks != cur_ticks){
                     var tmp = this.next_metaevent;
                     var msg = (tmp.name == "t" || tmp.name == "tempo") ? "It might cause the track to delay against the track #0." :
                         "The current note wouldn't be affected by the new key signature.";
-                    alert("Warning! The current note will play over a metaevent around " + cur_frame + " frames!\n" + msg);
+                    alert("Warning! The current note will play over a metaevent around " + cur_ticks + " ticks!\n" + msg);
                 }
                 
                 var event = this.next_metaevent, prev_index = this.note_tags[0].indexOf(this.next_metaevent);
                 this.cmd_manager.invoke(event.name, [event.arg1, event.arg2, "for_worker"]);
                 this.next_metaevent = this.find(this.note_tags[0], function(tag, cur_index){
                     return((tag.name == "t" || tag.name == "tempo" || tag.name == "k.sign" || tag.name == "key_signature") &&
-                        prev_index < cur_index && tag.start_frame >= cur_frame);
+                        prev_index < cur_index && event.start_frame <= tag.start_frame);
                 });
             }
         }
         
         var start_frame = this.cur_ast_node.end_frame || 0, ticks = (node.cons == "chord") ? node[1][0].value : node[0][1][0].value;
+        var start_ticks = this.cur_ast_node.end_ticks || 0;
         node.end_frame = start_frame + this.convertMidiTicksToSampleFrame(ticks);
+        node.end_ticks = start_ticks + ticks;
         var next_nodes = (node.cons == "chord") ? node[0].toArray() : [[node]];
         var freqs = next_nodes.map(function(note){
             return this.convertToFrequency(note[0][0][0][0].value);

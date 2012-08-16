@@ -137,9 +137,31 @@
                     </div>
                 </div>
                 <div class="spec_header">
+                    <h3>トラックの変更</h3>
+                    <p>"("T (number)")"<br>
+                    "["TRACK (number)"]" where...
+                    </p>
+                    <ul>
+                        <li>number = 1~ : トラックナンバー</li>
+                    </ul>
+                </div>
+                <div class="grammar_spec">
+                    <div class="grammar_left">
+                        <p>新しいトラックの定義を開始します。なお、定義可能なトラック数に特段の上限はありません。
+                        </p>
+                    </div>
+                    <div class="grammar_right">
+                        <p>
+                        例.<br>
+                        (t1)<br>
+                        [track 2]
+                        </p>
+                    </div>
+                </div>
+                <div class="spec_header">
                     <h3>調号</h3>
                     <p>"["K.SIGN (key1, key2...)"]" or "["K.SIGN (sign note1, note2...)"]"<br>
-                    "["KEY SIGNATURE (key1, key2...)"]" or "["KEY SIGNATURE (sign note1, note2...)"]" where...
+                    "["KEY_SIGNATURE (key1, key2...)"]" or "["KEY_SIGNATURE (sign note1, note2...)"]" where...
                     </p>
                     <ul>
                         <li>key1, key2... = (+-#)(A-G) : 調号をつける音名とつける調号の種類</li>
