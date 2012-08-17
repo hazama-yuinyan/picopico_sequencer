@@ -6,11 +6,12 @@
 
 
 define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit/registry", "dojox/timing", "dijit/form/Select","app/mml_updater",
-    "dojo/i18n!app/nls/resources", "dojo/aspect", "dojo/_base/xhr"],
-    function(compiler, Sequencer, dom_class, on, registry, timing, Select, updater, resources, aspect, xhr){
+    "dojo/i18n!app/nls/resources", "dojo/aspect", "dojo/_base/xhr", "dojo/dom-geometry"],
+    function(compiler, Sequencer, dom_class, on, registry, timing, Select, updater, resources, aspect, xhr, dom_geometry){
 
     var sequencer = null,
     data_store = null,
+    saved_data = null,
     timer = null,
     contents_changed = {
         source : false,
@@ -385,7 +386,7 @@ return {
         },
         
         "#open_from" : function(){
-            var open_from = registry.byId("open_from");
+            var open_from = registry.byId("open_from"), open_btn = registry.byId("open_button"), dialog_content = registry.byId("openDialogContent");
             var resource_names = ["open_explanation", "type_LOCAL", "type_SERVER", "type_FILE"], i = 0;
             open_from.options.forEach(function(option){
                 option.label = resources[resource_names[i]];
@@ -393,11 +394,11 @@ return {
             });
             open_from.startup();
             open_from.onChange = function(){
-                var loc = this.get("value"), names, data;
+                var loc = this.get("value"), names;
                 switch(loc){
                 case "LOCAL":
-                    data = retrieveAllDataFromStorage();
-                    names = data.map(function(item){return {value : item.name, label : item.name};});
+                    saved_data = retrieveAllDataFromStorage();
+                    names = saved_data.map(function(item){return {value : item.name, label : item.name};});
                     names.unshift({value : "", label : resources.open_prompt, selected : true});
                     break;
                 
@@ -411,11 +412,12 @@ return {
                         load : function(json_data){
                             clear();
                             setMsgOnStatusBar(resources.received_responce);
-                            data = json_data;
+                            saved_data = json_data;
                             names = json_data.map(function(item){return {value : item.name, label : item.name};});
                             names.unshift({value : "", label : resources.open_prompt, selected : true});
                             select_file.set("options", names);
                             select_file.startup();
+                            open_btn.openDropDown();
                         },
                         error : function(msg){
                             alert(msg);
@@ -433,28 +435,30 @@ return {
                     return;
                 }
                 
-                var select_file = registry.byId("select_file");
+                var select_file = registry.byId("select_file"), _self = this;
                 if(!select_file){
                     select_file = new Select({
                         name : "selectFile",
                         options : names,
                         maxHeight : -1,
                         onChange : function(){
-                            var file_name = this.get("value"), target;
-                            data.every(function(item){
+                            var file_name = this.get("value"), target, location = _self.get("value");
+                            saved_data.every(function(item){
                                 if(item.name == file_name){
                                     target = item;
                                     return false;
                                 }
                                 return true;
                             });
-                            openFile(loc, file_name, target);
+                            openFile(location, file_name, target);
                         }
                     }, "select_file");
+                    dialog_content.addChild(select_file);
                 }else{
                     select_file.set("options", names);
                 }
                 select_file.startup();
+                open_btn.openDropDown();
             };
         },
         
