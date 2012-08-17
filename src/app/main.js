@@ -534,28 +534,7 @@ return {
         "#editor" : function(){
             var editor = registry.byId("editor");
             newFile();
-            editor.set("value", "/[volume 127] [velocity 127]<br>" +
-                "[function (freq, time){<br>" +
-                "return Math.cos(2 * Math.PI * freq * time);<br>" +
-                "}]<br>" +
-                "(t1)@6 v40 c4c8d8 e8e8g4 e8e8d8d8 c1<br>" +
-                "[key_signature +f]<br>" +
-                "t132 l4 d edg f2d eda g2d &lt;d&gt;bg<br>" +
-                "f t66 e t132 &lt;c&gt;bga t80 g2<br>" +
-                "[key_signature +fc][volume 80]<br>" +
-                "t80 l8 bbffa2r4 bbffa4baa4^8,,80g,,-20<br>" +
-                "[key_signature -b, -e, -a, -d, -g][program 1]<br>" +
-                "l4 o4 u30 {dde}e2d4,*240,+30 cc&gt;b4&lt;c4d1<br><br>" +
-    
-                '(t2)@0 v65 l2 &quot;ceg&quot; &quot;ceg&quot; &quot;cfa&quot; &quot;d1gb&quot;<br>' +
-                '/ここからキーGMajor<br>' +
-                'l4 d &quot;&gt;b&lt;e&quot;d&quot;&gt;b&lt;g&quot; &quot;a2f&quot;d &quot;ce&quot;d&quot;ca&quot;<br>' +
-                '&quot;&gt;b&lt;g&quot;960&quot;&gt;b&lt;d&quot; &quot;d2g&lt;d&quot;&quot;dg&quot; &quot;df&quot;&quot;ce&quot;&quot;c&lt;c&quot;<br>' +
-                '&gt;&quot;db&quot;960&quot;ca&quot; &quot;&gt;b2&lt;g&quot;<br>' +
-                '/ここからキーDMajor<br>' +
-                'l8 ffdde2r4 ffdde4fee4^8,,60d,,50<br>' +
-                '/ここからキーDbMajor<br>' +
-                'v100 l1 o3 &quot;dfa&quot; l2 &quot;egb&quot; &quot;ea&lt;c&quot; &gt;&quot;dfa&quot;1920, 120<br>');
+            
             aspect.after(editor, "onKeyUp", function(){ //ソース画面で入力するたびに変更されたことが検知できるようにする
                 var new_val = editor.get("value");
                 if(old_value != new_val){
@@ -566,7 +545,6 @@ return {
                     dom_class.toggle("save_button_label", "not_saved", false);
                 }
             });
-            old_value = editor.get("value");
         }
     },
     resources : resources
