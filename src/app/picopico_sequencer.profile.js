@@ -16,6 +16,8 @@ var profile = (function(){
      
         selectorEngine: "acme",
         
+        localList : ["en", "ja"],
+        
         layers: {
             "dojo/dojo": {
                 include: [ "dojo/dojo", "app/main", "app/modules" ],
