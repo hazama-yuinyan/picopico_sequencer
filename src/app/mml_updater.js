@@ -106,6 +106,9 @@ define(["dojo/_base/lang", "app/mml_compiler"], function(lang, mml_compiler){
                         list.push(inner);
                         inner = [];
                     }else if(tmp.name.search(/^(t|tempo|k.sign|key_signature|program_change)/) != -1){
+                        if(tmp.name == "program_change"){   //record the track number
+                            tmp.arg2 = list.length;
+                        }
                         metaevents.push(tmp);
                     }
                     break;
