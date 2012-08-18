@@ -1,8 +1,4 @@
 var profile = (function(){
-    var not_copied = {
-        "app/config" : 1,
-        "app/profile" : 1
-    };
     return {
         basePath: "..",
      
@@ -48,7 +44,15 @@ var profile = (function(){
      
         resourceTags: {
             amd: function (filename, mid) {
-                return !(mid in not_copied) && /\.js$/.test(filename);
+                return /\.js$/.test(filename);
+            },
+            
+            miniExclude: function(filename, mid){
+                return mid in {
+                    "app/picopico_sequencer.profile" : 1,
+                    "app/config" : 1,
+                    "app/config_build" : 1
+                };
             }
         }
     };
