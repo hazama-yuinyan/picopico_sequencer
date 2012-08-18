@@ -6,7 +6,7 @@ SRCDIR="$ROOTDIR/src"
 
 TOOLSDIR="$SRCDIR/lib/util/buildscripts"
 
-RESOURCES=(src/style.css src/manual_style.css src/help_ja.html src/help_en.html)
+RESOURCES=(src/manual_style.css src/help_ja.html src/help_en.html)
 
 if [ ! -d "$TOOLSDIR" ]; then
     echo "Can't find Dojo build tools -- did you initialize submodules?(git submodule update --init --recursive)"
@@ -26,7 +26,6 @@ perl -pe "
   s/<\!--.*?-->//g;     #Strip comments
   s/<script src=\"app\/config.js\"><\/script>//g;
   s/\"lib\/dojo\/dojo.js\"/\"dojo\/dojo.js\"/;
-  s/\"lib\/dijit\/themes\/claro\/claro.css\"/\"dijit\/themes\/claro\/claro.css\"/;
   s/\s+/ /; #Collapse white-spaces" > release/index.html
 for path in ${RESOURCES[@]} ; do
     cp $path release
