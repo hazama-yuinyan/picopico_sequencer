@@ -1,4 +1,4 @@
-dojoConfig = {
+var dojoConfig = {
     async : true,
     isDebug : true,
     baseUrl : location.pathname.replace(/\/[^/]*$/, "/"),

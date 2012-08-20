@@ -1,6 +1,5 @@
-dojoConfig = {
+var dojoConfig = {
     basePath : "..",
-    baseUrl : '',
     packages : [
         {name : "dojo", location : "lib/dojo"},
         {name : "dijit", location : "lib/dijit"},

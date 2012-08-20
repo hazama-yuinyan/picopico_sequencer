@@ -6,8 +6,8 @@
 
 
 define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit/registry", "dojox/timing", "dijit/form/Select","app/mml_updater",
-    "dojo/i18n!app/nls/resources", "dojo/aspect", "dojo/_base/xhr", "dojo/dom-geometry"],
-    function(compiler, Sequencer, dom_class, on, registry, timing, Select, updater, resources, aspect, xhr, dom_geometry){
+    "dojo/i18n!app/nls/resources", "dojo/aspect", "dojo/request/xhr", "dojo/dom", "dojo/ready"],
+    function(compiler, Sequencer, dom_class, on, registry, timing, Select, updater, resources, aspect, xhr, dom, ready){
 
     var sequencer = null,
     data_store = null,
@@ -356,198 +356,173 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit
         hold();
     };
     
-return {
-    behaviors : {
-        "#compile_button" : function(target){
-            on(target, "click", function(e){
-                e.stopImmediatePropagation();
-                compile();
-            });
-        },
-        
-        "#controller" : function(){
-            var controller = registry.byId("controller");
-            switchController(controller, "play");
-        },
-        
-        "#stop_button" : function(target){
-            on(target, "click", function(e){
-                e.stopImmediatePropagation();
-                stop();
-            });
-        },
-        
-        "#new_button" : function(target){
-            on(target, "click", newFile);
-        },
-        
-        "#accept_button" : function(target){
-            on(target, "click", saveFile);
-        },
-        
-        "#open_from" : function(){
-            var open_from = registry.byId("open_from"), open_btn = registry.byId("open_button"), dialog_content = registry.byId("openDialogContent");
-            var resource_names = ["open_explanation", "type_LOCAL", "type_SERVER", "type_FILE"], i = 0;
-            open_from.options.forEach(function(option){
-                option.label = resources[resource_names[i]];
-                ++i;
-            });
-            open_from.startup();
-            open_from.onChange = function(){
-                var loc = this.get("value"), names;
-                switch(loc){
-                case "LOCAL":
-                    saved_data = retrieveAllDataFromStorage();
-                    names = saved_data.map(function(item){return {value : item.name, label : item.name};});
-                    names.unshift({value : "", label : resources.open_prompt, selected : true});
-                    break;
-                
-                case "SERVER":
-                    xhr.get({
-                        url : "sequencer",
-                        handleAs : "json",
-                        content : {
-                            method : "get_list"
-                        },
-                        load : function(json_data){
-                            clear();
-                            setMsgOnStatusBar(resources.received_responce);
-                            saved_data = json_data;
-                            names = json_data.map(function(item){return {value : item.name, label : item.name};});
-                            names.unshift({value : "", label : resources.open_prompt, selected : true});
-                            select_file.set("options", names);
-                            select_file.startup();
-                            open_btn.openDropDown();
-                        },
-                        error : function(msg){
-                            alert(msg);
-                        }
-                    });
-                    var clear = addDotToStatusBar(1000, resources.connect_to_server);
-                    break;
-                    
-                case "FILE":
-                    throw new Error("Not implemented yet!");
-                    break;
-                    
-                default:
-                    alert("保存元が選択されていません！");
-                    return;
-                }
-                
-                var select_file = registry.byId("select_file"), _self = this;
-                if(!select_file){
-                    select_file = new Select({
-                        name : "selectFile",
-                        options : names,
-                        maxHeight : -1,
-                        onChange : function(){
-                            var file_name = this.get("value"), target, location = _self.get("value");
-                            saved_data.every(function(item){
-                                if(item.name == file_name){
-                                    target = item;
-                                    return false;
-                                }
-                                return true;
-                            });
-                            openFile(location, file_name, target);
-                        }
-                    }, "select_file");
-                    dialog_content.addChild(select_file);
-                }else{
-                    select_file.set("options", names);
-                }
-                select_file.startup();
-                open_btn.openDropDown();
-            };
-        },
-        
-        "#save_as" : function(){
-            var save_as = registry.byId("save_as");
-            var resource_names = ["save_explanation", "type_LOCAL", "type_SERVER", "type_FILE"], i = 0;
-            save_as.options.forEach(function(option){
-                option.label = resources[resource_names[i]];
-                ++i;
-            });
-            save_as.startup();
-        },
-        
-        "#main_tab" : function(){
-            var tab_container = registry.byId("main_tab");
-            tab_container.watch("selectedChildWidget", function(name, old, new_val){
-                if(new_val.id == "piano_roll"){
-                    processMMLSource();
-                    new_val.set("_metaevent_list", data_store.metaevents);
-                    new_val.set("_tree", data_store.list);
-                }else if(old.id == "piano_roll"){
-                    old.set("_tree", null);
-                }
-            });
-        },
-        
-        "#track_selector" : function(){
-            var track_selector = registry.byId("track_selector"), piano_roll = registry.byId("piano_roll");
-            track_selector.watch("value", function(name, old, new_val){
-                piano_roll.set("_track_num", new_val);
-            });
-        },
-        
-        "#music_title" : function(){    //タイトルが変更されたかわかるよう監視する
-            var title_editor = registry.byId("music_title");
-            title_editor.watch("value", function(name, old, new_val){
-                if(new_val != old){
-                    contents_changed.name = true;
-                    dom_class.toggle("save_button_label", "not_saved", true);
-                }else{
-                    contents_changed.name = false;
-                    dom_class.toggle("save_button_label", "not_saved", false);
-                }
-            });
-        },
-        
-        "#author_editor" : function(){  //作成者名が変更されたかわかるよう監視する
-            var author_editor = registry.byId("author_editor");
-            author_editor.watch("value", function(name, old, new_val){
-                if(new_val != old){
-                    contents_changed.author = true;
-                    dom_class.toggle("save_button_label", "not_saved", true);
-                }else{
-                    contents_changed.author = false;
-                    dom_class.toggle("save_button_label", "not_saved", false);
-                }
-            });
-        },
-        
-        "#comment_editor" : function(){ //コメントが変更されたかわかるよう監視する
-            var comment_editor = registry.byId("comment_editor");
-            comment_editor.watch("value", function(name, old, new_val){
-                if(new_val != old){
-                    contents_changed.comment = true;
-                    dom_class.toggle("save_button_label", "not_saved", true);
-                }else{
-                    contents_changed.comment = false;
-                    dom_class.toggle("save_button_label", "not_saved", false);
-                }
-            });
-        },
-        
-        "#editor" : function(){
-            var editor = registry.byId("editor");
-            newFile();
+    ready(function(){
+        var compile_btn = dom.byId("compile_button"), stop_btn = dom.byId("stop_button");
+        on(compile_btn, "click", function(e){
+            e.stopImmediatePropagation();
+            compile();
+        });
+    
+        var controller = registry.byId("controller");
+        switchController(controller, "play");
+    
+        on(stop_btn, "click", function(e){
+            e.stopImmediatePropagation();
+            stop();
+        });
+    
+        var new_btn = dom.byId("new_button"), accept_btn = dom.byId("accept_button");
+        on(new_btn, "click", newFile);
+    
+        on(accept_btn, "click", saveFile);
+    
+        var open_from = registry.byId("open_from"), open_btn = registry.byId("open_button"), dialog_content = registry.byId("openDialogContent");
+        var resource_names = ["open_explanation", "type_LOCAL", "type_SERVER", "type_FILE"], i = 0;
+        open_from.options.forEach(function(option){
+            option.label = resources[resource_names[i]];
+            ++i;
+        });
+        open_from.startup();
+        open_from.onChange = function(){
+            var loc = this.get("value"), names;
+            switch(loc){
+            case "LOCAL":
+                saved_data = retrieveAllDataFromStorage();
+                names = saved_data.map(function(item){return {value : item.name, label : item.name};});
+                names.unshift({value : "", label : resources.open_prompt, selected : true});
+                break;
             
-            aspect.after(editor, "onKeyUp", function(){ //ソース画面で入力するたびに変更されたことが検知できるようにする
-                var new_val = editor.get("value");
-                if(old_value != new_val){
-                    contents_changed.source = true;
-                    dom_class.toggle("save_button_label", "not_saved", true);
-                }else{
-                    contents_changed.source = false;
-                    dom_class.toggle("save_button_label", "not_saved", false);
-                }
-            });
-        }
-    },
-    resources : resources
-};
+            case "SERVER":
+                xhr.get({
+                    url : "sequencer",
+                    handleAs : "json",
+                    content : {
+                        method : "get_list"
+                    },
+                    load : function(json_data){
+                        clear();
+                        setMsgOnStatusBar(resources.received_responce);
+                        saved_data = json_data;
+                        names = json_data.map(function(item){return {value : item.name, label : item.name};});
+                        names.unshift({value : "", label : resources.open_prompt, selected : true});
+                        select_file.set("options", names);
+                        select_file.startup();
+                        open_btn.openDropDown();
+                    },
+                    error : function(msg){
+                        alert(msg);
+                    }
+                });
+                var clear = addDotToStatusBar(1000, resources.connect_to_server);
+                break;
+                
+            case "FILE":
+                throw new Error("Not implemented yet!");
+                    break;
+                
+            default:
+                alert("保存元が選択されていません！");
+                return;
+            }
+            
+            var select_file = registry.byId("select_file"), _self = this;
+            if(!select_file){
+                select_file = new Select({
+                    name : "selectFile",
+                    options : names,
+                    maxHeight : -1,
+                    onChange : function(){
+                        var file_name = this.get("value"), target, location = _self.get("value");
+                        saved_data.every(function(item){
+                            if(item.name == file_name){
+                                target = item;
+                                return false;
+                            }
+                            return true;
+                        });
+                        openFile(location, file_name, target);
+                    }
+                }, "select_file");
+                dialog_content.addChild(select_file);
+            }else{
+                select_file.set("options", names);
+            }
+            select_file.startup();
+            open_btn.openDropDown();
+        };
+    
+        var save_as = registry.byId("save_as");
+        resource_names = ["save_explanation", "type_LOCAL", "type_SERVER", "type_FILE"], i = 0;
+        save_as.options.forEach(function(option){
+            option.label = resources[resource_names[i]];
+            ++i;
+        });
+        save_as.startup();
+    
+        var tab_container = registry.byId("main_tab");
+        tab_container.watch("selectedChildWidget", function(name, old, new_val){
+            if(new_val.id == "piano_roll"){
+                processMMLSource();
+                new_val.set("_metaevent_list", data_store.metaevents);
+                new_val.set("_tree", data_store.list);
+            }else if(old.id == "piano_roll"){
+                old.set("_tree", null);
+            }
+        });
+    
+        var track_selector = registry.byId("track_selector"), piano_roll = registry.byId("piano_roll");
+        track_selector.watch("value", function(name, old, new_val){
+            piano_roll.set("_track_num", new_val);
+        });
+    
+        var title_editor = registry.byId("music_title");        //タイトルが変更されたかわかるよう監視する
+        title_editor.watch("value", function(name, old, new_val){
+            if(new_val != old){
+                contents_changed.name = true;
+                dom_class.toggle("save_button_label", "not_saved", true);
+            }else{
+                contents_changed.name = false;
+                dom_class.toggle("save_button_label", "not_saved", false);
+            }
+        });
+    
+        var author_editor = registry.byId("author_editor");      //作成者名が変更されたかわかるよう監視する
+        author_editor.watch("value", function(name, old, new_val){
+            if(new_val != old){
+                contents_changed.author = true;
+                dom_class.toggle("save_button_label", "not_saved", true);
+            }else{
+                contents_changed.author = false;
+                dom_class.toggle("save_button_label", "not_saved", false);
+            }
+        });
+    
+        var comment_editor = registry.byId("comment_editor");   //コメントが変更されたかわかるよう監視する
+        comment_editor.watch("value", function(name, old, new_val){
+            if(new_val != old){
+                contents_changed.comment = true;
+                dom_class.toggle("save_button_label", "not_saved", true);
+            }else{
+                contents_changed.comment = false;
+                dom_class.toggle("save_button_label", "not_saved", false);
+            }
+        });
+    
+        var editor = registry.byId("editor");
+        newFile();
+            
+        aspect.after(editor, "onKeyUp", function(){ //ソース画面で入力するたびに変更されたことが検知できるようにする
+            var new_val = editor.get("value");
+            if(old_value != new_val){
+                contents_changed.source = true;
+                dom_class.toggle("save_button_label", "not_saved", true);
+            }else{
+                contents_changed.source = false;
+                dom_class.toggle("save_button_label", "not_saved", false);
+            }
+        });
+    });
+    
+return resources;
 
 });

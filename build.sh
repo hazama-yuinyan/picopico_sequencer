@@ -8,15 +8,25 @@ TOOLSDIR="$SRCDIR/lib/util/buildscripts"
 
 RESOURCES=(src/manual_style.css src/help_ja.html src/help_en.html)
 
+CMD="./build.sh --profile $SRCDIR/app/picopico_sequencer.profile.js --require $SRCDIR/app/run.js --dojoConfig $SRCDIR/app/config_build.js $EXTRA_FLAGS"
+
 if [ ! -d "$TOOLSDIR" ]; then
     echo "Can't find Dojo build tools -- did you initialize submodules?(git submodule update --init --recursive)"
     exit 1
 fi
 
+if [ $1 = "--no-build" ]; then
+    EXTRA_FLAGS="--check-args"
+    cd $TOOLSDIR
+    $CMD $EXTRA_FLAGS
+    exit 0
+fi
+
 echo Cleaning old built files...
 rm -rf release
 cd $TOOLSDIR
-./build.sh --profile $SRCDIR/app/picopico_sequencer.profile.js --require $SRCDIR/app/run.js --dojoConfig $SRCDIR/app/config_build.js
+
+$CMD
 
 echo "Copying html and css files..."
 cd $ROOTDIR
