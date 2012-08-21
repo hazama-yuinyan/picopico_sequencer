@@ -24,7 +24,7 @@ var profile = (function(){
             }
         },
         
-        defaultConfig:{
+        /*defaultConfig:{
             hasCache:{
 				// these are the values given above, not-built client code may test for these so they need to be available
 				'dojo-built':1,
@@ -36,7 +36,7 @@ var profile = (function(){
 				"config-selectorEngine":"lite"
 			},
 			async:1
-		},
+		},*/
         
         staticHasFeatures: {
             // The trace & log APIs are used for debugging the loader, so we don’t need them in the build
@@ -113,7 +113,7 @@ var profile = (function(){
 			'dojo-undef-api':0,
 
 			// dojo/i18n
-			'dojo-v1x-i18n-Api':0,
+			'dojo-v1x-i18n-Api':1,
 
 			// dojo/_base/loader, dojo/dojo, dojo/on
 			'dom':1,
@@ -122,7 +122,9 @@ var profile = (function(){
 			'host-browser':1,
 
 			// dojo/_base/array, dojo/_base/connect, dojo/_base/kernel, dojo/_base/lang
-			'extend-dojo':1
+			'extend-dojo':1,
+            
+            'dojo-preload-i18n-Api':1
         },
      
         resourceTags: {

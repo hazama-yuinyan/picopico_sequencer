@@ -1,5 +1,8 @@
-var dojoConfig = {
+dojoConfig = {
     basePath : "..",
+    baseUrl : "",
+    async : true,
+    tlmSiblingOfDojo : false,
     packages : [
         {name : "dojo", location : "lib/dojo"},
         {name : "dijit", location : "lib/dijit"},

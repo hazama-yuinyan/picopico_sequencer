@@ -6,8 +6,8 @@
 
 
 define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit/registry", "dojox/timing", "dijit/form/Select","app/mml_updater",
-    "dojo/i18n!app/nls/resources", "dojo/aspect", "dojo/request/xhr", "dojo/dom", "dojo/ready"],
-    function(compiler, Sequencer, dom_class, on, registry, timing, Select, updater, resources, aspect, xhr, dom, ready){
+    "dojo/i18n!app/nls/resources", "dojo/aspect", "dojo/request", "dojo/dom", "dojo/ready"],
+    function(compiler, Sequencer, dom_class, on, registry, timing, Select, updater, resources, aspect, request, dom, ready){
 
     var sequencer = null,
     data_store = null,
@@ -215,14 +215,14 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit
             break;
         
         case "SERVER" :
-            xhr.get({
-                url : "sequencer",
+            request.get("sequencer", {
                 handleAs : "json",
-                content : {
+                query : {
                     method : "get_content",
                     target : file_name
-                },
-                load : function(json_data){
+                }
+            }).then(
+                function(json_data){
                     clear();
                     editor.set("value", json_data.source);
                     old_value = json_data.source;
@@ -234,10 +234,11 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit
                     dom_class.toggle("save_button_label", "not_saved", false);  //remove the "not saved" indicator in case of it being already changed
                     setMsgOnStatusBar(resources.msg_file_opened);
                 },
-                error : function(msg){
-                    alert(msg);
+                function(error_msg){
+                    clear();
+                    alert(error_msg);
                 }
-            });
+            );
             var clear = addDotToStatusBar(1000, resources.connect_to_server);
             break;
             
@@ -393,13 +394,13 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit
                 break;
             
             case "SERVER":
-                xhr.get({
-                    url : "sequencer",
+                request.get("sequencer", {
                     handleAs : "json",
-                    content : {
+                    query : {
                         method : "get_list"
-                    },
-                    load : function(json_data){
+                    }
+                }).then(
+                    function(json_data){
                         clear();
                         setMsgOnStatusBar(resources.received_responce);
                         saved_data = json_data;
@@ -409,16 +410,17 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit
                         select_file.startup();
                         open_btn.openDropDown();
                     },
-                    error : function(msg){
-                        alert(msg);
+                    function(error_msg){
+                        clear();
+                        alert(error_msg);
                     }
-                });
+                );
                 var clear = addDotToStatusBar(1000, resources.connect_to_server);
                 break;
                 
             case "FILE":
                 throw new Error("Not implemented yet!");
-                    break;
+                break;
                 
             default:
                 alert("保存元が選択されていません！");

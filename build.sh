@@ -34,9 +34,9 @@ cd $ROOTDIR
 cat src/index.html | tr '\n' ' ' | \
 perl -pe "
   s/<\!--.*?-->//g;     #Strip comments
-  s/<script src=\"app\/config.js\"><\/script>//g;
+  s/<script src=\"app\/config.js\"><\/script>/<script>dojoConfig = {async:true,baseUrl:'',tlmSiblingOfDojo:false,parseOnLoad:false,packages:[\"dojo\",\"dijit\",\"dojox\",\"treehugger\",\"app\",\"piano_roll\"]};<\/script>/g;
   s/\"lib\/dojo\/dojo.js\"/\"dojo\/dojo.js\"/;
-  s/\s+/ /; #Collapse white-spaces" > release/index.html
+  s/\s+/ /; #Collapse white-spaces" > "release/index.html"
 for path in ${RESOURCES[@]} ; do
     cp $path release
 done
