@@ -432,7 +432,7 @@
                 <div class="grammar_spec">
                     <div class="grammar_left">
                         <p>シーケンサーの音色として使用できる独自波形を生成する関数を定義します。この関数は妥当なJavascriptコードとして記述する必要があり、
-                        Javascript側から発音するべき音の波長を１つ目、発音時の曲頭からの経過時間を２つ目の引数として呼び出されます。
+                        Javascript側から現在の音符の発音時間を1つ目の引数、発音するべき音の波長を2つ目として呼び出されます。
                         </p>
                         <p>{}の中にはJavascriptとして有効なあらゆるコードを記述することができますが、この関数自体がWebWorker上で実行されるため
                         通常なら参照可能な一部のグローバル変数が使用できない場合があります。
@@ -441,7 +441,7 @@
                     <div class="grammar_right">
                         <p>
                         例.<br>
-                        [function (freq, time){return Math.sin(freq * 2 * Math.PI * time);}] /組み込みの正弦波と同じ波形を生成する関数
+                        [function (time, freq){return Math.sin(freq * 2 * Math.PI * time);}] /組み込みの正弦波と同じ波形を生成する関数
                         </p>
                     </div>
                 </div>

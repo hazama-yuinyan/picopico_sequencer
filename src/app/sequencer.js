@@ -24,7 +24,7 @@ return declare(null, {
         this.actual_end_frame = 0;                          //バッファーが空になるように曲の終端チェックを少しずらすときに使用する
         this.next_ticks = 0;                                //cur_ticksの一時保管領域。processAudioCallbackは実際に演奏されるよりも前に呼び出されるため
         this.cur_ticks = 0;                                 //現在の再生側の経過時間をMIDIのtick数で表したもの(ピアノロールとの同期用)
-        this.last_vol = 127;                                //一個前のノードのボリューム(波形生成時用)
+        this.last_vol = 100;                                //一個前のノードのボリューム(波形生成時用)
         this.cur_progress = -1;                             //現在の進捗状況(波形生成時用)
         this.last_progress = -1;                            //前回の進捗状況(波形生成時用)
         this.sound_producer = null;                         //バックグラウンドで波形生成を担当する

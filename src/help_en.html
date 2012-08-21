@@ -429,7 +429,8 @@
                 <div class="grammar_spec">
                     <div class="grammar_left">
                         <p>Defines a function which generates a new sound wave. The function have to obey the Javascript grammar and will be
-                        called, with the first argument being the desired frequency and the second being the elapsed time from the beginning.
+                        called, with the first argument being the elapsed time from the beginning of the current note and the second being 
+                        the desired frequency.
                         </p>
                         <p>Although you can write any valid Javascript code in the curly brackets, there are times when you cann't use some
                         global variables.
@@ -438,7 +439,7 @@
                     <div class="grammar_right">
                         <p>
                         e.g.<br>
-                        [function (freq, time){return Math.sin(freq * 2 * Math.PI * time);}] /Defined another sine wave function.
+                        [function (time, freq){return Math.sin(freq * 2 * Math.PI * time);}] /Defined another sine wave function.
                         </p>
                     </div>
                 </div>

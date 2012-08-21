@@ -372,7 +372,7 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit
             stop();
         });
     
-        var new_btn = dom.byId("new_button"), accept_btn = dom.byId("accept_button");
+        var new_btn = dom.byId("new_button"), accept_btn = dom.byId("accept_button"), about_btn = dom.byId("about_button");
         on(new_btn, "click", newFile);
     
         on(accept_btn, "click", saveFile);
@@ -460,6 +460,15 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit
             ++i;
         });
         save_as.startup();
+        save_as.onChange = function(){
+            var save_btn = registry.byId("save_button");
+            save_btn.openDropDown();
+        };
+        
+        on(about_btn, "click", function(){
+            var about_dialog = registry.byId("aboutDialog");
+            about_dialog.show();
+        });
     
         var tab_container = registry.byId("main_tab");
         tab_container.watch("selectedChildWidget", function(name, old, new_val){
@@ -524,7 +533,7 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit
             }
         });
     });
-    
+
 return resources;
 
 });

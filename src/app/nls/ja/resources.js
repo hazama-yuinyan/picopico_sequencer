@@ -1,4 +1,5 @@
 define({
+    "app_name" : "ぴこぴこ・しーけんさー",
     "compile_btn_text" : "コンパイル",
     "play_btn_text" : "再生",
     "resume_btn_text" : "再開",
@@ -15,6 +16,7 @@ define({
     "save_btn_text" : "保存",
     "save_label_text" : "保存先：",
     "save_explanation" : "保存先を選択してください",
+    "about_btn_text" : "About",
     "piano_roll_pane_title" : "ピアノロール",
     "editor_pane_title" : "MMLソース",
     "AST_pane_title" : "構文木",
@@ -29,6 +31,7 @@ define({
     "settings_pane_title" : "設定",
     "progress_bar_dialog_title" : "進捗状況",
     "help_file_url" : "help_ja.html",
+    "about_file_url" : "about_ja.html",
     "msg_prompt_compiling" : "まだ曲のデータの解析が終わっていません。\n初めて曲を再生する場合は、\"コンパイル\"ボタンを使ってください。",
     "warning_not_saved" : "未保存のファイルが開かれています。編集中のファイルを先に保存しますか？",
     "msg_new_file_opened" : "新規ファイルに切り替えました。",
