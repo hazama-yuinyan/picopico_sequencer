@@ -1,9 +1,10 @@
-dojoConfig = {
+var dojoConfig = {
     async : true,
     isDebug : true,
     baseUrl : location.pathname.replace(/\/[^/]*$/, "/"),
     tlmSiblingOfDojo : false,
     parseOnLoad : false,
+    //locale : "en-us",
     packages : [
         {name : "dojo", location : "lib/dojo"},
         {name : "dijit", location : "lib/dijit"},

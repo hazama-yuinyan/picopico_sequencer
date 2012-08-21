@@ -64,6 +64,18 @@ html, body {
     background-color: #ff6161;
 }
 
+.aligned_center{
+    text-align: center;
+}
+
+.aligned_right{
+    text-align: right;
+}
+
+#license{
+    border: inset 2px #000;
+}
+
 #contents{
     width: 90%;
 }

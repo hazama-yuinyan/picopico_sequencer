@@ -1,4 +1,4 @@
-dojoConfig = {
+var dojoConfig = {
     basePath : "..",
     baseUrl : "",
     async : true,
