@@ -76,7 +76,7 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
                     }else{
                         name = resources.e_program_change;
                         var inst_names = _self._predefined_inst_names;
-                        params = (info.arg1 < inst_names.length) ? inst_names[info.arg1] : resources.user_defined_wave + info.arg1 - inst_names.length + 1;
+                        params = (info.arg1 < inst_names.length) ? inst_names[info.arg1] : resources.user_defined_wave + (info.arg1 - inst_names.length + 1);
                         params += "(for track " + (info.arg2 + 1) + ")";
                     }
                     

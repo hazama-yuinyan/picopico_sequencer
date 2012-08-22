@@ -258,6 +258,10 @@ return declare(null, {
         var track_num = this.env.for_worker.getCurrentTrackNum();
         if(node.cons === "command"){
             this.processCommand(node, track_num);
+            if(this.func_definition){
+                this.sound_producer.postMessage({func : this.func_definition});
+                this.func_definition = null;
+            }
             return this.prepareToProcessNextNode(this.getNextNode(node, true));
         }
         
@@ -317,9 +321,8 @@ return declare(null, {
         this.sound_producer.postMessage({
             freq_list : freqs, program_num : this.env.for_worker.getProgramNumForTrack(track_num), note_len : node.end_frame - start_frame,
             secs_per_frame : this.secs_per_frame, volume : vol, track_num : track_num, len_in_ticks : ticks,
-            gate_time : gate_time, func : this.func_definition
+            gate_time : gate_time
         });
-        if(this.func_definition){this.func_definition = null;}
     },
     
     /**

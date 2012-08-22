@@ -43,13 +43,13 @@
                 <div>
                     <h3>Legends</h3>
                     <ul>
-                        <li>() : Represents arguments. Unlike the programming languages, you don't need to write the parentheses in MML sources.<br>
+                        <li>() : Represents arguments. Unlike the programming languages, you don't need to write the parentheses in MML source.<br>
                             It also represents a group of characters referring to commands.
                         </li>
                         <li>[] : Suggests that it can be ommited.</li>
-                        <li>"" : Double-quoted signs have to be explicitly written in MML sources.</li>
+                        <li>"" : Double-quoted signs have to be explicitly written in MML source.</li>
                         <li>xxx-xxx : Indicates a range of letters, numbers etc.</li>
-                        <li>XXX : Letters in capital refer to commands and those letters have to be put in MML sources as they are.<br>
+                        <li>XXX : Letters in capital refer to commands and those letters have to be put in MML source as they are.<br>
                             Note that the case is not significant.(So xxx and XXX refer to the same command.)
                         </li>
                     </ul>
@@ -77,7 +77,7 @@
                         value set by a "L" command will be applied.<br>
                         In addition, you can express "step" in ticks instead of a note value. What is notated in ticks can be written like
                         "*some_number".<br>
-                        Furthermore you can lengthen the duration by adding "^"(circumflexes) and an extra duration.<br>
+                        Furthermore you can lengthen the duration by adding "^"(circumflex) and an extra duration.<br>
                         And dots after the step time lengthen the note duration by half the preceding number.
                         </p>
                         <p>The second parameter called "gate" refers to the gate time which is the real duration in which the note will be played.
@@ -106,7 +106,7 @@
                         c4, 8 /It describes the note as a quarter note, but it actually sounds as an eighth note（so you can say it denotes a staccato)<br>
                         c, 8 /same as above(if the default length is set to 4)<br>
                         example 6:<br>
-                        c4,,127 /Played at maximum volume<br>
+                        c4,,127 /Played at the maximum volume<br>
                         c,,-20 /Plays a C note at 20 less in velocity than the last one
                         </p>
                     </div>
@@ -208,7 +208,7 @@
                         o3<br>
                         o8<br>
                         o4 c /Plays a middle C<br>
-                        o4 < /Here is as high in octave as explicitly writing "o5"
+                        o4 < /Here is as high in octave as it is when you explicitly write "o5"
                         </p>
                     </div>
                 </div>
@@ -347,7 +347,7 @@
                     </p>
                     <ul>
                         <li>ticks = 0~32767 : the duration in ticks</li>
-                        <li>delay = 2<sup>n</sup>(n = 0, 1, 2...) or *0~32767 : the delay in which each note will play</li>
+                        <li>delay = 2<sup>n</sup>(n = 0, 1, 2...) or *0~32767 : the delay in which each note will be played</li>
                     </ul>
                 </div>
                 <div class="grammar_spec">
@@ -429,8 +429,8 @@
                 <div class="grammar_spec">
                     <div class="grammar_left">
                         <p>Defines a function which generates a new sound wave. The function have to obey the Javascript grammar and will be
-                        called, with the first argument being the elapsed time from the beginning of the current note and the second being 
-                        the desired frequency.
+                        called, with the first argument being the elapsed time from the beginning of the current note(in seconds) and the
+                        second being the desired frequency(in hertz).
                         </p>
                         <p>Although you can write any valid Javascript code in the curly brackets, there are times when you cann't use some
                         global variables.

@@ -22,7 +22,7 @@ if [ $1 = "--no-build" ]; then
     exit 0
 fi
 
-echo Cleaning old built files...
+echo "Cleaning old built files..."
 rm -rf release
 cd $TOOLSDIR
 
@@ -40,4 +40,4 @@ perl -pe "
 for path in ${RESOURCES[@]} ; do
     cp $path release
 done
-echo "Build complete!"
+echo "Build completed!"

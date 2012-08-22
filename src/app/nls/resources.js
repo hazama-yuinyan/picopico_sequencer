@@ -23,7 +23,7 @@ define({
         "AST_pane_title" : "AST",
         "help_pane_title" : "Help",
         "music_info_pane_title" : "Music infos",
-        "track_selector_label" : "Track Num",
+        "track_selector_label" : "Track Number",
         "music_title_label" : "Title",
         "author_label" : "Author",
         "comment_label" : "Comment",

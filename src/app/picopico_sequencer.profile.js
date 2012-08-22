@@ -18,25 +18,11 @@ var profile = (function(){
         
         layers: {
             "dojo/dojo": {
-                include: [ "dojo/dojo", "app/main", "app/modules" ],
+                include: [ "dojo/dojo", "app/main", "app/modules", "dojox/gfx" ],
                 customBase: true,
                 boot: true
             }
         },
-        
-        /*defaultConfig:{
-            hasCache:{
-				// these are the values given above, not-built client code may test for these so they need to be available
-				'dojo-built':1,
-				'dojo-loader':1,
-				'dom':1,
-				'host-browser':1,
-
-				// default
-				"config-selectorEngine":"lite"
-			},
-			async:1
-		},*/
         
         staticHasFeatures: {
             // The trace & log APIs are used for debugging the loader, so we don’t need them in the build

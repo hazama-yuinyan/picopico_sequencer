@@ -49,6 +49,7 @@ onmessage = function(e){
     var data = e.data;
     if(data.func){
         eval("functions.push(function("+data.func.params[0]+","+data.func.params[2]+"){"+data.func.body+"})");
+        return;
     }
     var freq_list = data.freq_list, func = functions[data.program_num], note_len = data.note_len, buffer = new Float32Array(note_len);
     var gate_time = data.gate_time, is_chord = (freq_list.length > 1), velocity = data.volume;
