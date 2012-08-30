@@ -99,6 +99,12 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
                     
                     last_x = x;
                 }, this);
+                if(label_texts.length){ //add the last metaevent infos
+                    var metaevent = {x : last_x};
+                    metaevent.tooltip = new Tooltip({label : ["<div>"].concat(label_texts).concat(["</div>"]).join(""), showDelay : 250, connectId : []});
+                    this._metaevent_list.push(metaevent);
+                    label_texts.splice(0);
+                }
             },
             _set_track_numAttr : function(num){
                 this._track_num = num;

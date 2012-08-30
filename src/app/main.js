@@ -12,6 +12,7 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit
     var sequencer = null,
     data_store = null,
     saved_data = null,
+    data_on_server = null,
     timer = null,
     contents_changed = {
         source : false,
@@ -170,6 +171,25 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit
         };
     },
     
+    fetchHeadersFromServer = function(success_func){
+        request.get("sequencer", {
+            handleAs : "json",
+            query : {
+                method : "get_list"
+            }
+        }).then(
+            function(data){
+                clear();
+                success_func(data);
+            },
+            function(error_msg){
+                clear();
+                alert(error_msg);
+            }
+        );
+        var clear = addDotToStatusBar(1000, resources.connect_to_server);
+    },
+    
     newFile = function(){
         if(contents_changed.source){
             if(confirm(resources.warning_not_saved)){
@@ -288,6 +308,9 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit
                 if(!item.comment){
                     item.comment = old_item.comment;
                 }
+            }else{      //ローカルストレージに同名のファイルが存在しない場合、問答無用で全てのプロパティーを保存する
+                contents_changed.name = true;
+                item = prepareForSave();
             }
             localStorage.setItem(item.name, JSON.stringify(item));
             setMsgOnStatusBar(resources.msg_file_saved);
@@ -297,23 +320,31 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit
             break;
             
         case "SERVER":
-            var http_obj = new XMLHttpRequest();
-            http_obj.open("post", "sequencer", true);
-            http_obj.setRequestHeader("Content-Type", "application/json; charset=UTF-8");
-            http_obj.onreadystatechange = function(){
-                if(this.readyState == 4 && this.status == 200){
-                    clear();
-                    setMsgOnStatusBar(resources.msg_file_saved);
-                    resetContentsStatus();
-                    old_value = item.source;
-                    dom_class.toggle("save_button_label", "not_saved", false);  //remove the "not saved" indicator
-                }else if(this.readyState == 4){
-                    clear();
-                    setMsgOnStatusBar(resources.msg_save_failed);
+            fetchHeadersFromServer(
+                function(json_data){
+                    if(!(item.name in json_data)){  //サーバーに同名のファイルが存在しない場合、問答無用で全てのプロパティーを保存する
+                        contents_changed.name = true;
+                        item = prepareForSave();
+                    }
+                    var http_obj = new XMLHttpRequest();
+                    http_obj.open("post", "sequencer", true);
+                    http_obj.setRequestHeader("Content-Type", "application/json; charset=UTF-8");
+                    http_obj.onreadystatechange = function(){
+                        if(this.readyState == 4 && this.status == 200){
+                            clear();
+                            setMsgOnStatusBar(resources.msg_file_saved);
+                            resetContentsStatus();
+                            old_value = item.source;
+                            dom_class.toggle("save_button_label", "not_saved", false);  //remove the "not saved" indicator
+                        }else if(this.readyState == 4){
+                            clear();
+                            setMsgOnStatusBar(resources.msg_save_failed);
+                        }
+                    };
+                    http_obj.send(JSON.stringify(item));
+                    var clear = addDotToStatusBar(1000, resources.connect_to_server);
                 }
-            };
-            http_obj.send(JSON.stringify(item));
-            var clear = addDotToStatusBar(1000, resources.connect_to_server);
+            );
             break;
             
         case "FILE":
@@ -321,7 +352,7 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit
             break;
             
         default:
-            alert("保存先を選択してください！");
+            alert("Choose a desired location!");
             return;
         }
         last_modified_display.set("value", item.date);
@@ -394,14 +425,8 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit
                 break;
             
             case "SERVER":
-                request.get("sequencer", {
-                    handleAs : "json",
-                    query : {
-                        method : "get_list"
-                    }
-                }).then(
+                fetchHeadersFromServer(
                     function(json_data){
-                        clear();
                         setMsgOnStatusBar(resources.received_responce);
                         saved_data = json_data;
                         names = json_data.map(function(item){return {value : item.name, label : item.name};});
@@ -409,13 +434,8 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit
                         select_file.set("options", names);
                         select_file.startup();
                         open_btn.openDropDown();
-                    },
-                    function(error_msg){
-                        clear();
-                        alert(error_msg);
                     }
                 );
-                var clear = addDotToStatusBar(1000, resources.connect_to_server);
                 break;
                 
             case "FILE":
@@ -423,7 +443,7 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit
                 break;
                 
             default:
-                alert("保存元が選択されていません！");
+                alert("Choose a desired location!");
                 return;
             }
             

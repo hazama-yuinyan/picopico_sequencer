@@ -279,7 +279,7 @@ define(["app/lexer", "app/parser", "app/utils", "treehugger/tree", "treehugger/t
                 
                 var macros = [], i = this.indexOfToken(tokens, 0, "[");
                 while(i < tokens.length){           //まず、マクロ定義を探す
-                    var start_index = i;            //[define macro_name([param1,param2...])'macro_body']
+                    var start_index = i;            //syntax: [define macro_name([param1,param2...])'macro_body']
                     if(tokens[i + 1].value != "define"){
                         i = this.indexOfToken(tokens, i + 1, "[");
                         continue;
@@ -337,9 +337,9 @@ define(["app/lexer", "app/parser", "app/utils", "treehugger/tree", "treehugger/t
                 
                 i = this.indexOfToken(tokens, 0, "$");
                 while(i < tokens.length){       //マクロ展開を行う
-                    var start_index2 = i;       //${macro_name[:param1,param2...]}
+                    var start_index2 = i;       //syntax: ${macro_name[:param1,param2...]}
                     if(tokens[i + 1].type != "{"){
-                        this.macro_error(tokens[i + 1].line_num, tokens[i + 1].col, "Unexpected token!; " + tokens[i + 1].value);
+                        this.macro_error(tokens[i + 1].line_num, tokens[i + 1].col, "Unexpected token!: " + tokens[i + 1].value + "; Expected: {");
                     }
                     i += 2;
                     
@@ -365,7 +365,7 @@ define(["app/lexer", "app/parser", "app/utils", "treehugger/tree", "treehugger/t
                     }
                     
                     if(tokens[i].type != "}"){
-                        this.macro_error(tokens[i].line_num, tokens[i].col, "Unexpected token!; " + tokens[i].value);
+                        this.macro_error(tokens[i].line_num, tokens[i].col, "Unexpected token!: " + tokens[i].value + "; Expected: }");
                     }
                     ++i;
                     if(target_macro.formal_params.length > param_list.length){  //実引数が仮引数よりも少なかった場合は、空文字列をその引数に指定する
@@ -376,7 +376,16 @@ define(["app/lexer", "app/parser", "app/utils", "treehugger/tree", "treehugger/t
                     }
                     var len2 = i - start_index2;
                     var expanded = substituteParameters(target_macro.body, param_list);
-                    var macro_tokens = lexer.tokenize(expanded);
+                    var macro_tokens = lexer.tokenize(expanded), macro_front = tokens[start_index2], macro_end = tokens[i - 1];
+                    macro_tokens.forEach(function(macro_token){ //マクロ内のトークン列の行番号と列番号をずらす
+                        macro_token.line_num = macro_front.line_num;
+                        macro_token.col += macro_front.col - 1;
+                    });
+                    var last_macro_token_col = macro_tokens[macro_tokens.length - 1].col, cur_macro_linenum = macro_front.line_num, tmp_index = i;
+                    for(; tmp_index < tokens.length && tokens[tmp_index].line_num == cur_macro_linenum; ++tmp_index){
+                        tokens[tmp_index].col += (-macro_end.col) + last_macro_token_col;
+                    }
+                    
                     tokens.splice(start_index2, len2);      //まず、マクロ展開式をトークンから削除する
                     i -= len2;
                     var front = tokens.slice(0, i), back = tokens.slice(i);     //次にマクロを展開した文字列をトークン列に変換後、
