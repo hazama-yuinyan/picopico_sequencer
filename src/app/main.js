@@ -190,6 +190,12 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit
         var clear = addDotToStatusBar(1000, resources.connect_to_server);
     },
     
+    arrayIncludesProperty = function(array, prop_name, prop){
+        return !array.every(function(item){
+            return (item[prop_name] === prop) ? false : true;
+        });
+    },
+    
     newFile = function(){
         if(contents_changed.source){
             if(confirm(resources.warning_not_saved)){
@@ -322,7 +328,7 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit
         case "SERVER":
             fetchHeadersFromServer(
                 function(json_data){
-                    if(!(item.name in json_data)){  //サーバーに同名のファイルが存在しない場合、問答無用で全てのプロパティーを保存する
+                    if(!arrayIncludesProperty(json_data, "name", item.name)){  //サーバーに同名のファイルが存在しない場合、問答無用で全てのプロパティーを保存する
                         contents_changed.name = true;
                         item = prepareForSave();
                     }
