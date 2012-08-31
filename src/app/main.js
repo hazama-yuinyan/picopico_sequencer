@@ -12,7 +12,7 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit
     var sequencer = null,
     data_store = null,
     saved_data = null,
-    data_on_server = null,
+    elapsed_time = 0,
     timer = null,
     contents_changed = {
         source : false,
@@ -36,6 +36,17 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit
         contents_changed.name = false;
     },
     
+    formatTime = function(millisecs){
+        var result = "", millis = millisecs % 1000;
+        millisecs = Math.floor(millisecs / 1000);
+        var secs = millisecs % 60;
+        millisecs = Math.floor(millisecs / 60);
+        var mins = millisecs % 60;
+        millisecs = Math.floor(millisecs / 60);
+        result = "" + Math.floor(millisecs) + ":" + mins + ":" + secs + "." + millis;
+        return result;
+    },
+    
     compile = function(){
         processMMLSource();
         var tab_container = registry.byId("main_tab");
@@ -50,11 +61,13 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit
         if(!sequencer){sequencer = new Sequencer({stop : stop, play : play, hold : hold});}
         sequencer.setASTTree(data_store.tree);
         sequencer.prepareToPlay();
+        elapsed_time = 0;
     },
 
     stop = function(){
         sequencer.stop();
-        timer.stop();
+        if(timer.isRunning){timer.stop();}
+        elapsed_time = 0;
         var controller = registry.byId("controller");
         switchController(controller, "play");
     },
@@ -64,7 +77,7 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit
             alert(resources.msg_prompt_compiling);
             return;
         }
-        var controller = registry.byId("controller");
+        var controller = registry.byId("controller"), music_info = registry.byId("music_info");
         switchController(controller, "hold");
         sequencer.play();
         
@@ -86,7 +99,10 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit
                 piano_roll.set("_cur_ticks", cur_ticks_in_seq);
             }
             piano_roll.onSoundPlaying(ticks);
-            setMsgOnStatusBar(piano_roll._cur_ticks);
+            setMsgOnStatusBar(Math.round(piano_roll._cur_ticks));
+            elapsed_time += millisecs_per_frame;
+            var elapsed_time_str = formatTime(Math.floor(elapsed_time));
+            music_info.set("value", elapsed_time_str);
         };
         timer.start();
     },
