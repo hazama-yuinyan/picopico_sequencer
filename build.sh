@@ -6,7 +6,7 @@ SRCDIR="$ROOTDIR/src"
 
 TOOLSDIR="$SRCDIR/lib/util/buildscripts"
 
-RESOURCES=(src/manual_style.css src/help_ja.html src/help_en.html src/about_en.html src/about_ja.html)
+RESOURCES=(src/manual_style.css src/help_ja.html src/help_en.html src/about_en.html src/about_ja.html src/public_imgs)
 
 CMD="./build.sh --profile $SRCDIR/app/picopico_sequencer.profile.js --require $SRCDIR/app/run.js --dojoConfig $SRCDIR/app/config_build.js $EXTRA_FLAGS"
 
@@ -38,6 +38,6 @@ perl -pe "
   s/\"lib\/dojo\/dojo.js\"/\"dojo\/dojo.js\"/;
   s/\s+/ /; #Collapse white-spaces" > "release/index.html"
 for path in ${RESOURCES[@]} ; do
-    cp $path release
+    cp -R $path release
 done
 echo "Build completed!"
