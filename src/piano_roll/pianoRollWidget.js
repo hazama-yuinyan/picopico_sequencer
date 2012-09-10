@@ -378,7 +378,7 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
                             if(ticks == channel[i].start_time){return elem;}
                         }else{
                             if(ticks == elem[0].start_time){
-                                var note_num = _self.convertPosToNoteNum(y + _self.viewport_pos.y);
+                                var note_num = _self.convertPosToNoteNum(y);
                                 for(var j = 0; j < elem.length; ++j){
                                     if(note_num == elem[j].pitch){return elem[j];}
                                 }

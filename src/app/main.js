@@ -206,6 +206,10 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit
         var clear = addDotToStatusBar(1000, resources.connect_to_server);
     },
     
+    normalizeLineBreaks = function(str){
+        return str.replace(/\r\n/g, "\n").replace(/\r/, "\n");
+    },
+    
     arrayIncludesProperty = function(array, prop_name, prop){
         return !array.every(function(item){
             return (item[prop_name] === prop) ? false : true;
@@ -285,7 +289,15 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit
             break;
             
         case "FILE" : 
-            throw new Error("Not implemented yet!");
+            editor.set("value", other_info.source);
+            old_value = other_info.source;
+            title_editor.set("value", other_info.title);
+            author_editor.set("value", other_info.author);
+            comment_editor.set("value", other_info.comment);
+            last_modified_display.set("value", other_info.date);
+            reset();
+            dom_class.toggle("save_button_label", "not_saved", false);  //remove the "not saved" indicator in case of it being already changed
+            setMsgOnStatusBar(resources.msg_file_opened);
             break;
             
         default :
@@ -390,6 +402,22 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit
         return data;
     },
     
+    retrieveDataFromFile = function(file){
+        var reader = new FileReader();
+        reader.onload = function(e){
+            var data = {}, raw_text = normalizeLineBreaks(e.target.result);
+            var results = raw_text.match(/\*[A-Z]+:[^;]+;[\n\r]+/g);
+            for(var i = 0; i < results.length; ++i){
+                var details = results[i].match(/\*([A-Z]+):([^;]+);/);
+                data[details[1].toLowerCase()] = details[2];
+            }
+            data.date = file.lastModifiedDate.toLocaleString();
+            data.source = toDisplayedString(data.source);
+            openFile("FILE", file.name, data);
+        };
+        reader.readAsText(file);
+    },
+    
     setMsgOnStatusBar = function(msg){
         var status_bar = registry.byId("various_uses_pane");
         status_bar.domNode.textContent = msg;
@@ -436,6 +464,15 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit
             option.label = resources[resource_names[i]];
             ++i;
         });
+        var file_input = dom.byId("file_input");
+        on(file_input, "change", function(e){
+            var target_file = e.target.files[0];
+            if(!target_file.type.match("text/plain") && !target_file.name.match(".pico")){
+                alert("Unexpected file type!");
+                return;
+            }
+            retrieveDataFromFile(target_file);
+        });
         open_from.startup();
         open_from.onChange = function(){
             var loc = this.get("value"), names;
@@ -461,7 +498,10 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit
                 break;
                 
             case "FILE":
-                throw new Error("Not implemented yet!");
+                on.emit(file_input, "click", {
+                    bubbles : true,
+                    cancelable : false
+                });
                 break;
                 
             default:
