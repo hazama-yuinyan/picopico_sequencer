@@ -14,6 +14,7 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit
     saved_data = null,
     elapsed_time = 0,
     timer = null,
+    fs = null,
     contents_changed = {
         source : false,
         comment : false,
@@ -207,7 +208,7 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit
     },
     
     normalizeLineBreaks = function(str){
-        return str.replace(/\r\n/g, "\n").replace(/\r/, "\n");
+        return str.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
     },
     
     arrayIncludesProperty = function(array, prop_name, prop){
@@ -382,7 +383,32 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit
             break;
             
         case "FILE":
-            throw new Error("Not implemented yet!");
+            var raw_text = "";
+            contents_changed.name = true;
+            item = prepareForSave();
+            var original_source = item.source;
+            item.source = toPlainString(item.source);
+            raw_text = "*TITLE:" + item.name + ";\n*COMMENT:" + item.comment + ";\n*AUTHOR:" + item.author + ";\n*SOURCE:" + item.source + ";\n";
+            fs.root.getFile(item.name + ".pico", {create : true}, function(fileEntry){
+                fileEntry.createWriter(function(fileWriter){
+                    fileWriter.onwriteend = function(){
+                        var dialog = registry.byId("save_to_local_dialog"), file_link = dom.byId("local_file_link");
+                        file_link.href = fileEntry.toURL();
+                        file_link.download = item.name + ".pico";
+                        dialog.show();
+                        resetContentsStatus();
+                        old_value = original_source;
+                        dom_class.toggle("save_button_label", "not_saved", false);  //remove the "not saved" indicator
+                    };
+                    
+                    fileWriter.onerror = function(e){
+                        alert("Failed to write the data;" + e.toString());
+                    };
+                    
+                    var blob = new Blob([raw_text], {type : "text/plain"});
+                    fileWriter.write(blob);
+                }, fsErrorHandler);
+            }, fsErrorHandler);
             break;
             
         default:
@@ -436,6 +462,33 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit
     onHoldButtonClicked = function(e){
         e.stopImmediatePropagation();
         hold();
+    },
+    
+    fsErrorHandler = function(e){
+        var msg = "";
+        
+        switch(e.code){
+            case FileError.QUOTA_EXCEEDED_ERR:
+              msg = 'QUOTA_EXCEEDED_ERR';
+              break;
+            case FileError.NOT_FOUND_ERR:
+              msg = 'NOT_FOUND_ERR';
+              break;
+            case FileError.SECURITY_ERR:
+              msg = 'SECURITY_ERR';
+              break;
+            case FileError.INVALID_MODIFICATION_ERR:
+              msg = 'INVALID_MODIFICATION_ERR';
+              break;
+            case FileError.INVALID_STATE_ERR:
+              msg = 'INVALID_STATE_ERR';
+              break;
+            default:
+              msg = 'Unknown Error';
+              break;
+        }
+        
+        alert(msg);
     };
     
     ready(function(){
@@ -615,6 +668,10 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit
             }
         });
     });
+    
+    window.webkitRequestFileSystem(window.TEMPORARY, 5*1024*1024 /*5MB*/, function(Fs){
+        fs = Fs;
+    }, fsErrorHandler);
 
 return resources;
 

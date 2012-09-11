@@ -17,6 +17,8 @@ See the __How to run the program__ section for more details.
   * A visual representation in piano roll
   * Total of 6 types of "primitive" sound waves
   * The potential of generating any type of sound
+  * Saving edited files to LocalStorage, the server or the local system
+  * Opening files from LocalStorage, the server or the local system
   * MML editing with GUI(not yet implemented)
 
 ## How to run the program

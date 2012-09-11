@@ -41,5 +41,6 @@ define({
     "no_file_name" : "名無しのファイルさん",
     "last_modified" : "最終更新日時",
     "connect_to_server" : "サーバーの応答を待っています",
-    "received_responce" : "サーバーからの応答を受け付けました。"
+    "received_responce" : "サーバーからの応答を受け付けました。",
+    "save_to_local" : "ダウンロード"
 });
