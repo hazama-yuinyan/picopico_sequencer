@@ -42,5 +42,6 @@ define({
     "last_modified" : "最終更新日時",
     "connect_to_server" : "サーバーの応答を待っています",
     "received_responce" : "サーバーからの応答を受け付けました。",
-    "save_to_local" : "ダウンロード"
+    "save_to_local" : "ダウンロード",
+    "click_to_download" : "保存を完了するには上方のリンクをクリックしてください。"
 });

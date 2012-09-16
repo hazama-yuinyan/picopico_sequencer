@@ -399,6 +399,7 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit
                         resetContentsStatus();
                         old_value = original_source;
                         dom_class.toggle("save_button_label", "not_saved", false);  //remove the "not saved" indicator
+                        setMsgOnStatusBar(resources.click_to_download);
                     };
                     
                     fileWriter.onerror = function(e){

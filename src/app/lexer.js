@@ -25,9 +25,9 @@ define(["dojo/_base/declare"], function(declare){
                     return true;
                 });
                 if(!m){throw new Error("Lexer Error! at " + line_num + " : " + col);}
+                col += m[0].length;
                 str = str.substring(m[0].length);
                 
-                col += m[0].length;
                 if(m[0].search(/[\n\r]/) != -1){
                     col = 1;
                     ++line_num;

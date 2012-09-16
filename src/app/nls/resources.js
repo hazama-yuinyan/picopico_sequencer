@@ -43,7 +43,8 @@ define({
         "last_modified" : "Last modified at",
         "connect_to_server" : "Connecting to the server",
         "received_responce" : "Received responce from the server",
-        "save_to_local" : "Download"
+        "save_to_local" : "Download",
+        "click_to_download" : "Click the above link to complete the save."
     },
     
     ja : true
