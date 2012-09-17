@@ -17,7 +17,9 @@ define(["app/mml_compiler"], function(compiler){
         "var a = 1;\n" +
         "}]\n",
         "ab ${test_macro} c1\n",
-        "aacc b${with_params:2, 1, 4} c\n"
+        "aacc b${with_params:2, 1, 4} c\n",
+        "{ab<c}2{ab<c}2\n",
+        '{"ceg""ceg""ceg"}2{"eg<c">"eg<c">"eg<c"}2\n'
         ];
     describe("tests.MMLcompiler.Lexer", function (){
         var lexer = compiler.mml_lexer;
@@ -78,13 +80,27 @@ define(["app/mml_compiler"], function(compiler){
                 17
                 ];
             var tokens, sources = simple_mml_sources;
-            for(var i = 13; i < sources.length; ++i){
+            for(var i = 13; i < 15; ++i){
                 console.log("start " + (i - 12) + " th tokenization");
                 tokens = lexer.tokenize(sources[i]);
                 expect(tokens.length).toEqual(expected_lens[i - 13]);
                 console.log(tokens);
             };
         });
+        it("tuplets", function(){
+            lexer.resetState();
+            var expected_lens = [
+                15,
+                42
+                ];
+            var tokens, sources = simple_mml_sources;
+            for(var i = 15; i < 17; ++i){
+                console.log("start " + (i - 14) + " th tokenization");
+                tokens = lexer.tokenize(sources[i]);
+                expect(tokens.length).toEqual(expected_lens[i - 15]);
+                console.log(tokens);
+            }
+        })
     });
     describe("tests.MMLCompiler.PreParser", function(){
         var lexer = compiler.mml_lexer, parser = compiler.mml_parser;
@@ -175,6 +191,15 @@ define(["app/mml_compiler"], function(compiler){
         });
         it("commands", function(){
             var tree, sources = simple_mml_sources.slice(7, 13);
+            sources.forEach(function(source, i){
+                console.log("start " + (i + 1) + " th parse");
+                tree = parser.parse(source);
+                expect(tree).not.toEqual(null);
+                console.log(tree);
+            });
+        });
+        it("tuplets", function(){
+            var tree, sources = simple_mml_sources.slice(15, 17);
             sources.forEach(function(source, i){
                 console.log("start " + (i + 1) + " th parse");
                 tree = parser.parse(source);
