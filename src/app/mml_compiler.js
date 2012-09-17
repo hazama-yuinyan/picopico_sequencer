@@ -71,7 +71,7 @@ define(["app/lexer", "app/parser", "app/utils", "treehugger/tree", "treehugger/t
                     line: Seq(Maybe(Any(Repeat1(Ref("longer_command")), Repeat1(Any(Ref("shortened_command"), Ref("tuplet"), Ref("chord"),
                         Ref("tie"), Ref("note"))))), Token("line_delimiter")),
                     tie: Seq(Ref("note"), Repeat1(Token("&"), Ref("note"))),
-                    tuplet: Seq(Token("{"), Repeat1(Ref("note")), Token("}"), Maybe(Ref("length"))),
+                    tuplet: Seq(Token("{"), Repeat1(Any(Ref("note"), Ref("chord"), Ref("shortened_command"))), Token("}"), Maybe(Ref("length"))),
                     chord: Seq(Any(Token('"'), Token("'")), Repeat1(Any(Ref("note"), Ref("shortened_command"))), Any(Token('"'), Token("'")),
                         Maybe(Maybe(Token("num")), Maybe(Token(","), Label("gate_time", Token("num"))))),
                     note: Seq(Ref("pitch"), Maybe(Label("note_length", Ref("length"))), Maybe(Token(","), Maybe(Label("gate_time", Ref("length"))),
@@ -131,16 +131,29 @@ define(["app/lexer", "app/parser", "app/utils", "treehugger/tree", "treehugger/t
                     return [tree.num(length)];
                 },
                 tuplet: function(m){
-                    var notes = m[1], cur_default_len = _self.env.getCurrentDefaultLength();
-                    var len = m[3] && m[3][0].value || cur_default_len, len_per_note = len / notes.length;
+                    var elems = m[1], cur_default_len = _self.env.getCurrentDefaultLength();
+                    var len = m[3] && m[3][0].value || cur_default_len, num_notes = 0;
                     
-                    notes.forEach(function(note){
-                        if(note[0][0][1][0].value != cur_default_len){
-                            throw SyntaxError("Illegal notation! You can't write a note length in a tuplet defnition!");
-                        }
-                        note[0][0][1][0].value = len_per_note;
+                    elems.forEach(function(elem){
+                        if(elem.cons !== "command"){++num_notes;}
                     });
-                    return tree.cons("tuplet", [tree.list(notes), tree.cons("length", [tree.num(len)])]);
+                    var len_per_note = len / num_notes;
+                    
+                    elems.forEach(function(elem){
+                        if(elem.cons == "command"){return;}
+                        if(elem.cons == "note"){
+                            if(elem[0][0][1][0].value != cur_default_len){
+                                throw SyntaxError("Illegal notation! You can't write a note length in a tuplet definition!");
+                            }
+                            elem[0][0][1][0].value = len_per_note;
+                        }else{
+                            if(elem[1][0].value != cur_default_len){
+                                throw SyntaxError("Illegal notation! You can't write a note length in a tuplet definition!");
+                            }
+                            elem[1][0].value = len_per_note;
+                        }
+                    });
+                    return tree.cons("tuplet", [tree.list(elems), tree.cons("length", [tree.num(len)])]);
                 },
                 chord: function(m){
                     if(m[0] !== m[2]){
@@ -155,7 +168,7 @@ define(["app/lexer", "app/parser", "app/utils", "treehugger/tree", "treehugger/t
                             len = note[0][0][1][0].value;
                         }else if(len != -1 && note[0][0][1][0].value != cur_default_len){
                             throw SyntaxError("Multiple definitions found! You can set the note length just once in a chord!" +
-                                "Remove one of the length definition or just use the postfix-style notation.");
+                                "Remove one of the length definitions or just use the postfix-style notation.");
                         }
                         notes.push(note);
                     });
@@ -245,6 +258,7 @@ define(["app/lexer", "app/parser", "app/utils", "treehugger/tree", "treehugger/t
                 }},
                 {shorter_name : null, longer_name : ["track"], func : function(num){
                     _self.env.setTrackNum(num - 1);
+                    _self.env.cur_volumes.push(100);
                 }},
                 {shorter_name : null, longer_name : ["program_change"], func : function(args){
                     _self.env.setProgramNumForTrack(0, args[0][1]);

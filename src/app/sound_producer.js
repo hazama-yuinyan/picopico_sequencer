@@ -94,13 +94,15 @@ onmessage = function(e){
         }
     }else{                      //単音の場合
         var freq = freq_list[0], actual_end_frame = (gate_time !== 0) ? note_len - gate_time : note_len;
-        for(i = 0; i < note_len; ++i, ++cur_sample_frame){
-            y = func(i * secs_per_frame, freq);
-            y *= Math.pow(velocity / 127.0, 2.0);
-            if(i <= len_suppressing){y = linear(y, i, 0, len_suppressing, len_suppressing, true);}    //急激な波形の変化を抑えるため、ノートの端の方は波形を変化させる
-            if(i >= actual_end_frame - len_suppressing){y = linear(y, i, actual_end_frame - len_suppressing, actual_end_frame, len_suppressing, false);}
-            if(i >= actual_end_frame){freq = 0.0;}          //ゲートタイムの長さに合わせて発音時間を調整する
-            buffer[i] = y;
+        if(freq >= 20.0){
+            for(i = 0; i < note_len; ++i, ++cur_sample_frame){
+                y = func(i * secs_per_frame, freq);
+                y *= Math.pow(velocity / 127.0, 2.0);
+                if(i <= len_suppressing){y = linear(y, i, 0, len_suppressing, len_suppressing, true);}    //急激な波形の変化を抑えるため、ノートの端の方は波形を変化させる
+                if(i >= actual_end_frame - len_suppressing){y = linear(y, i, actual_end_frame - len_suppressing, actual_end_frame, len_suppressing, false);}
+                if(i >= actual_end_frame){freq = 0.0;}          //ゲートタイムの長さに合わせて発音時間を調整する
+                buffer[i] = y;
+            }
         }
     }
     
