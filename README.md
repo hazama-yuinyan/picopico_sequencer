@@ -4,12 +4,12 @@ __picopico sequencer__ is a web-based and Flash-free music sequencer and sythesi
 It employs the brand new __WebAudio API__ for playing the sounds. So as of now it's very likely that Picopico Sequencer only works properly on
 Google Chrome.
 
-The Japanese term "Picopico" generally refers to the sounds produced by the traditional video game consoles such as the Family Computer and
-Super Family Computer(SFC), which are also known as NES and SNES in English-speaking countries. So the name "Picopico Sequencer" suggests that
+The Japanese word "Picopico" generally refers to the sounds produced by the traditional video game consoles such as the Family Computer and
+Super Family Computer(SFC), which are also known as NES and SNES in English-spoken countries. So the name "Picopico Sequencer" suggests that
 the program can only produce such eh...(I don't know how it can be described in English) primitive sounds.
 
 Notice that the program can't be run out-of-the-box because it lacks some dependencies by default. So you must first explicitly install extra
-dependent files.
+dependency files.
 See the __How to run the program__ section for more details.
 
 ## Features

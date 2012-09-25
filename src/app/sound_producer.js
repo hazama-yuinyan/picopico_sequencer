@@ -103,6 +103,8 @@ onmessage = function(e){
                 if(i >= actual_end_frame){freq = 0.0;}          //ゲートタイムの長さに合わせて発音時間を調整する
                 buffer[i] = y;
             }
+        }else{
+            cur_sample_frame += note_len;
         }
     }
     

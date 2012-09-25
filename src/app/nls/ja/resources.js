@@ -43,5 +43,6 @@ define({
     "connect_to_server" : "サーバーの応答を待っています",
     "received_responce" : "サーバーからの応答を受け付けました。",
     "save_to_local" : "ダウンロード",
-    "click_to_download" : "保存を完了するには上方のリンクをクリックしてください。"
+    "click_to_download" : "保存を完了するには上方のリンクをクリックしてください。",
+    "play_from" : "この小節から再生する"
 });

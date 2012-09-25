@@ -12,9 +12,9 @@
                 <h2>Introduction</h2>
                 <p>Welcome to the Picopico Sequencer!<br>
                 Picopico Sequencer is a Flash-free and purely HTML5 written music sequencer. It describes music in MML and has a piano-roll-style
-                visualization. Even though it is not implemented as of now, it will have the ability to edit music with GUI.<br>
-                The Japanese term "Picopico" generally refers to the sounds produced by the traditional video game consoles such as the Family Computer and
-                Super Family Computer(SFC), which are also known as NES and SNES in English-speaking countries. So the name "Picopico Sequencer" suggests that
+                visualization. Even though it is not implemented as of now, it will have the ability to edit music in GUI.<br>
+                The Japanese word "Picopico" generally refers to the sounds produced by the traditional video game consoles such as the Family Computer and
+                Super Family Computer(SFC), which are also known as NES and SNES in English-spoken countries. So the name "Picopico Sequencer" suggests that
                 the program can only produce such eh...(I don't know how it can be described in English) primitive sounds.<br>
                 However, there is a way to break the limit, which is explained later.
                 </p>
@@ -22,8 +22,12 @@
             
             <section id="notes">
                 <h2>Notes</h2>
-                <p>Currently, due to the Web Audio API I gurantee that only the Google Chrome would run it completely as I expect.
-                </p>
+                <ul>
+                    <li>Currently, due to the Web Audio API I gurantee that only the Google Chrome would run it completely as I expect.</li>
+                    <li>If you have trouble in saving files to the local system/opening files from the local system, try to launch Chrome with the
+                    --allow-file-access-from-files switch on.
+                    </li>
+                </ul>
             </section>
             
             <section id="basics">
@@ -47,10 +51,10 @@
                     Creates a new file.
                 </p>
                 <p>5: Open button<br>
-                    Opens a file previously saved on LocalStorage or the server.
+                    Opens a file previously saved on LocalStorage, the server or the local system.
                 </p>
                 <p>6: Save button<br>
-                    Saves the MML to LocalStorage or the server.
+                    Saves the MML to LocalStorage, the server or the local system.
                 </p>
                 <p>7: About button<br>
                     Opens the "about this program" page.
@@ -172,7 +176,7 @@
                     </div>
                 </div>
                 <div class="spec_header">
-                    <h3>Definition of track</h3>
+                    <h3>Definition of a track</h3>
                     <p>"("T (number)")"<br>
                     "["TRACK (number)"]" where...
                     </p>

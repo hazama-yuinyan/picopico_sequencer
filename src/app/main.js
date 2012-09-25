@@ -5,9 +5,10 @@
  */
 
 
-define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit/registry", "dojox/timing", "dijit/form/Select","app/mml_updater",
-    "dojo/i18n!app/nls/resources", "dojo/aspect", "dojo/request", "dojo/dom", "dojo/ready"],
-    function(compiler, Sequencer, dom_class, on, registry, timing, Select, updater, resources, aspect, request, dom, ready){
+define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/dom-geometry", "dojo/on", "dijit/registry", "dojox/timing", 
+    "dijit/form/Select","app/mml_updater", "dojo/i18n!app/nls/resources", "dijit/Menu", "dijit/MenuItem", "dojo/aspect", "dojo/request",
+    "dojo/dom", "dojo/ready"],
+    function(compiler, Sequencer, dom_class, dom_geometry, on, registry, timing, Select, updater, resources, Menu, MenuItem, aspect, request, dom, ready){
 
     var sequencer = null,
     data_store = null,
@@ -121,6 +122,23 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit
         switchController(controller, "resume");
         sequencer.hold();
         timer.stop();
+    },
+    
+    playFromHalfWay = function(e){
+        if(!sequencer){
+            alert(resources.msg_prompt_compiling);
+            return;
+        }
+        var x = e.x, piano_roll = registry.byId("piano_roll"), viewport_pos = piano_roll.get("_viewport_pos");
+        var PIANO_ROLL_POS = dom_geometry.position(piano_roll.domNode, true), PIANO_ROLL_WIDTH = PIANO_ROLL_POS.w - piano_roll.keyboard_size.w;
+        var CLICKED_POS = x + viewport_pos.x - piano_roll.keyboard_size.w - PIANO_ROLL_POS.x;
+        var TICKS_PER_MEASURE = piano_roll.get("_ticks_per_measure");
+        var clicked_pos_in_ticks = piano_roll.convertPosToTicks(CLICKED_POS), clipped_ticks = Math.floor(clicked_pos_in_ticks / TICKS_PER_MEASURE) * TICKS_PER_MEASURE;
+        elapsed_time = sequencer.prepareToPlayFrom(clipped_ticks);
+        piano_roll.set("_cur_ticks", clipped_ticks);
+        piano_roll.set("_viewport_pos", {x : Math.floor(CLICKED_POS / PIANO_ROLL_WIDTH) * PIANO_ROLL_WIDTH, y : viewport_pos.y});
+        piano_roll.onUpdate();
+        resume();
     },
     
     toPlainString = function(html_source){
@@ -668,6 +686,16 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/on", "dijit
                 dom_class.toggle("save_button_label", "not_saved", false);
             }
         });
+        
+        var context_menu = new Menu({
+            id : "piano_roll_menu",
+            targetNodeIds : ["piano_roll"]
+        });
+        context_menu.addChild(new MenuItem({
+            id : "item_play_from",
+            Label : resources.play_from,
+            onClick : playFromHalfWay
+        }));
     });
     
     window.webkitRequestFileSystem(window.TEMPORARY, 5*1024*1024 /*5MB*/, function(Fs){

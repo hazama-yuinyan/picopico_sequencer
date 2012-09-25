@@ -35,7 +35,7 @@ define(["app/lexer", "app/parser", "app/utils", "treehugger/tree", "treehugger/t
                 }, callback : function(arg){
                     return parseInt(arg, 10);
                 }},
-                {type : "operators", regexp : /^[<>,\.\^\+#\-!\*@\{\}\[\]"'\(\)\$:]/, callback : function(arg){
+                {type : "operators", regexp : /^[<>,\.\^\+#\-!\*@\{\}\[\]"'\(\)\$:\|]/, callback : function(arg){
                     if(state == "func_defining" && arg == '{'){
                         state = "in_func_body";
                     }else if(state == "in_func_body" && arg == '}' || state == "in_macro_body" && arg == "'"){

@@ -125,6 +125,41 @@ return declare(null, {
     },
     
     /**
+     * 特定の時間から再生を開始する準備をする
+     */
+    prepareToPlayFrom : function(ticks){
+        this.reinitialize();
+        
+        var LEN = this.track_infos.length;
+        for(var i = 0, total_ticks; i < LEN; ++i){
+            total_ticks = 0;
+            var cur_track = this.track_infos[i];
+            if(this.note_tags[i].every(function(tag, index){
+                if(total_ticks + tag.len_in_ticks > ticks){
+                    cur_track.next_tag_count = index;
+                    cur_track.frame_in_buf = this.convertMidiTicksToSampleFrame(ticks - total_ticks);
+                    return false;
+                }else{
+                    if(tag.type === "command"){
+                        this.cmd_manager.invoke(tag.name, [tag.arg1, tag.arg2, "for_playback"]);
+                    }else{
+                        total_ticks += tag.len_in_ticks;
+                    }
+                    return true;
+                }
+            }, this)){  //最後まで到達してしまった場合
+                cur_track.next_tag_count = this.note_tags[i].length - 1;
+            }
+        }
+        this.cur_ticks = ticks;
+        var sample_frame_per_tick = this.actual_sample_rate / (this.getCurTempo() * 480.0 / 60.0);
+        this.next_ticks = ticks + this.buffer_size / sample_frame_per_tick;
+        var target_tag = this.note_tags[LEN - 1][this.track_infos[LEN - 1].next_tag_count];
+        var elapsed_frames = target_tag.start_frame + this.convertMidiTicksToSampleFrame(ticks - total_ticks);
+        return elapsed_frames * this.secs_per_frame * 1000.0;
+    },
+    
+    /**
      * ASTノードに対してArray.prototype.indexOfと同じ処理を施す
      * @param node {Object} 処理対象となるASTノード
      * @param target_node {Object} 探索対象のノード
@@ -270,7 +305,7 @@ return declare(null, {
             while(this.next_metaevent && this.next_metaevent.start_ticks <= cur_ticks){
                 if(this.next_metaevent.start_ticks != cur_ticks){
                     var tmp = this.next_metaevent;
-                    var msg = (tmp.name == "t" || tmp.name == "tempo") ? "It might cause the track to delay against the track #0." :
+                    var msg = (tmp.name == "t" || tmp.name == "tempo") ? "It might cause the track to delay against the track #1." :
                         "The current note wouldn't be affected by the new key signature.";
                     alert("Warning! The current note will play over a metaevent around " + cur_ticks + " ticks!\n" + msg);
                 }

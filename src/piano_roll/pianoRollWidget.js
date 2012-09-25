@@ -1,7 +1,7 @@
 define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin", "dojox/gfx", "dojo/on",
     "dojo/_base/lang", "dojo/text!piano_roll/templates/piano_roll_template.html", "dijit/Tooltip", "dijit/registry", "dojo/i18n!./nls/resources",
-    "dijit/layout/BorderContainer", "dijit/layout/BorderContainer", "dijit/form/Button"],
-    function(declare, WidgetBase, TemplatedMixin, WidgetsInTemplateMixin, gfx, on, lang, template, Tooltip, registry, resources){
+    "dojo/mouse", "dijit/layout/BorderContainer", "dijit/layout/BorderContainer", "dijit/form/Button"],
+    function(declare, WidgetBase, TemplatedMixin, WidgetsInTemplateMixin, gfx, on, lang, template, Tooltip, registry, resources, mouse){
         return declare("myCustomWidgets.PianoRoll", [WidgetBase, TemplatedMixin, WidgetsInTemplateMixin], {
             templateString : template,
             widgetsInTemplate : true,
@@ -41,6 +41,9 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
             //      音符を配置するバー一本分の幅
             //      upperはF-Bまで、lowerはC-Eまでの音に対応する音符領域の高さ
             _bar_heights : {upper : 0, lower : 0},
+            // _ticks_per_measure: Number
+            //      1小節に相当するtick数
+            _ticks_per_measure : 1920,
             _lowest_uppermost_note_num : 0,
             _velocity_colors : {weak : [0, 0, 255], strong : [255, 0, 0]},
             _tree : null,
@@ -153,6 +156,14 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
             
             _set_bar_heightsAttr : function(bar_heights){
                 this._bar_heights = bar_heights;
+            },
+            
+            _get_ticks_per_measureAttr : function(){
+                return this._ticks_per_measure;
+            },
+            
+            _set_ticks_per_measureAttr : function(/*Number*/ new_ticks){
+                this._ticks_per_measure = new_ticks;
             },
             
             postCreate : function(){
@@ -466,6 +477,7 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
             },
             
             onmousedown : function(e){
+                if(mouse.isRight(e)){return;}
                 this._touched = true;
                 this._last_mouse_pos.x = e.x;
                 this._last_mouse_pos.y = e.y;
