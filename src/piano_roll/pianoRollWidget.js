@@ -459,6 +459,14 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
                 return (lower <= val && val <= upper);
             },
             
+            jumpToMeasure : function(measure_num){
+                var target_ticks = (measure_num - 1) * this._ticks_per_measure;
+                var target_x = this.convertTicksToPos(target_ticks), PIANO_ROLL_WIDTH = this._viewport_size.w - this.keyboard_size.w;
+                var viewport_pos = this.get("_viewport_pos");
+                this.set("_viewport_pos", {x : Math.floor(target_x / PIANO_ROLL_WIDTH) * PIANO_ROLL_WIDTH, y : viewport_pos.y});
+                this.onUpdate();
+            },
+            
             onSoundPlaying : function(ticks){
                 this._cur_ticks += ticks;
                 var original_offset = this.convertTicksToPos(this._cur_ticks), viewport_size = this.get("_viewport_size");

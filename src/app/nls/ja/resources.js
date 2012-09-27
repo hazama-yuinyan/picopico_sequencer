@@ -7,6 +7,7 @@ define({
     "stop_btn_text" : "ストップ",
     "new_btn_text" : "新規",
     "open_btn_text" : "開く",
+    "jump_btn_text" : "ジャンプ",
     "open_label_text" : "保存元：",
     "open_explanation" : "保存元を選択してください",
     "type_LOCAL" : "ローカルストレージ",
@@ -44,5 +45,8 @@ define({
     "received_responce" : "サーバーからの応答を受け付けました。",
     "save_to_local" : "ダウンロード",
     "click_to_download" : "保存を完了するには上方のリンクをクリックしてください。",
-    "play_from" : "この小節から再生する"
+    "play_from" : "この小節から再生する",
+    "jump_to" : "指定した番号の小節へジャンプする",
+    "title_jump_to_measure" : "指定の小節へジャンプ",
+    "jump_prompt" : "ジャンプ先の小節番号を入れてください。"
 });

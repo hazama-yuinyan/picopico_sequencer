@@ -255,7 +255,7 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/dom-geometr
         dom_class.toggle("save_button_label", "not_saved", false);
     },
     
-    openFile = function(location, file_name, other_info){
+    openFile = function(location, file_name, other_infos){
         if(contents_changed.source){
             if(confirm(resources.warning_not_saved)){
                 saveFile();
@@ -268,12 +268,13 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/dom-geometr
         switch(location){
         case "LOCAL" :
             item = JSON.parse(localStorage.getItem(file_name));
+            var last_modified_date = new Date(item.date);
             editor.set("value", item.source);
             old_value = item.source;
             title_editor.set("value", item.name);
             author_editor.set("value", item.author);
             comment_editor.set("value", item.comment);
-            last_modified_display.set("value", item.date);
+            last_modified_display.set("value", last_modified_date.toLocaleString());
             reset();
             dom_class.toggle("save_button_label", "not_saved", false);  //remove the "not saved" indicator in case of it being already changed
             setMsgOnStatusBar(resources.msg_file_opened);
@@ -289,12 +290,13 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/dom-geometr
             }).then(
                 function(json_data){
                     clear();
+                    var last_modified_date = new Date(other_infos.date);
                     editor.set("value", json_data.source);
                     old_value = json_data.source;
                     title_editor.set("value", file_name);
-                    author_editor.set("value", other_info.author);
-                    comment_editor.set("value", other_info.comment);
-                    last_modified_display.set("value", other_info.date);
+                    author_editor.set("value", other_infos.author);
+                    comment_editor.set("value", other_infos.comment);
+                    last_modified_display.set("value", last_modified_date.toLocaleString());
                     reset();
                     dom_class.toggle("save_button_label", "not_saved", false);  //remove the "not saved" indicator in case of it being already changed
                     setMsgOnStatusBar(resources.msg_file_opened);
@@ -308,12 +310,12 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/dom-geometr
             break;
             
         case "FILE" : 
-            editor.set("value", other_info.source);
-            old_value = other_info.source;
-            title_editor.set("value", other_info.title);
-            author_editor.set("value", other_info.author);
-            comment_editor.set("value", other_info.comment);
-            last_modified_display.set("value", other_info.date);
+            editor.set("value", other_infos.source);
+            old_value = other_infos.source;
+            title_editor.set("value", other_infos.title);
+            author_editor.set("value", other_infos.author);
+            comment_editor.set("value", other_infos.comment);
+            last_modified_display.set("value", other_infos.date);
             reset();
             dom_class.toggle("save_button_label", "not_saved", false);  //remove the "not saved" indicator in case of it being already changed
             setMsgOnStatusBar(resources.msg_file_opened);
@@ -325,8 +327,9 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/dom-geometr
     },
     
     prepareForSave = function(){
-        var now = new Date(), title_editor = registry.byId("music_title"), music_title = title_editor.get("value");
-        var item = {source : null, author : null, comment : null, name : music_title, date : now.toString()};
+        var now = new Date(), title_editor = registry.byId("music_title"), music_title = title_editor.get("value"), last_modified_display = registry.byId("last_modified_display");
+        last_modified_display.set("value", now.toLocaleString());
+        var item = {source : null, author : null, comment : null, name : music_title, date : now.toUTCString()};
         if(contents_changed.name || contents_changed.source){   //タイトルを変更したときは問答無用で全プロパティーを更新する
             var editor = registry.byId("editor"), source = editor.get("value");
             item.source = source;
@@ -345,7 +348,7 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/dom-geometr
     },
     
     saveFile = function(){
-        var loc_save = registry.byId("save_as").get("value"), last_modified_display = registry.byId("last_modified_display");
+        var loc_save = registry.byId("save_as").get("value");
         var item = prepareForSave();
         
         switch(loc_save){
@@ -434,7 +437,6 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/dom-geometr
             alert("Choose a desired location!");
             return;
         }
-        last_modified_display.set("value", item.date);
     },
     
     retrieveAllDataFromStorage = function(){
@@ -673,7 +675,7 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/dom-geometr
             }
         });
     
-        var editor = registry.byId("editor");
+        var editor = registry.byId("editor"), jump_btn = registry.byId("jump_button");
         newFile();
             
         aspect.after(editor, "onKeyUp", function(){ //ソース画面で入力するたびに変更されたことが検知できるようにする
@@ -696,6 +698,19 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/dom-geometr
             Label : resources.play_from,
             onClick : playFromHalfWay
         }));
+        context_menu.addChild(new MenuItem({
+            id : "item_jump",
+            Label : resources.jump_to,
+            onClick : function(){
+                var jump_dialog = registry.byId("jump_to_measure_dialog");
+                jump_dialog.show();
+            }
+        }));
+        
+        on(jump_btn, "click", function(){
+            var measure_num_editor = registry.byId("to_measure_num"), piano_roll = registry.byId("piano_roll"), MEASURE_NUM = measure_num_editor.get("value");
+            piano_roll.jumpToMeasure(MEASURE_NUM);
+        });
     });
     
     window.webkitRequestFileSystem(window.TEMPORARY, 5*1024*1024 /*5MB*/, function(Fs){

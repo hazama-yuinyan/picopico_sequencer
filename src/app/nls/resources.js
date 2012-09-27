@@ -8,6 +8,7 @@ define({
         "stop_btn_text" : "Stop",
         "new_btn_text" : "New",
         "open_btn_text" : "Open",
+        "jump_btn_text" : "Jump",
         "open_label_text" : "Open from :",
         "open_explanation" : "Choose a desired location",
         "type_LOCAL" : "Local storage",
@@ -45,7 +46,10 @@ define({
         "received_responce" : "Received responce from the server",
         "save_to_local" : "Download",
         "click_to_download" : "Click the above link to complete the save.",
-        "play_from" : "Play from this measure"
+        "play_from" : "Play from this measure",
+        "jump_to" : "Jump to a specific measure",
+        "title_jump_to_measure" : "Jump to a measure",
+        "jump_prompt" : "Enter a measure number to which you want to jump."
     },
     
     ja : true
