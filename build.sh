@@ -19,14 +19,14 @@ if [ ! -d "$TOOLSDIR" ]; then
     exit 1
 fi
 
-if [ $# -gt 1 -a $1 = "--no-build" ]; then
+if [ $# -gt 1 -a "$1" = "--no-build" ]; then
     EXTRA_FLAGS="--check-args"
     cd $TOOLSDIR
     $CMD $EXTRA_FLAGS
     exit 0
 fi
 
-if [ $# -gt 1 -a $1 = "--rewrite-version" ]; then
+if [ $# -gt 1 -a "$1" = "--rewrite-version" ]; then
     if [ $# -lt 2 ]; then
 	echo "No new version number found. Please enter some version-ish number!"
 	exit 1

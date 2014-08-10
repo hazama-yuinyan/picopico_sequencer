@@ -37,7 +37,8 @@ function linear(val, x, from, to, len, is_up){
 
 function findNextNoteStartFrame(start_frame_list, cur_frame){
     for(var i = 0; i < start_frame_list.length; ++i){
-        if(start_frame_list[i] > cur_frame){return start_frame_list[i];}
+        if(start_frame_list[i] > cur_frame)
+            return start_frame_list[i];
     }
     has_arpeggiated_note = false;
     return start_frame_list[start_frame_list.length - 1];
@@ -60,8 +61,14 @@ onmessage = function(e){
         cur_sample_frame = 0;
         note_id = 0;
     }
-    var note_tag = {type : "note", start_frame : cur_sample_frame, end_frame : cur_sample_frame + note_len, note_id : note_id++,
-        len_in_ticks : data.len_in_ticks, vol : velocity};
+    var note_tag = {
+        type : "note",
+        start_frame : cur_sample_frame,
+        end_frame : cur_sample_frame + note_len,
+        note_id : note_id++,
+        len_in_ticks : data.len_in_ticks,
+        vol : velocity
+    };
     
     //ここから実際に出力バッファーに波形データをセットする
     var i, y;
@@ -74,7 +81,9 @@ onmessage = function(e){
         for(i = 0; i < note_len; ++i, ++cur_sample_frame){
             y = 0.0;
             for(var j = 0; j < freq_list.length; ++j){
-                if(start_frame_list[j] > i){break;}
+                if(start_frame_list[j] > i)
+                    break;
+
                 y += func(i * secs_per_frame, freq_list[j]);
             }
             
@@ -87,8 +96,11 @@ onmessage = function(e){
                 end_suppressing_frame1 = i + len_suppressing;
                 end_suppressing_frame2 = (has_arpeggiated_note) ? next_note_start_frame : note_len;
             }
-            if(i <= end_suppressing_frame1){y = linear(y, i, start_suppressing_frame1, end_suppressing_frame1, len_suppressing, true);}
-            if(i >= start_suppressing_frame2){y = linear(y, i, start_suppressing_frame2, end_suppressing_frame2, len_suppressing, false);}
+            if(i <= end_suppressing_frame1)
+                y = linear(y, i, start_suppressing_frame1, end_suppressing_frame1, len_suppressing, true);
+
+            if(i >= start_suppressing_frame2)
+                y = linear(y, i, start_suppressing_frame2, end_suppressing_frame2, len_suppressing, false);
             
             buffer[i] = y;
         }
@@ -98,9 +110,17 @@ onmessage = function(e){
             for(i = 0; i < note_len; ++i, ++cur_sample_frame){
                 y = func(i * secs_per_frame, freq);
                 y *= Math.pow(velocity / 127.0, 2.0);
-                if(i <= len_suppressing){y = linear(y, i, 0, len_suppressing, len_suppressing, true);}    //急激な波形の変化を抑えるため、ノートの端の方は波形を変化させる
-                if(i >= actual_end_frame - len_suppressing){y = linear(y, i, actual_end_frame - len_suppressing, actual_end_frame, len_suppressing, false);}
-                if(i >= actual_end_frame){freq = 0.0;}          //ゲートタイムの長さに合わせて発音時間を調整する
+
+                //急激な波形の変化を抑えるため、ノートの端の方は波形を変化させる
+                if(i <= len_suppressing)
+                    y = linear(y, i, 0, len_suppressing, len_suppressing, true);
+
+                if(i >= actual_end_frame - len_suppressing)
+                    y = linear(y, i, actual_end_frame - len_suppressing, actual_end_frame, len_suppressing, false);
+
+                if(i >= actual_end_frame)          //ゲートタイムの長さに合わせて発音時間を調整する
+                    freq = 0.0;
+
                 buffer[i] = y;
             }
         }else{

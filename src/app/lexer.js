@@ -15,16 +15,21 @@ define(["dojo/_base/declare"], function(declare){
                                 m = null;
                                 return true;
                             }
-                            tokens.push({type : definition.type == "operators" ? m[0] : definition.type,
+                            tokens.push({
+                                type : definition.type == "operators" ? m[0] : definition.type,
                                 value : (definition.callback) ? definition.callback(m[0]) : m[0],
-                                line_num : line_num, col : col});
+                                line_num : line_num,
+                                col : col
+                            });
                         }
                         return false;
                     }
                         
                     return true;
                 });
-                if(!m){throw new Error("Lexer Error! at " + line_num + " : " + col);}
+                if(!m)
+                    throw new Error("Lexer Error! at " + line_num + " : " + col);
+                
                 col += m[0].length;
                 str = str.substring(m[0].length);
                 

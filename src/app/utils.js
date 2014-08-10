@@ -106,7 +106,9 @@ define(["dojo/_base/declare"], function(declare){
         },
         
         invoke : function(name, args){
-            if(!this.command_names[name]){throw new Error("Command not found : " + name);}
+            if(!this.command_names[name])
+                throw new Error("Command not found : " + name);
+
             this.command_names[name](args);
         },
         
@@ -116,7 +118,9 @@ define(["dojo/_base/declare"], function(declare){
         
         registerAll : function(objs){
             objs.forEach(function(obj){
-                if(obj.shorter_name){this.register(obj.shorter_name, obj.func);}
+                if(obj.shorter_name)
+                    this.register(obj.shorter_name, obj.func);
+                
                 if(obj.longer_name){
                     obj.longer_name.forEach(function(name){
                         this.register(name, obj.func);

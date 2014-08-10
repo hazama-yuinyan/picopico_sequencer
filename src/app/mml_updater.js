@@ -17,7 +17,8 @@ define(["dojo/_base/lang", "app/mml_compiler"], function(lang, mml_compiler){
          */
         indexOf : function(node, target_node){
             for(var i = 0; i < node.length; ++i){
-                if(node[i] == target_node){return i;}
+                if(node[i] == target_node)
+                    return i;
             }
             return -1;
         },
@@ -29,18 +30,20 @@ define(["dojo/_base/lang", "app/mml_compiler"], function(lang, mml_compiler){
          * @returns {Object} | null 見つかったノード、またはnull
          */
         getNextNode : function(node, skip_child){
-            if(!skip_child && (node.cons === "params" || node.cons === "command" || node.cons === "chord")){return node;}
-            if(!skip_child && node.length){return this.getNextNode(node[0], false);}
+            if(!skip_child && (node.cons === "params" || node.cons === "command" || node.cons === "chord"))
+                return node;
+
+            if(!skip_child && node.length)
+                return this.getNextNode(node[0], false);
             
-            if(!node.parent){
+            if(!node.parent)
                 return null;
-            }
+            
             var index = this.indexOf(node.parent, node);
-            if(index + 1 >= node.parent.length){
+            if(index + 1 >= node.parent.length)
                 return this.getNextNode(node.parent, true);
-            }else{
+            else
                 return this.getNextNode(node.parent[index + 1], false);
-            }
         },
         
         simplifyNote : function(params){
@@ -50,8 +53,14 @@ define(["dojo/_base/lang", "app/mml_compiler"], function(lang, mml_compiler){
             var gate_time = (params[0][2][0].value != "none") ? params[0][2][0].value : 0;
             var vol = (!lang.isString(params[0][3][0].value)) ? params[0][3][0].value : 
                       (params[0][3][0].value == "none") ? params[0][3][1].value : this.last_vol + parseInt(params[0][3][0].value + params[0][3][1].value);
-            var tmp = {type : (params[0][0][0].value < 0) ? "rest" : "note", pitch : params[0][0][0].value, length : params[0][1][0].value,
-                gate_time : gate_time, velocity : vol, start_time : this.start_time};
+            var tmp = {
+                type : (params[0][0][0].value < 0) ? "rest" : "note",
+                pitch : params[0][0][0].value,
+                length : params[0][1][0].value,
+                gate_time : gate_time,
+                velocity : vol,
+                start_time : this.start_time
+            };
             
             this.last_vol = vol;
             return tmp;
@@ -65,7 +74,9 @@ define(["dojo/_base/lang", "app/mml_compiler"], function(lang, mml_compiler){
             chord[0].forEach(function(note){
                 var tmp_val = _self.simplifyNote(note[0]);
                 tmp_val.length = len;
-                if(chord[2][0].value != "none"){tmp_val.gate_time = chord[2][0].value;}
+                if(chord[2][0].value != "none")
+                    tmp_val.gate_time = chord[2][0].value;
+
                 tmp.push(tmp_val);
             });
             this.start_time += len;
@@ -77,14 +88,20 @@ define(["dojo/_base/lang", "app/mml_compiler"], function(lang, mml_compiler){
             // summary:
             //      commandタイプのノードを受け取って一つのオブジェクトにまとめる
             
-            var tmp = {type : "command", name : command[0].value, arg1 : lang.isArray(command[1]) ? command[1] : command[1].value,
-                arg2 : command[2] && command[2].value || "none", start_time : this.start_time};
+            var tmp = {
+                type : "command",
+                name : command[0].value,
+                arg1 : lang.isArray(command[1]) ? command[1] : command[1].value,
+                arg2 : command[2] && command[2].value || "none",
+                start_time : this.start_time
+            };
             return tmp;
         },
         
         compile : function(str){
             var tree = compiler.parse(str);
-            if(!tree){return compiler.stringifyErrors();}
+            if(!tree)
+                return compiler.stringifyErrors();
             
             var node = this.getNextNode(tree, false), list = [], inner = [], metaevents = [];
             do{

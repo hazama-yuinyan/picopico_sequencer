@@ -58,9 +58,12 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/dom-geometr
         }
         var display = registry.byId("ast");
         display.set("value", data_store.tree && data_store.tree.toPrettyString() || compiler.mml_parser.stringifyErrors());
-        if(!data_store.tree){return;}
+        if(!data_store.tree)
+            return;
         
-        if(!sequencer){sequencer = new Sequencer({stop : stop, play : play, hold : hold});}
+        if(!sequencer)
+            sequencer = new Sequencer({stop : stop, play : play, hold : hold});
+
         sequencer.setASTTree(data_store.tree);
         sequencer.prepareToPlay();
         elapsed_time = 0;
@@ -68,7 +71,9 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/dom-geometr
 
     stop = function(){
         sequencer.stop();
-        if(timer.isRunning){timer.stop();}
+        if(timer.isRunning)
+            timer.stop();
+
         elapsed_time = 0;
         var controller = registry.byId("controller");
         switchController(controller, "play");
@@ -171,7 +176,8 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/dom-geometr
     },
     
     switchController = function(controller, mode){
-        if(listener_remover){listener_remover.remove();}
+        if(listener_remover)
+            listener_remover.remove();
         
         switch(mode){
         case "play" :
@@ -329,7 +335,14 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/dom-geometr
     prepareForSave = function(){
         var now = new Date(), title_editor = registry.byId("music_title"), music_title = title_editor.get("value"), last_modified_display = registry.byId("last_modified_display");
         last_modified_display.set("value", now.toLocaleString());
-        var item = {source : null, author : null, comment : null, name : music_title, date : now.toUTCString()};
+        var item = {
+            source : null,
+            author : null,
+            comment : null,
+            name : music_title,
+            date : now.toUTCString()
+        };
+
         if(contents_changed.name || contents_changed.source){   //タイトルを変更したときは問答無用で全プロパティーを更新する
             var editor = registry.byId("editor"), source = editor.get("value");
             item.source = source;
@@ -444,7 +457,12 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/dom-geometr
         for(var i = 0; i < localStorage.length; ++i){
             var cur_key = localStorage.key(i);
             var item = JSON.parse(localStorage.getItem(cur_key));
-            data.push({name : cur_key, comment : item.comment, author : item.author, date : item.date});
+            data.push({
+                name : cur_key,
+                comment : item.comment,
+                author : item.author,
+                date : item.date
+            });
         }
         return data;
     },

@@ -135,12 +135,15 @@ define(["app/lexer", "app/parser", "app/utils", "treehugger/tree", "treehugger/t
                     var len = m[3] && m[3][0].value || cur_default_len, num_notes = 0;
                     
                     elems.forEach(function(elem){
-                        if(elem.cons !== "command"){++num_notes;}
+                        if(elem.cons !== "command")
+                            ++num_notes;
                     });
                     var len_per_note = len / num_notes;
                     
                     elems.forEach(function(elem){
-                        if(elem.cons == "command"){return;}
+                        if(elem.cons == "command")
+                            return;
+
                         if(elem.cons == "note"){
                             if(elem[0][0][1][0].value != cur_default_len){
                                 throw SyntaxError("Illegal notation! You can't write a note length in a tuplet definition!");
@@ -179,13 +182,19 @@ define(["app/lexer", "app/parser", "app/utils", "treehugger/tree", "treehugger/t
                         [m.g.gate_time && tree.num(m.g.gate_time) || tree.string("none")])]);
                 },
                 pitch: function(m){     //音高をMIDIのNoteNum形式で求める
-                    if(m[0] === 'r'){return tree.cons("pitch", [tree.num(-127)]);}
+                    if(m[0] === 'r')
+                        return tree.cons("pitch", [tree.num(-127)]);
+
                     var pitch_num = _self.env.getOctaveInNoteNum();
                     pitch_num += _self.env.getPitchDifference(m.g.note_name);
                     var diff_pitch = _self.env.getPitchDiffByKey(m.g.note_name), num_accidentals = m[2].length;
-                    if(m[1]){pitch_num += -diff_pitch;}     //調号を無効にする
+                    if(m[1])     //調号を無効にする
+                        pitch_num += -diff_pitch;
+
                     pitch_num += diff_pitch;
-                    if(num_accidentals){pitch_num += (m[2][0] == '-') ? -1 * num_accidentals : 1 * num_accidentals;}
+                    if(num_accidentals)
+                        pitch_num += (m[2][0] == '-') ? -1 * num_accidentals : 1 * num_accidentals;
+
                     return tree.cons("pitch", [tree.num(pitch_num)]);
                 },
                 shortened_command: function(m){
@@ -307,11 +316,14 @@ define(["app/lexer", "app/parser", "app/utils", "treehugger/tree", "treehugger/t
                     
                     var params = [];
                     for(; tokens[i].type == "identifier" || tokens[i].type == "(" || tokens[i].type == ")" || tokens[i].type == ","; ++i){
-                        if(tokens[i].type == "identifier"){params.push({name : tokens[i].value});}
+                        if(tokens[i].type == "identifier")
+                            params.push({name : tokens[i].value});
                     }
                     new_macro.formal_params = params;
                     
-                    if(tokens[i].type == "line_delimiter"){++i;}
+                    if(tokens[i].type == "line_delimiter")
+                        ++i;
+
                     if(tokens[i].value != "'"){
                         this.macro_error(tokens[i].line_num, tokens[i].col, "Unexpected token!; " + tokens[i].value);
                     }
@@ -335,7 +347,8 @@ define(["app/lexer", "app/parser", "app/utils", "treehugger/tree", "treehugger/t
                 
                 function findMacro(name){
                     for(var i = 0; i < macros.length; ++i){
-                        if(macros[i].name == name){return macros[i];}
+                        if(macros[i].name == name)
+                            return macros[i];
                     }
                     
                     return null;
@@ -385,7 +398,8 @@ define(["app/lexer", "app/parser", "app/utils", "treehugger/tree", "treehugger/t
                     if(target_macro.formal_params.length > param_list.length){  //実引数が仮引数よりも少なかった場合は、空文字列をその引数に指定する
                         var formals = target_macro.formal_params;
                         for(var j = 0; j < formals.length; ++j){
-                            if(!param_list[formals[j].name]){param_list[formals[j].name] = "";}
+                            if(!param_list[formals[j].name])
+                                param_list[formals[j].name] = "";
                         }
                     }
                     var len2 = i - start_index2;
@@ -416,10 +430,13 @@ define(["app/lexer", "app/parser", "app/utils", "treehugger/tree", "treehugger/t
                 this.env = new util.Enviroment();
                 var target_str = input_str + "\n";
                 var tokens = lexer.tokenize(target_str);
-                if(!tokens.length){return;}
+                if(!tokens.length)
+                    return;
+
                 var preparsed_tokens = this.preparse(tokens);
                 var result = parser.parse(preparsed_tokens, "mml");
-                if(!result){return;}
+                if(!result)
+                    return;
                 
                 traverse.addParentPointers(result.value);
                 return result.value;

@@ -98,8 +98,8 @@ return declare(null, {
                 node.disconnect();
             });
         }
-        this.nodes = [this.context.createJavaScriptNode(this.buffer_size, 1, 1)];
-        this.gain_nodes = [this.context.createGainNode()];
+        this.nodes = [this.context.createScriptProcessor(this.buffer_size, 1, 1)];
+        this.gain_nodes = [this.context.createGain()];
         this.last_vol = 100;
         this.sound_producer = new Worker("app/sound_producer.js");
         
@@ -167,7 +167,8 @@ return declare(null, {
      */
     indexOf : function(node, target_node){
         for(var i = 0; i < node.length; ++i){
-            if(node[i] == target_node){return i;}
+            if(node[i] == target_node)
+                return i;
         }
         return -1;
     },
@@ -199,21 +200,22 @@ return declare(null, {
      * @returns {Object} | null 見つかったノード、またはnull
      */
     getNextNode : function(node, skip_child){
-        if(!skip_child && (node.cons === "params" || node.cons === "command" || node.cons === "chord")){return node;}
-        if(!skip_child && node.length){return this.getNextNode(node[0], false);}
+        if(!skip_child && (node.cons === "params" || node.cons === "command" || node.cons === "chord"))
+            return node;
+        if(!skip_child && node.length)
+            return this.getNextNode(node[0], false);
         
         if(!node.parent){
             return null;
         }
-        if(node.cons == "line"){      //プログレスバーの更新用に現在の行数を記録しておく
+        if(node.cons == "line")      //プログレスバーの更新用に現在の行数を記録しておく
             this.cur_progress = this.indexOf(node.parent, node) * 100.0 / node.parent.length;
-        }
+        
         var index = this.indexOf(node.parent, node);
-        if(index + 1 >= node.parent.length){
+        if(index + 1 >= node.parent.length)
             return this.getNextNode(node.parent, true);
-        }else{
+        else
             return this.getNextNode(node.parent[index + 1], false);
-        }
     },
     
     getCurTempo : function(){
@@ -243,9 +245,9 @@ return declare(null, {
         if(node[0].value === "track" && node[1].value != 1 || node[0].value !== "track"){
             this.cmd_manager.invoke(node[0].value, [node[1], node[2], "for_worker"]);
             if(node[0].value === "track"){
-                var new_node = this.context.createJavaScriptNode(this.buffer_size, 1, 1);
+                var new_node = this.context.createScriptProcessor(this.buffer_size, 1, 1);
                 new_node.onaudioprocess = this.processAudio;
-                var gain_node = this.context.createGainNode();
+                var gain_node = this.context.createGain();
                 new_node.connect(gain_node);
                 gain_node.connect(this.compressor);
                 this.nodes.push(new_node);
@@ -369,7 +371,9 @@ return declare(null, {
         var track_tags = this.note_tags[track_num], track_info = this.track_infos[track_num];
         if(track_info.next_tag_count >= track_tags.length){         //曲の最後まで到達したので、メソッドを抜ける
             this.can_play = false;
-            if(track_num === 0 && this.actual_end_frame === 0){this.actual_end_frame = this.cur_frame + 5 * this.buffer_size;}
+            if(track_num === 0 && this.actual_end_frame === 0)
+                this.actual_end_frame = this.cur_frame + 5 * this.buffer_size;
+
             return null;
         }
         var tag = track_tags[track_info.next_tag_count];
@@ -390,7 +394,9 @@ return declare(null, {
         }
         var track_info = this.track_infos[track_num], tag = this.proceedToNextNoteForTrack(track_num), i;
         if(!tag){       //曲の終端に到達したので、メソッドを抜ける
-            if(track_num === 0){this.cur_frame += data_length;}
+            if(track_num === 0)
+                this.cur_frame += data_length;
+            
             for(i = 0; i < data_length; ++i){    //後片付けをする
                 buffer[i] = 0;
             }
@@ -401,7 +407,9 @@ return declare(null, {
         for(i = 0; i < data_length; ++i, ++index){    //出力バッファーに波形データをセットする
             if(index >= playing_buffer.length){
                 ++track_info.next_tag_count;
-                if(!(tag = this.proceedToNextNoteForTrack(track_num))){break;} //曲の終端に到達したので、ループを抜ける
+                if(!(tag = this.proceedToNextNoteForTrack(track_num))) //曲の終端に到達したので、ループを抜ける
+                    break;
+
                 index = 0;
                 playing_buffer = this.queues[track_num][tag.note_id];
             }
