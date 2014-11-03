@@ -551,10 +551,10 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/dom-geometr
         on(accept_btn, "click", saveFile);
     
         var open_from = registry.byId("open_from"), open_btn = registry.byId("open_button"), dialog_content = registry.byId("openDialogContent");
-        var resource_names = ["open_explanation", "type_LOCAL", "type_SERVER", "type_FILE"], i = 0;
-        open_from.options.forEach(function(option){
+        var resource_names = (typeof fs !== "undefined") ? ["open_explanation", "type_LOCAL", "type_SERVER", "type_FILE"]
+                                                         : ["open_explanation", "type_LOCAL", "type_SERVER"];
+        open_from.options.forEach(function(option, i){
             option.label = resources[resource_names[i]];
-            ++i;
         });
         var file_input = dom.byId("file_input");
         on(file_input, "change", function(e){
@@ -628,10 +628,10 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/dom-geometr
         };
     
         var save_as = registry.byId("save_as");
-        resource_names = ["save_explanation", "type_LOCAL", "type_SERVER", "type_FILE"], i = 0;
-        save_as.options.forEach(function(option){
+        resource_names = (typeof fs !== "undefined") ? ["save_explanation", "type_LOCAL", "type_SERVER", "type_FILE"]
+                                                     : ["save_explanation", "type_LOCAL", "type_SERVER"];
+        save_as.options.forEach(function(option, i){
             option.label = resources[resource_names[i]];
-            ++i;
         });
         save_as.startup();
         save_as.onChange = function(){
@@ -731,9 +731,12 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/dom-geometr
         });
     });
     
-    window.webkitRequestFileSystem(window.TEMPORARY, 5*1024*1024 /*5MB*/, function(Fs){
-        fs = Fs;
-    }, fsErrorHandler);
+    var requestFileSystem = window.requestFileSystem || window.webkitRequestFileSystem;
+    if(requestFileSystem){
+        requestFileSystem(window.TEMPORARY, 5*1024*1024 /*5MB*/, function(Fs){
+            fs = Fs;
+        }, fsErrorHandler);
+    }
 
 return resources;
 
