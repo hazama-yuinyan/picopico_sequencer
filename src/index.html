@@ -16,22 +16,30 @@
                                             data-dojo-props="design: 'headline'">
             <div id="tool_bar" data-dojo-type="dijit.Toolbar"
                                data-dojo-props="region: 'top'">
+                <div id="music_info" data-dojo-type="dijit.InlineEditBox" data-dojo-props="disabled:true">0:0:0.000</div>
                 <button id="compile_button" type="button" data-dojo-type="dijit.form.Button" data-dojo-props="label:this.compile_btn_text"></button>
                 <button id="controller" type="button" data-dojo-type="dijit.form.Button" data-dojo-props="label:this.play_btn_text"></button>
                 <button id="stop_button" type="button" data-dojo-type="dijit.form.Button" data-dojo-props="label:this.stop_btn_text"></button>
-                <button id="new_button" type="button" data-dojo-type="dijit.form.Button" data-dojo-props="label:this.new_btn_text"></button>
+                <div id="file_button" type="button" data-dojo-type="dijit.form.DropDownButton" data-dojo-props="label:this.file_btn_text">
+                    <span></span>
+                    <div data-dojo-type="dijit.TooltipDialog" id="fileDialog">
+                        <div data-dojo-type="dijit.layout.ContentPane" id="fileDialogContent">
+                        </div>
+                    </div>
+                </div>
+                
                 <div id="open_button" data-dojo-type="dijit.form.DropDownButton" data-dojo-props="label:this.open_btn_text">
                     <span></span>
                     <div data-dojo-type="dijit.TooltipDialog" id="openDialog">
                         <div data-dojo-type="dijit.layout.ContentPane" id="openDialogContent">
-                            <select id="open_from" data-dojo-type="dijit.form.Select"
+                            <!--<select id="open_from" data-dojo-type="dijit.form.Select"
                                 name="sourceSelect">
                                 <option value="" selected="true"></option>
                                 <option value="LOCAL"></option>
                                 <option value="SERVER"></option>
                                 <option value="FILE"></option>
                             </select>
-                            <br>
+                            <br>-->
                             <div id="select_file">
                             </div>
                         </div>
@@ -53,7 +61,6 @@
                     </div>
                 </div>
                 <button id="about_button" type="button" data-dojo-type="dijit.form.Button" data-dojo-props="label:this.about_btn_text"></button>
-                <div id="music_info" data-dojo-type="dijit.InlineEditBox" data-dojo-props="disabled:true">0:0:0.000</div>
             </div>
             <div id="main_tab" data-dojo-type="dijit.layout.TabContainer"
                 data-dojo-props="region: 'center', tabPosition: 'bottom'">
@@ -113,6 +120,9 @@
                 <div data-dojo-type="dijit.InlineEditBox" data-dojo-props="value:this.jump_prompt, disabled:true"></div>
                 <div data-dojo-type="dijit.form.NumberSpinner" data-dojo-props="constraints:{min: 1}, value: 1" id="to_measure_num"></div>
                 <button id="jump_button" type="button" data-dojo-type="dijit.form.Button" data-dojo-props="label: this.jump_btn_text"></button>
+            </div>
+            <div data-dojo-type="dijit.Dialog" style="width:400px" data-dojo-props="title:this.open_file_dialog_title" id="openFileDialog">
+                
             </div>
             <input type="file" id="file_input">
         </div>

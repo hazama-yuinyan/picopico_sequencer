@@ -181,7 +181,7 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
             
             resize : function(new_size){
                 this._surface.setDimensions(new_size.w, this.keyboard_size.h * 7);
-                this._set("_pianoroll_height", new_size.h - this.tool_box.domNode.offsetHeight);
+                this._set("_pianoroll_height", new_size.h/* - this.tool_box.domNode.offsetHeight*/);
                 this._set("_viewport_size", new_size);
                 var viewport_height = this._viewport_size.h, i = 12, y = 0, bar_heights = this.get("_bar_heights");
                 for(; y < viewport_height; ++i){
