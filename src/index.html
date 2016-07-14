@@ -16,11 +16,20 @@
                                             data-dojo-props="design: 'headline'">
             <div id="tool_bar" data-dojo-type="dijit.Toolbar"
                                data-dojo-props="region: 'top'">
+                <div id="music_info" data-dojo-type="dijit.InlineEditBox" data-dojo-props="disabled:true">0:0:0.000</div>
                 <button id="compile_button" type="button" data-dojo-type="dijit.form.Button" data-dojo-props="label:this.compile_btn_text"></button>
                 <button id="controller" type="button" data-dojo-type="dijit.form.Button" data-dojo-props="label:this.play_btn_text"></button>
                 <button id="stop_button" type="button" data-dojo-type="dijit.form.Button" data-dojo-props="label:this.stop_btn_text"></button>
-                <button id="new_button" type="button" data-dojo-type="dijit.form.Button" data-dojo-props="label:this.new_btn_text"></button>
-                <div id="open_button" data-dojo-type="dijit.form.DropDownButton" data-dojo-props="label:this.open_btn_text">
+                <div id="file_button" data-dojo-type="dijit.form.DropDownButton" data-dojo-props="label:this.file_btn_text">
+                    <span></span>
+                    <div data-dojo-type="dijit.TooltipDialog" id="fileDialog">
+                        <button id="new_button" type="button" data-dojo-type="dijit.form.Button" data-dojo-props="label:this.new_btn_text"></button>
+                        <button id="open_button" data-dojo-type="dijit.form.Button" data-dojo-props="label:this.open_btn_text"></button>
+                        <button id="save_button" data-dojo-type="dijit.form.DropDownButton" data-dojo-props="label:this.save_btn_text"></button>
+                    </div>
+                </div>
+                
+                <!--<div id="open_button" data-dojo-type="dijit.form.DropDownButton" data-dojo-props="label:this.open_btn_text">
                     <span></span>
                     <div data-dojo-type="dijit.TooltipDialog" id="openDialog">
                         <div data-dojo-type="dijit.layout.ContentPane" id="openDialogContent">
@@ -51,9 +60,8 @@
                         </p>
                         <button id="accept_button" type="button" data-dojo-type="dijit.form.Button">OK</button>
                     </div>
-                </div>
+                </div>-->
                 <button id="about_button" type="button" data-dojo-type="dijit.form.Button" data-dojo-props="label:this.about_btn_text"></button>
-                <div id="music_info" data-dojo-type="dijit.InlineEditBox" data-dojo-props="disabled:true">0:0:0.000</div>
             </div>
             <div id="main_tab" data-dojo-type="dijit.layout.TabContainer"
                 data-dojo-props="region: 'center', tabPosition: 'bottom'">

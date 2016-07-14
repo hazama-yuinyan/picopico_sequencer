@@ -7,6 +7,7 @@ define({
     "stop_btn_text" : "ストップ",
     "new_btn_text" : "新規",
     "open_btn_text" : "開く",
+    "file_btn_text" : "ファイル",
     "jump_btn_text" : "ジャンプ",
     "open_label_text" : "保存元：",
     "open_explanation" : "保存元を選択してください",

@@ -8,6 +8,7 @@ define({
         "stop_btn_text" : "Stop",
         "new_btn_text" : "New",
         "open_btn_text" : "Open",
+        "file_btn_text" : "File",
         "jump_btn_text" : "Jump",
         "open_label_text" : "Open from :",
         "open_explanation" : "Choose a desired location",
