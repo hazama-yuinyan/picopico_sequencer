@@ -16,7 +16,7 @@
                                             data-dojo-props="design: 'headline'">
             <div id="tool_bar" data-dojo-type="dijit.Toolbar"
                                data-dojo-props="region: 'top'">
-                <div id="music_info" data-dojo-type="dijit.InlineEditBox" data-dojo-props="disabled:true">0:0:0.000</div>
+                <span id="music_info" data-dojo-type="dijit.InlineEditBox" data-dojo-props="disabled:true">0:0:0.000</span>
                 <button id="compile_button" type="button" data-dojo-type="dijit.form.Button" data-dojo-props="label:this.compile_btn_text"></button>
                 <button id="controller" type="button" data-dojo-type="dijit.form.Button" data-dojo-props="label:this.play_btn_text"></button>
                 <button id="stop_button" type="button" data-dojo-type="dijit.form.Button" data-dojo-props="label:this.stop_btn_text"></button>
@@ -25,7 +25,7 @@
                     <div data-dojo-type="dijit.TooltipDialog" id="fileDialog">
                         <button id="new_button" type="button" data-dojo-type="dijit.form.Button" data-dojo-props="label:this.new_btn_text"></button>
                         <button id="open_button" data-dojo-type="dijit.form.Button" data-dojo-props="label:this.open_btn_text"></button>
-                        <button id="save_button" data-dojo-type="dijit.form.DropDownButton" data-dojo-props="label:this.save_btn_text"></button>
+                        <button id="save_button" data-dojo-type="dijit.form.Button" data-dojo-props="label:this.save_btn_text"></button>
                     </div>
                 </div>
                 
@@ -116,6 +116,11 @@
             </div>
             <div data-dojo-type="dijit.Dialog" style="width:400px;" data-dojo-props="title:this.save_to_local" id="save_to_local_dialog">
                 <a href="" download="" id="local_file_link">Click me</a>
+            </div>
+            <div data-dojo-type="dijit.Dialog" style="width:400px" data-dojo-props="title:this.open_dialog_title" id="open_dialog">
+                <select data-dojo-type="dijit/form/MultiSelect" id="open_dialog_file_selector">
+                </select>
+                <button id="open_dialog_ok_button" data-dojo-type="dijit/form/Button" data-dojo-props="label:this.ok_btn_text"></button>
             </div>
             <div data-dojo-type="dijit.Dialog" style="width:400px;" data-dojo-props="title:this.title_jump_to_measure" id="jump_to_measure_dialog">
                 <div data-dojo-type="dijit.InlineEditBox" data-dojo-props="value:this.jump_prompt, disabled:true"></div>

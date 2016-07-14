@@ -5,10 +5,10 @@
  */
 
 
-define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/dom-geometry", "dojo/on", "dijit/registry", "dojox/timing", 
+define(["app/mml_compiler", "app/sequencer", "app/utils", "dojo/dom-class", "dojo/dom-geometry", "dojo/on", "dijit/registry", "dojox/timing", 
     "dijit/form/Select","app/mml_updater", "dojo/i18n!app/nls/resources", "dijit/Menu", "dijit/MenuItem", "dojo/aspect", "dojo/request",
     "dojo/dom", "dojo/ready"],
-    function(compiler, Sequencer, dom_class, dom_geometry, on, registry, timing, Select, updater, resources, Menu, MenuItem, aspect, request, dom, ready){
+    function(compiler, Sequencer, utils, dom_class, dom_geometry, on, registry, timing, Select, updater, resources, Menu, MenuItem, aspect, request, dom, ready){
 
     var sequencer = null,
     data_store = null,
@@ -361,7 +361,7 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/dom-geometr
     },
     
     saveFile = function(){
-        var loc_save = registry.byId("save_as").get("value");
+        var loc_save = "LOCAL";//registry.byId("save_as").get("value");
         var item = prepareForSave();
         
         switch(loc_save){
@@ -457,12 +457,15 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/dom-geometr
         for(var i = 0; i < localStorage.length; ++i){
             var cur_key = localStorage.key(i);
             var item = JSON.parse(localStorage.getItem(cur_key));
-            data.push({
-                name : cur_key,
-                comment : item.comment,
-                author : item.author,
-                date : item.date
-            });
+            if(typeof item.comment !== "undefined" && typeof item.author !== "undefined" && typeof item.date !== "undefined"){
+                // comment, author, dateプロパティを持たないデータは、picopico-sequencerのものではないと判断して無視する
+                data.push({
+                    name : cur_key,
+                    comment : item.comment,
+                    author : item.author,
+                    date : item.date
+                });
+            }
         }
         return data;
     },
@@ -545,15 +548,17 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/dom-geometr
             stop();
         });
     
-        var new_btn = dom.byId("new_button"), accept_btn = dom.byId("accept_button"), about_btn = dom.byId("about_button");
+        var new_btn = dom.byId("new_button"), save_btn = dom.byId("save_button"), about_btn = dom.byId("about_button");
         on(new_btn, "click", newFile);
     
-        on(accept_btn, "click", saveFile);
+        on(save_btn, "click", saveFile);
     
-        var open_from = registry.byId("open_from"), open_btn = registry.byId("open_button"), dialog_content = registry.byId("openDialogContent");
-        var resource_names = (typeof fs !== "undefined") ? ["open_explanation", "type_LOCAL", "type_SERVER", "type_FILE"]
-                                                         : ["open_explanation", "type_LOCAL", "type_SERVER"];
-        open_from.options.forEach(function(option, i){
+        /*var open_from = registry.byId("open_from"), */
+        var open_btn = registry.byId("open_button"), open_accept_btn = registry.byId("open_dialog_ok_button"), select_file = registry.byId("open_dialog_file_selector");
+        var open_dialog = registry.byId("open_dialog");
+        /*var resource_names = (typeof fs !== "undefined") ? ["open_explanation", "type_LOCAL", "type_SERVER", "type_FILE"]
+                                                         : ["open_explanation", "type_LOCAL", "type_SERVER"];*/
+        /*open_from.options.forEach(function(option, i){
             option.label = resources[resource_names[i]];
         });
         var file_input = dom.byId("file_input");
@@ -564,15 +569,16 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/dom-geometr
                 return;
             }
             retrieveDataFromFile(target_file);
-        });
-        open_from.startup();
-        open_from.onChange = function(){
-            var loc = this.get("value"), names;
+        });*/
+        //open_from.startup();
+        /*open_from.onChange =*/
+        on(open_btn, "click", function(){
+            var loc = "LOCAL"/*this.get("value")*/, names;
             switch(loc){
             case "LOCAL":
                 saved_data = retrieveAllDataFromStorage();
                 names = saved_data.map(function(item){return {value : item.name, label : item.name};});
-                names.unshift({value : "", label : resources.open_prompt, selected : true});
+                //names.unshift({value : "", label : resources.open_prompt, selected : true});
                 break;
             
             case "SERVER":
@@ -601,13 +607,13 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/dom-geometr
                 return;
             }
             
-            var select_file = registry.byId("select_file"), _self = this;
-            if(!select_file){
-                select_file = new Select({
+            var _self = this;
+            /*if(!select_file){
+                select_file = new MultiSelect({
                     name : "selectFile",
                     options : names,
                     maxHeight : -1,
-                    onChange : function(){
+                    /*onChange : function(){
                         var file_name = this.get("value"), target, location = _self.get("value");
                         saved_data.every(function(item){
                             if(item.name == file_name){
@@ -618,16 +624,38 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/dom-geometr
                         });
                         openFile(location, file_name, target);
                     }
-                }, "select_file");
-                dialog_content.addChild(select_file);
+                }, "open_dialog_file_selector");
+                //dialog_content.addChild(select_file);
             }else{
                 select_file.set("options", names);
-            }
+            }*/
+            utils.clearChildren(select_file.domNode);
+            names.forEach(function(name){
+                var option = document.createElement("option");
+                option.label = name.label;
+                option.value = name.value;
+                select_file.domNode.appendChild(option);
+            })
             select_file.startup();
-            open_btn.openDropDown();
-        };
+
+            open_dialog.show();
+            //open_btn.openDropDown();
+        });
+        on(open_accept_btn, "click", function(){
+            var file_name = select_file.get("value"), target, location = "LOCAL";
+            saved_data.every(function(item){
+                if(item.name == file_name){
+                    target = item;
+                    return false;
+                }
+                return true;
+            });
+            openFile(location, file_name, target);
+            
+            open_dialog.hide();
+        });
     
-        var save_as = registry.byId("save_as");
+        /*var save_as = registry.byId("save_as");
         resource_names = (typeof fs !== "undefined") ? ["save_explanation", "type_LOCAL", "type_SERVER", "type_FILE"]
                                                      : ["save_explanation", "type_LOCAL", "type_SERVER"];
         save_as.options.forEach(function(option, i){
@@ -637,7 +665,7 @@ define(["app/mml_compiler", "app/sequencer", "dojo/dom-class", "dojo/dom-geometr
         save_as.onChange = function(){
             var save_btn = registry.byId("save_button");
             save_btn.openDropDown();
-        };
+        };*/
         
         on(about_btn, "click", function(){
             var about_dialog = registry.byId("aboutDialog");

@@ -1,5 +1,6 @@
 define({
     "app_name" : "ぴこぴこ・しーけんさー",
+    "ok_btn_text" : "OK",
     "compile_btn_text" : "コンパイル",
     "play_btn_text" : "再生",
     "resume_btn_text" : "再開",
@@ -15,6 +16,7 @@ define({
     "type_SERVER" : "サーバー",
     "type_FILE" : "ローカルファイル",
     "open_prompt" : "開くタイトルを選択してください",
+    "open_dialog_title" : "ファイルを開く",
     "save_btn_text" : "保存",
     "save_label_text" : "保存先：",
     "save_explanation" : "保存先を選択してください",

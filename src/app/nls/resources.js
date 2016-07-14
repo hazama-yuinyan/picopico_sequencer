@@ -1,6 +1,7 @@
 define({
     root: {
         "app_name" : "Picopico Sequencer",
+        "ok_btn_text" : "OK",
         "compile_btn_text" : "Compile",
         "play_btn_text" : "Play",
         "resume_btn_text" : "Resume",
@@ -16,6 +17,7 @@ define({
         "type_SERVER" : "Server",
         "type_FILE" : "Local file",
         "open_prompt" : "Choose a title to open",
+        "open_dialog_title" : "Open file",
         "save_btn_text" : "Save",
         "save_label_text" : "Save to :",
         "save_explanation" : "Choose a desired location",

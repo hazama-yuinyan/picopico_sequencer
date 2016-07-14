@@ -129,6 +129,12 @@ define(["dojo/_base/declare"], function(declare){
             }, this);
         }
     });
+
+    var clearChildren = function(parent){
+        var range = new Range();
+        range.selectNodeContents(parent);
+        range.deleteContents();
+    }
     
-    return {Enviroment : Enviroment, CommandManager : CommandManager};
+    return {Enviroment : Enviroment, CommandManager : CommandManager, clearChildren : clearChildren};
 });
