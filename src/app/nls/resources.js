@@ -1,6 +1,7 @@
 define({
     root: {
         "app_name" : "Picopico Sequencer",
+        "cancel_btn_text" : "Cancel",
         "ok_btn_text" : "OK",
         "compile_btn_text" : "Compile",
         "play_btn_text" : "Play",

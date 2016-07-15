@@ -134,9 +134,12 @@
                 <a href="" download="" id="local_file_link">Click me</a>
             </div>
             <div data-dojo-type="dijit.Dialog" style="width:400px" data-dojo-props="title:this.open_dialog_title" id="open_dialog">
-                <select data-dojo-type="dijit/form/Select" id="open_dialog_file_selector">
-                </select>
-                <button id="open_dialog_ok_button" data-dojo-type="dijit/form/Button" data-dojo-props="label:this.ok_btn_text"></button>
+                <div id="open_dialog_file_selector">
+                </div>
+                <div>
+                    <button id="open_dialog_cancel_button" data-dojo-type="dijit/form/Button" data-dojo-props="label:this.cancel_btn_text"></button>
+                    <button id="open_dialog_ok_button" data-dojo-type="dijit/form/Button" data-dojo-props="label:this.ok_btn_text"></button>
+                </div>
             </div>
             <div data-dojo-type="dijit.Dialog" style="width:400px;" data-dojo-props="title:this.title_jump_to_measure" id="jump_to_measure_dialog">
                 <div data-dojo-type="dijit.InlineEditBox" data-dojo-props="value:this.jump_prompt, disabled:true"></div>

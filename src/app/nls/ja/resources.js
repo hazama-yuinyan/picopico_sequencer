@@ -1,5 +1,6 @@
 define({
     "app_name" : "ぴこぴこ・しーけんさー",
+    "cancel_btn_text" : "キャンセル",
     "ok_btn_text" : "OK",
     "compile_btn_text" : "コンパイル",
     "play_btn_text" : "再生",

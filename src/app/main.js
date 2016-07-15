@@ -561,7 +561,7 @@ define(["app/mml_compiler", "app/sequencer", "app/utils", "dojo/dom-class", "doj
         on(save_btn, "click", saveFile);
     
         var open_btn = registry.byId("open_button"), open_accept_btn = registry.byId("open_dialog_ok_button"), select_file = registry.byId("open_dialog_file_selector");
-        var open_dialog = registry.byId("open_dialog");
+        var open_dialog = registry.byId("open_dialog"), open_cancel_btn = registry.byId("open_dialog_cancel_button");
         /*var resource_names = (typeof fs !== "undefined") ? ["open_explanation", "type_LOCAL", "type_SERVER", "type_FILE"]
                                                          : ["open_explanation", "type_LOCAL", "type_SERVER"];*/
         /*open_from.options.forEach(function(option, i){
@@ -614,16 +614,21 @@ define(["app/mml_compiler", "app/sequencer", "app/utils", "dojo/dom-class", "doj
             }
             
             var _self = this;
-            utils.clearChildren(select_file.domNode);
-            names.forEach(function(name){
-                var option = document.createElement("option");
-                option.label = name.label;
-                option.value = name.value;
-                select_file.domNode.appendChild(option);
-            })
+            if(!select_file){
+                select_file = new Select({
+                    name : "selectFile",
+                    options : names,
+                    maxHeight : -1
+                }, "open_dialog_file_selector");
+            }else{
+                select_file.set("options", names);
+            }
             select_file.startup();
 
             open_dialog.show();
+        });
+        on(open_cancel_btn, "click", function(){
+            open_dialog.hide();
         });
         on(open_accept_btn, "click", function(){
             var file_name = select_file.get("value"), target, location = "LOCAL";
