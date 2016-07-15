@@ -177,7 +177,7 @@ define(["app/mml_compiler", "app/sequencer", "app/utils", "dojo/dom-class", "doj
             setMsgOnStatusBar(tmp);
             return false;
         }else{
-            setMsgOnStatusBar("Compiled successfully!");
+            setMsgOnStatusBar(resources.msg_compile_succeeded);
         }
         
         data_store = tmp;

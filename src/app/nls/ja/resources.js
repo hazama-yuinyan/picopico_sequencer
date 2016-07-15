@@ -44,6 +44,7 @@ define({
     "msg_file_saved" : "正常に保存しました。",
     "msg_save_failed" : "保存に失敗しました。",
     "msg_empty_string" : "コードが空白です。",
+    "msg_compile_succeeded" : "コンパイルに成功しました！",
     "no_file_name" : "名無しのファイルさん",
     "last_modified" : "最終更新日時",
     "connect_to_server" : "サーバーの応答を待っています",

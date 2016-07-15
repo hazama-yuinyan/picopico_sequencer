@@ -302,7 +302,7 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
                 }, this).forEach(function(metaevent){
                     var offset = metaevent.x - viewport_pos.x + this.keyboard_size.w;
                     measure_num_texts.every(function(text){
-                        var width = text.rawNode.offsetWidth;
+                        var width = text.rawNode.clientWidth;
                         if(this.isBetween(text.shape.x, text.shape.x + width, offset)){
                             offset += width;
                             return false;
@@ -312,8 +312,13 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
                         }
                         return true;
                     }, this);
-                    metaevent.img = this._surface.createImage({x : offset, y : 2, width : 12, height : 12,
-                        src : "piano_roll/images/metaevent.png"});
+                    metaevent.img = this._surface.createImage({
+                        x : offset,
+                        y : 2,
+                        width : 12,
+                        height : 12,
+                        src : "piano_roll/images/metaevent.png"
+                    });
                     metaevent.tooltip.set("connectId", metaevent.img.rawNode);
                 }, this);
             },
