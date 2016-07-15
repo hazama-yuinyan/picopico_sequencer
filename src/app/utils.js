@@ -134,7 +134,14 @@ define(["dojo/_base/declare"], function(declare){
         var range = new Range();
         range.selectNodeContents(parent);
         range.deleteContents();
+    };
+
+    var padNumber = function(number, pad_string, digits){
+        var tmp = new Array(digits);
+        tmp.fill(pad_string).join("");
+        tmp = tmp + number;
+        return tmp.substr(-digits);
     }
     
-    return {Enviroment : Enviroment, CommandManager : CommandManager, clearChildren : clearChildren};
+    return {Enviroment : Enviroment, CommandManager : CommandManager, clearChildren : clearChildren, padNumber : padNumber};
 });

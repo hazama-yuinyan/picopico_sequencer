@@ -45,7 +45,7 @@ define(["app/mml_compiler", "app/sequencer", "app/utils", "dojo/dom-class", "doj
         millisecs = Math.floor(millisecs / 60);
         var mins = millisecs % 60;
         millisecs = Math.floor(millisecs / 60);
-        result = "" + Math.floor(millisecs) + ":" + mins + ":" + secs + "." + millis;
+        result = "" + Math.floor(millisecs) + ":" + mins + ":" + utils.padNumber(secs, "0", 2) + "." + utils.padNumber(millis, "0", 3);
         return result;
     },
     
