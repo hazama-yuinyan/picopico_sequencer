@@ -43,6 +43,7 @@ define({
         "msg_file_opened" : "Successfully opened the file.",
         "msg_file_saved" : "Successfully saved the file.",
         "msg_save_failed" : "Failed to save.",
+        "msg_empty_string" : "The source code is empty.",
         "no_file_name" : "Untitled",
         "last_modified" : "Last modified at",
         "connect_to_server" : "Connecting to the server",

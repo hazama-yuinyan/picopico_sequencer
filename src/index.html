@@ -75,10 +75,26 @@
                      data-dojo-props="title: this.AST_pane_title">
                     <textarea id="ast" rows="30" data-dojo-type="dijit.form.SimpleTextarea"></textarea>
                 </div>
+                <div id="info_pane" data-dojo-type="dijit.layout.ContentPane" data-dojo-props="title: this.music_info_pane_title">
+                    <div data-dojo-type="dijit.InlineEditBox" data-dojo-props="value:this.track_selector_label, disabled:true"></div>
+                    <input data-dojo-type="dijit.form.NumberSpinner" data-dojo-props="constraints: {max: 32, min: 1}, value: 1" id="track_selector">
+                    <br>
+                    <div data-dojo-type="dijit.InlineEditBox" data-dojo-props="value:this.music_title_label, disabled:true"></div>
+                    <textarea data-dojo-type="dijit.form.Textarea" id="music_title"></textarea>
+                    <br>
+                    <div data-dojo-type="dijit.InlineEditBox" data-dojo-props="value:this.author_label, disabled:true"></div>
+                    <textarea data-dojo-type="dijit.form.Textarea" id="author_editor"></textarea>
+                    <br>
+                    <div data-dojo-type="dijit.InlineEditBox" data-dojo-props="value:this.comment_label, disabled:true"></div>
+                    <textarea rows="5" data-dojo-type="dijit.form.SimpleTextarea" id="comment_editor"></textarea>
+                    <br>
+                    <div data-dojo-type="dijit.InlineEditBox" data-dojo-props="value:this.last_modified, disabled:true"></div>
+                    <div data-dojo-type="dijit.InlineEditBox" data-dojo-props="disabled:true" id="last_modified_display"></div>
+                </div>
                 <div id="help_pane" data-dojo-type="dijit.layout.ContentPane" data-dojo-props="title:this.help_pane_title, href:this.help_file_url, loadingMessage:'Loading...'">
                 </div>
             </div>
-            <div class="edgePanel" data-dojo-type="dijit.layout.AccordionContainer"
+            <!--<div class="edgePanel" data-dojo-type="dijit.layout.AccordionContainer"
                 data-dojo-props="region: 'left', splitter: true, minSize: 100">
                 <div data-dojo-type="dijit.layout.ContentPane" data-dojo-props="title: this.music_info_pane_title">
                     <div data-dojo-type="dijit.InlineEditBox" data-dojo-props="value:this.track_selector_label, disabled:true"></div>
@@ -102,7 +118,7 @@
                 </div>
                 <div data-dojo-type="dijit.layout.ContentPane" data-dojo-props="title: this.settings_pane_title">
                 </div>
-            </div>
+            </div>-->
             <div id="various_uses_pane" data-dojo-type="dijit.layout.ContentPane"
                 data-dojo-props="region: 'bottom', splitter: true">No Messages
             </div>
@@ -118,7 +134,7 @@
                 <a href="" download="" id="local_file_link">Click me</a>
             </div>
             <div data-dojo-type="dijit.Dialog" style="width:400px" data-dojo-props="title:this.open_dialog_title" id="open_dialog">
-                <select data-dojo-type="dijit/form/MultiSelect" id="open_dialog_file_selector">
+                <select data-dojo-type="dijit/form/Select" id="open_dialog_file_selector">
                 </select>
                 <button id="open_dialog_ok_button" data-dojo-type="dijit/form/Button" data-dojo-props="label:this.ok_btn_text"></button>
             </div>

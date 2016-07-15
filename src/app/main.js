@@ -50,7 +50,11 @@ define(["app/mml_compiler", "app/sequencer", "app/utils", "dojo/dom-class", "doj
     },
     
     compile = function(){
-        processMMLSource();
+        if(!processMMLSource()){
+            setMsgOnStatusBar(resources.msg_empty_string)
+            return;
+        }
+        
         var tab_container = registry.byId("main_tab");
         if(tab_container.selectedChildWidget.id == "piano_roll"){
             tab_container.selectedChildWidget.set("_metaevent_list", data_store.metaevents);
@@ -159,16 +163,19 @@ define(["app/mml_compiler", "app/sequencer", "app/utils", "dojo/dom-class", "doj
         try{
             var editor = registry.byId("editor");
             var source = toPlainString(editor.get("value"));
+            if(source === "")
+                return false;
+
             tmp = updater.compile(source);
         }
         catch(e){
             setMsgOnStatusBar(e.message);
-            return;
+            return false;
         }
         
         if(!tmp.tree){
             setMsgOnStatusBar(tmp);
-            return;
+            return false;
         }else{
             setMsgOnStatusBar("Compiled successfully!");
         }
@@ -553,7 +560,6 @@ define(["app/mml_compiler", "app/sequencer", "app/utils", "dojo/dom-class", "doj
     
         on(save_btn, "click", saveFile);
     
-        /*var open_from = registry.byId("open_from"), */
         var open_btn = registry.byId("open_button"), open_accept_btn = registry.byId("open_dialog_ok_button"), select_file = registry.byId("open_dialog_file_selector");
         var open_dialog = registry.byId("open_dialog");
         /*var resource_names = (typeof fs !== "undefined") ? ["open_explanation", "type_LOCAL", "type_SERVER", "type_FILE"]
@@ -608,27 +614,6 @@ define(["app/mml_compiler", "app/sequencer", "app/utils", "dojo/dom-class", "doj
             }
             
             var _self = this;
-            /*if(!select_file){
-                select_file = new MultiSelect({
-                    name : "selectFile",
-                    options : names,
-                    maxHeight : -1,
-                    /*onChange : function(){
-                        var file_name = this.get("value"), target, location = _self.get("value");
-                        saved_data.every(function(item){
-                            if(item.name == file_name){
-                                target = item;
-                                return false;
-                            }
-                            return true;
-                        });
-                        openFile(location, file_name, target);
-                    }
-                }, "open_dialog_file_selector");
-                //dialog_content.addChild(select_file);
-            }else{
-                select_file.set("options", names);
-            }*/
             utils.clearChildren(select_file.domNode);
             names.forEach(function(name){
                 var option = document.createElement("option");
@@ -639,7 +624,6 @@ define(["app/mml_compiler", "app/sequencer", "app/utils", "dojo/dom-class", "doj
             select_file.startup();
 
             open_dialog.show();
-            //open_btn.openDropDown();
         });
         on(open_accept_btn, "click", function(){
             var file_name = select_file.get("value"), target, location = "LOCAL";
@@ -651,7 +635,7 @@ define(["app/mml_compiler", "app/sequencer", "app/utils", "dojo/dom-class", "doj
                 return true;
             });
             openFile(location, file_name, target);
-            
+
             open_dialog.hide();
         });
     
@@ -675,7 +659,9 @@ define(["app/mml_compiler", "app/sequencer", "app/utils", "dojo/dom-class", "doj
         var tab_container = registry.byId("main_tab");
         tab_container.watch("selectedChildWidget", function(name, old, new_val){
             if(new_val.id == "piano_roll"){
-                processMMLSource();
+                if(!processMMLSource()){
+                    return;
+                }
                 new_val.set("_metaevent_list", data_store.metaevents);
                 new_val.set("_tree", data_store.list);
             }else if(old.id == "piano_roll"){

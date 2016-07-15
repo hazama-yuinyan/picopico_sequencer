@@ -177,6 +177,9 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
                 on(this._surface.getEventSource(), "mousedown", lang.hitch(this, this.onmousedown));
                 on(this._surface.getEventSource(), "mouseup", lang.hitch(this, this.onmouseup));
                 on(this._surface.getEventSource(), "mousemove", lang.hitch(this, this.onmousemove));
+                on(this._surface.getEventSource(), "touchstart", lang.hitch(this, this.onmousedown));
+                on(this._surface.getEventSource(), "touchend", lang.hitch(this, this.onmouseup));
+                on(this._surface.getEventSource(), "touchmove", lang.hitch(this, this.onmousemove));
             },
             
             resize : function(new_size){
@@ -485,16 +488,18 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
             },
             
             onmousedown : function(e){
-                if(mouse.isRight(e)){return;}
+                if(mouse.isRight(e))
+                    return;
+
                 this._touched = true;
-                this._last_mouse_pos.x = e.x;
-                this._last_mouse_pos.y = e.y;
+                this._last_mouse_pos.x = e.pageX;
+                this._last_mouse_pos.y = e.pageY;
             },
             
             onmousemove : function(e){
                 if(this._touched){
                     e.preventDefault();
-                    var diff_x = e.x - this._last_mouse_pos.x, diff_y = e.y - this._last_mouse_pos.y, changed = false, viewport_pos = this._viewport_pos;
+                    var diff_x = e.pageX - this._last_mouse_pos.x, diff_y = e.pageY - this._last_mouse_pos.y, changed = false, viewport_pos = this._viewport_pos;
                     var pianoroll_height = this.get("_pianoroll_height");
                     if(Math.abs(diff_y) > 0 && this.isBetween(0, 7 * this.keyboard_size.h, viewport_pos.y + diff_y) &&
                         this.isBetween(-7 * this.keyboard_size.h + pianoroll_height, 0, this._keyboard_pos + diff_y)){
@@ -523,14 +528,16 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
                         changed = true;
                     }
                     
-                    this._last_mouse_pos.x = e.x;
-                    this._last_mouse_pos.y = e.y;
-                    if(changed){this.onUpdate();}
+                    this._last_mouse_pos.x = e.pageX;
+                    this._last_mouse_pos.y = e.pageY;
+                    if(changed)
+                        this.onUpdate();
                 }
             },
             
             onmouseup : function(){
-                if(this._touched){this._touched = false;}
+                if(this._touched)
+                    this._touched = false;
             }
         });
 });
