@@ -179,7 +179,9 @@ define(["app/mml_compiler", "app/sequencer", "app/utils", "dojo/dom-class", "doj
         }else{
             setMsgOnStatusBar("Compiled successfully!");
         }
+        
         data_store = tmp;
+        return true;
     },
     
     switchController = function(controller, mode){
