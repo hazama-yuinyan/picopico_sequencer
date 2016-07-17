@@ -13,6 +13,7 @@ define(["app/mml_compiler", "app/sequencer", "app/utils", "dojo/dom-class", "doj
     var sequencer = null,
     data_store = null,
     saved_data = null,
+    compiling = false,
     elapsed_time = 0,
     timer = null,
     fs = null,
@@ -50,6 +51,12 @@ define(["app/mml_compiler", "app/sequencer", "app/utils", "dojo/dom-class", "doj
     },
     
     compile = function(){
+        if(compiling)
+            return;
+
+        setMsgOnStatusBar(resources.msg_compilation_started);
+        compiling = true;
+
         if(!processMMLSource()){
             setMsgOnStatusBar(resources.msg_empty_string)
             return;
@@ -71,6 +78,8 @@ define(["app/mml_compiler", "app/sequencer", "app/utils", "dojo/dom-class", "doj
         sequencer.setASTTree(data_store.tree);
         sequencer.prepareToPlay();
         elapsed_time = 0;
+
+        compiling = false;
     },
 
     stop = function(){
@@ -177,7 +186,7 @@ define(["app/mml_compiler", "app/sequencer", "app/utils", "dojo/dom-class", "doj
             setMsgOnStatusBar(tmp);
             return false;
         }else{
-            setMsgOnStatusBar(resources.msg_compile_succeeded);
+            setMsgOnStatusBar(resources.msg_compilation_succeeded);
         }
         
         data_store = tmp;

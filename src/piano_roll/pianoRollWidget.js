@@ -53,8 +53,14 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
             _width_quarter_note : 48,
             _ticks_per_quarter_note : 480,
             _cur_selected_note : null,
-            _predefined_inst_names : [resources.sine_wave, resources.square_wave, resources.sawtooth_wave, resources.triangle_wave, 
-                resources.m_shaped_wave, resources.noise],
+            _predefined_inst_names : [
+                resources.sine_wave,
+                resources.square_wave,
+                resources.sawtooth_wave,
+                resources.triangle_wave, 
+                resources.m_shaped_wave,
+                resources.noise
+            ],
             _translations : resources,
             // _metaevent_list
             //      info_bar領域に特殊なアイコンを描画すべきメタイベントのリスト
@@ -342,7 +348,9 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
                 // summary:
                 //      音符を描画する
                 
-                if(!this._tree || this._track_num > this._tree.length){return;}
+                if(!this._tree || this._track_num > this._tree.length)
+                    return;
+
                 var MULTIPLIERS_NOTE_LEN = this._ticks_per_quarter_note / this._width_quarter_note;
                 var viewport_pos = this.get("_viewport_pos"), viewport_size = this.get("_viewport_size"), _self = this;
                 var start_ticks = viewport_pos.x * MULTIPLIERS_NOTE_LEN, cur_track = this._tree[this._track_num - 1];
@@ -394,12 +402,14 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
                     for(var i = 0, channel = _self._tree[_self._track_num - 1]; i < channel.length; ++i){
                         var elem = channel[i];
                         if(!lang.isArray(elem)){
-                            if(ticks == channel[i].start_time){return elem;}
+                            if(ticks == channel[i].start_time)
+                                return elem;
                         }else{
                             if(ticks == elem[0].start_time){
                                 var note_num = _self.convertPosToNoteNum(y);
                                 for(var j = 0; j < elem.length; ++j){
-                                    if(note_num == elem[j].pitch){return elem[j];}
+                                    if(note_num == elem[j].pitch)
+                                        return elem[j];
                                 }
                             }
                         }
@@ -412,7 +422,8 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
                 var surface = this._surface, color_weak = this._velocity_colors.weak, color_strong = this._velocity_colors.strong;
                 
                 do{
-                    if(!this.isBetween(0, this._viewport_size.h, info.y)){continue;}    //ビューポートの高さに収まらないノートは描画しない
+                    if(!this.isBetween(0, this._viewport_size.h, info.y))   //ビューポートの高さに収まらないノートは描画しない
+                        continue;
                     
                     var color = interpretVelocity(info.event.velocity);
                     var note_rect = surface.createRect({x : info.x, y : info.y, width : info.width, height : info.height})
@@ -437,7 +448,9 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
             
             _drawGuideBar : function(offset){
                 var BOTTOM_MEASURE_NUM_BAR = 18;
-                if(this.guide_bar){this._surface.remove(this.guide_bar, true);}
+                if(this.guide_bar)
+                    this._surface.remove(this.guide_bar, true);
+
                 this.guide_bar = this._surface.createRect({x : offset, y : BOTTOM_MEASURE_NUM_BAR, width : 4, height : this._viewport_size.h})
                     .setFill("gray")
                     .setStroke("blue");
@@ -454,8 +467,13 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
                 
                 //鍵盤を左端に表示する
                 var TOTAL_KEYBOARD_HEIGHT = 7 * this.keyboard_size.h;
-                this._surface.createImage({x : 0, y : this._keyboard_pos, width : this.keyboard_size.w,
-                    height : TOTAL_KEYBOARD_HEIGHT, src : "piano_roll/images/keyboard.svg"});
+                this._surface.createImage({
+                    x : 0,
+                    y : this._keyboard_pos,
+                    width : this.keyboard_size.w,
+                    height : TOTAL_KEYBOARD_HEIGHT,
+                    src : "piano_roll/images/keyboard.svg"
+                });
             },
             
             clip : function(lower, upper, val){
