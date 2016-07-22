@@ -469,6 +469,34 @@
                     </div>
                 </div>
             </section>
+
+            <section id="programmable_synthesizer">
+                <h2>Programmable synthesizer</h2>
+                <p>
+                    As you may see in the last section of the grammer reference, you can define your own sound wave with the define command.<br>
+                    In PicopicoSequencer we call it the "programmable synthesizer", and it's a synthesizer that can be programmed.
+                    The "programmable synthesizer" is a tool that can define your own sound wave function in JavaScript.
+                </p>
+                <p>
+                    To tell the truth, the "programmable synthesizer" is a JavaScript function that defines sound wave.<br>
+                    Below, I'll introduce some function definitions.<br>
+                    I hope that it'll help you define your own sound wave functions.
+                </p>
+                <pre>
+[function(time, freq){
+return Math.sin(2 * Math.PI * time * freq) + 0.3 * Math.sin(2 * Math.PI * time * 2 * freq) + 0.05 * Math.sin(2 * Math.PI * time * 3 * freq); //like the fulte
+}]
+[function(time, freq){
+return (Math.sin(2 * Math.PI * time * freq) + 0.1 * Math.sin(2 * Math.PI * time * 2 * freq)) * Math.exp(-time * time); //like the guitar
+}]
+[function(time, freq){
+return (Math.sin(2 * Math.PI * time * freq) + 0.4 * Math.sin(2 * Math.PI * time * 2 * freq) + 0.3 * Math.sin(2 * Math.PI * time * 3 * freq) + 0.15 * Math.sin(2 * Math.PI * time * 5 * freq) + 0.3 * Math.sin(2 * Math.PI * time * 7 * freq)) * Math.exp(-2*time); //like electric piano
+}]
+[function(time, freq){
+return Math.sin(2 * Math.PI * time * freq) + 0.75 * Math.sin(2 * Math.PI * time * 4 * freq) + 0.1 * Math.sin(2 * Math.PI * time * 8 * freq); //like organ
+}]
+                </pre>
+            </section>
         </article>
         </div>
     </body>

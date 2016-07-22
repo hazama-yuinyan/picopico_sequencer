@@ -472,6 +472,34 @@
                     </div>
                 </div>
             </section>
+
+            <section id="programmable_synthesizer">
+                <h2>プログラマブルシンセサイザー</h2>
+                <p>
+                    文法集の最後の項にもあったように、ぴこぴこしーけんさーには、独自の波形を定義する機能があります。<br>
+                    これをぴこぴこしーけんさーではプログラマブルシンセサイザーと呼び、その名の通り、プログラミング可能なシンセサイザーです。
+                    プログラマブルシンセサイザーは、JavaScriptの文法で定義できる波形生成装置です。
+                </p>
+                <p>
+                    種明かしをすると、プログラマブルシンセサイザーは、JavaScriptの文法で波形を生成するJavaScript関数です。<br>
+                    ここでは、今すぐに使えそうな関数定義をいくつか紹介します。<br>
+                    独自波形生成の参考にしてみてください。
+                </p>
+                <pre>
+[function(time, freq){
+return Math.sin(2 * Math.PI * time * freq) + 0.3 * Math.sin(2 * Math.PI * time * 2 * freq) + 0.05 * Math.sin(2 * Math.PI * time * 3 * freq); //フルートっぽい
+}]
+[function(time, freq){
+return (Math.sin(2 * Math.PI * time * freq) + 0.1 * Math.sin(2 * Math.PI * time * 2 * freq)) * Math.exp(-time * time); //ギターっぽい
+}]
+[function(time, freq){
+return (Math.sin(2 * Math.PI * time * freq) + 0.4 * Math.sin(2 * Math.PI * time * 2 * freq) + 0.3 * Math.sin(2 * Math.PI * time * 3 * freq) + 0.15 * Math.sin(2 * Math.PI * time * 5 * freq) + 0.3 * Math.sin(2 * Math.PI * time * 7 * freq)) * Math.exp(-2*time); //電子ピアノっぽい
+}]
+[function(time, freq){
+return Math.sin(2 * Math.PI * time * freq) + 0.75 * Math.sin(2 * Math.PI * time * 4 * freq) + 0.1 * Math.sin(2 * Math.PI * time * 8 * freq); //オルガンっぽい
+}]
+                </pre>
+            </section>
         </article>
         </div>
     </body>
