@@ -57,10 +57,10 @@ define(["app/mml_compiler", "app/sequencer", "app/utils", "dojo/dom-class", "doj
         setMsgOnStatusBar(resources.msg_compilation_started);
         compiling = true;
 
-        if(!processMMLSource()){
-            setMsgOnStatusBar(resources.msg_empty_string)
+        if(!processMMLSource())
             return;
-        }
+        else
+            setMsgOnStatusBar(resources.msg_compilation_succeeded);
         
         var tab_container = registry.byId("main_tab");
         if(tab_container.selectedChildWidget.id == "piano_roll"){
@@ -69,8 +69,8 @@ define(["app/mml_compiler", "app/sequencer", "app/utils", "dojo/dom-class", "doj
         }
         var display = registry.byId("ast");
         display.set("value", data_store.tree && data_store.tree.toPrettyString() || compiler.mml_parser.stringifyErrors());
-        if(!data_store.tree)
-            return;
+        //if(!data_store.tree) processMMLSource内で確認しているので、無駄になる
+        //    return;
         
         if(!sequencer)
             sequencer = new Sequencer({stop : stop, play : play, hold : hold});
@@ -173,24 +173,34 @@ define(["app/mml_compiler", "app/sequencer", "app/utils", "dojo/dom-class", "doj
             var editor = registry.byId("editor");
             var source = toPlainString(editor.get("value"));
             if(source === "")
-                return false;
+                throw new Error(resources.msg_empty_string);
 
             tmp = updater.compile(source);
+
+            if(!tmp.tree)
+                throw new Error(resources.msg_error_while_parsing);
         }
         catch(e){
             setMsgOnStatusBar(e.message);
             return false;
         }
         
-        if(!tmp.tree){
-            setMsgOnStatusBar(tmp);
-            return false;
-        }else{
-            setMsgOnStatusBar(resources.msg_compilation_succeeded);
-        }
-        
         data_store = tmp;
         return true;
+    },
+
+    preparePianoroll = function(piano_roll_tab){
+        //var clear = addDotToStatusBar(1000, resources.msg_preparing_piano_roll);
+        setMsgOnStatusBar(resources.msg_preparing_piano_roll);
+        if(!processMMLSource())
+            return;
+        else
+            setMsgOnStatusBar(resources.msg_piano_roll_ready);
+        
+
+        piano_roll_tab.set("_metaevent_list", data_store.metaevents);
+        piano_roll_tab.set("_tree", data_store.list);
+        //clear();
     },
     
     switchController = function(controller, mode){
@@ -291,6 +301,7 @@ define(["app/mml_compiler", "app/sequencer", "app/utils", "dojo/dom-class", "doj
         
         switch(location){
         case "LOCAL" :
+            //PicopicoSequencer_という接頭辞はファイル選択時に付与されているので、つける必要はない
             item = JSON.parse(localStorage.getItem(file_name));
             var last_modified_date = new Date(item.date);
             editor.set("value", item.source);
@@ -348,6 +359,12 @@ define(["app/mml_compiler", "app/sequencer", "app/utils", "dojo/dom-class", "doj
         default :
             alert("Unknown location!");
         }
+
+        var tab_container = registry.byId("main_tab");
+        if(tab_container.selectedChildWidget.id == "piano_roll"){
+            var piano_roll_tab = tab_container.selectedChildWidget;
+            preparePianoroll(piano_roll_tab);
+        }
     },
     
     prepareForSave = function(){
@@ -381,10 +398,11 @@ define(["app/mml_compiler", "app/sequencer", "app/utils", "dojo/dom-class", "doj
     saveFile = function(){
         var loc_save = "LOCAL";//registry.byId("save_as").get("value");
         var item = prepareForSave();
+        var file_name = "PicopicoSequencer_" + item.name;
         
         switch(loc_save){
         case "LOCAL":
-            var old_item = JSON.parse(localStorage.getItem(item.name));
+            var old_item = JSON.parse(localStorage.getItem(file_name));
             if(old_item){   //変更されていないプロパティーをすでに保存されているオブジェクトから拾ってくる
                 if(!item.source){
                     item.source = old_item.source;
@@ -399,7 +417,7 @@ define(["app/mml_compiler", "app/sequencer", "app/utils", "dojo/dom-class", "doj
                 contents_changed.name = true;
                 item = prepareForSave();
             }
-            localStorage.setItem(item.name, JSON.stringify(item));
+            localStorage.setItem(file_name, JSON.stringify(item));
             setMsgOnStatusBar(resources.msg_file_saved);
             resetContentsStatus();
             old_value = item.source;
@@ -594,7 +612,10 @@ define(["app/mml_compiler", "app/sequencer", "app/utils", "dojo/dom-class", "doj
             switch(loc){
             case "LOCAL":
                 saved_data = retrieveAllDataFromStorage();
-                names = saved_data.map(function(item){return {value : item.name, label : item.name};});
+                names = saved_data.map(function(item){
+                    var true_name = item.name.match(/PicopicoSequencer_(.+)/)[1];
+                    return {value : item.name, label : true_name};
+                });
                 //names.unshift({value : "", label : resources.open_prompt, selected : true});
                 break;
             
@@ -675,11 +696,7 @@ define(["app/mml_compiler", "app/sequencer", "app/utils", "dojo/dom-class", "doj
         var tab_container = registry.byId("main_tab");
         tab_container.watch("selectedChildWidget", function(name, old, new_val){
             if(new_val.id == "piano_roll"){
-                if(!processMMLSource()){
-                    return;
-                }
-                new_val.set("_metaevent_list", data_store.metaevents);
-                new_val.set("_tree", data_store.list);
+                preparePianoroll(new_val);
             }else if(old.id == "piano_roll"){
                 old.set("_tree", null);
             }
