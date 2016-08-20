@@ -18,10 +18,16 @@ html, body {
 #editor{
     display: block;
     float: left;
+    font-size: 100%;
+    width: 100%;
+    height: 100%;
 }
 #ast{
     display: block;
     float: right;
+    font-size: 100%;
+    width: 100%;
+    height: 100%;
     background-color: #eee;
 }
 

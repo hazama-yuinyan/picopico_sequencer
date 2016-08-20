@@ -1,6 +1,6 @@
 define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "dijit/_WidgetsInTemplateMixin", "dojox/gfx", "dojo/on",
     "dojo/_base/lang", "dojo/text!piano_roll/templates/piano_roll_template.html", "dijit/Tooltip", "dijit/registry", "dojo/i18n!./nls/resources",
-    "dojo/mouse", "dijit/layout/BorderContainer", "dijit/layout/BorderContainer", "dijit/form/Button"],
+    "dojo/mouse", "dijit/layout/BorderContainer", "dijit/form/Button"],
     function(declare, WidgetBase, TemplatedMixin, WidgetsInTemplateMixin, gfx, on, lang, template, Tooltip, registry, resources, mouse){
         return declare("myCustomWidgets.PianoRoll", [WidgetBase, TemplatedMixin, WidgetsInTemplateMixin], {
             templateString : template,
@@ -355,10 +355,13 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
                 var viewport_pos = this.get("_viewport_pos"), viewport_size = this.get("_viewport_size"), _self = this;
                 var start_ticks = viewport_pos.x * MULTIPLIERS_NOTE_LEN, cur_track = this._tree[this._track_num - 1];
                 var index = this._findStartNoteIndex(cur_track, start_ticks), info = {}, inner_index = 0;
-                if(index == -1){return;}
+                if(index == -1)
+                    return;
                 
                 var proceedToNextEvent = function(info){
-                    if(index >= cur_track.length){return false;}
+                    if(index >= cur_track.length)
+                        return false;
+
                     var tmp = cur_track[index];
                     if(lang.isArray(tmp)){
                         if(inner_index < tmp.length){
@@ -376,7 +379,9 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
                     
                     info.event = tmp;
                     info.x = tmp.start_time / MULTIPLIERS_NOTE_LEN - viewport_pos.x + _self.keyboard_size.w;
-                    if(inner_index !== 0){info.x += (inner_index - 1) * tmp.gate_time / MULTIPLIERS_NOTE_LEN;}
+                    if(inner_index !== 0)
+                        info.x += (inner_index - 1) * tmp.gate_time / MULTIPLIERS_NOTE_LEN;
+
                     info.y = _self.calcNoteNumPos(tmp.pitch) + _self._keyboard_pos;
                     info.width = (inner_index === 0) ? tmp.length / MULTIPLIERS_NOTE_LEN - tmp.gate_time / MULTIPLIERS_NOTE_LEN :
                         tmp.length / MULTIPLIERS_NOTE_LEN - (inner_index - 1) * tmp.gate_time / MULTIPLIERS_NOTE_LEN;
@@ -433,7 +438,7 @@ define(["dojo/_base/declare","dijit/_WidgetBase", "dijit/_TemplatedMixin", "diji
                         var node = e.currentTarget, pos = {x : node.x.baseVal.value, y : node.y.baseVal.value};
                         var ticks = _self.convertPosToTicks(pos.x + viewport_pos.x - _self.keyboard_size.w);
                         var target = findNoteAt(ticks, pos.y), velocity_display = registry.byId("velocity");
-                        velocity_display.set("value", target.velocity);
+                        //velocity_display.set("value", target.velocity);
                         
                         if(_self._cur_selected_note){
                             _self._cur_selected_note.node.setAttribute("fill-opacity", 1);

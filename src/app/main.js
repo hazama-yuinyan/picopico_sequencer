@@ -159,19 +159,11 @@ define(["app/mml_compiler", "app/sequencer", "app/utils", "dojo/dom-class", "doj
         resume();
     },
     
-    toPlainString = function(html_source){
-        return html_source.replace(/<br[^>]+>|<\/div><div>|<div>/g, "\n").replace(/<[^>]+>/g, "").replace(/&quot;/g, "\"").replace(/&lt;/g, "<").replace(/&gt;/g, ">");
-    },
-    
-    toDisplayedString = function(str){
-        return str.replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, "<br>");
-    },
-    
     processMMLSource = function(){
         var tmp;
         try{
             var editor = registry.byId("editor");
-            var source = toPlainString(editor.get("value"));
+            var source = editor.get("value");
             if(source === "")
                 throw new Error(resources.msg_empty_string);
 
@@ -457,7 +449,7 @@ define(["app/mml_compiler", "app/sequencer", "app/utils", "dojo/dom-class", "doj
             contents_changed.name = true;
             item = prepareForSave();
             var original_source = item.source;
-            item.source = toPlainString(item.source);
+            item.source = item.source;
             raw_text = "*TITLE:" + item.name + ";\n*COMMENT:" + item.comment + ";\n*AUTHOR:" + item.author + ";\n*SOURCE:" + item.source + ";\n";
             fs.root.getFile(item.name + ".pico", {create : true}, function(fileEntry){
                 fileEntry.createWriter(function(fileWriter){
@@ -516,7 +508,7 @@ define(["app/mml_compiler", "app/sequencer", "app/utils", "dojo/dom-class", "doj
                 data[details[1].toLowerCase()] = details[2];
             }
             data.date = file.lastModifiedDate.toLocaleString();
-            data.source = toDisplayedString(data.source);
+            data.source = data.source;
             openFile("FILE", file.name, data);
         };
         reader.readAsText(file);
@@ -585,6 +577,7 @@ define(["app/mml_compiler", "app/sequencer", "app/utils", "dojo/dom-class", "doj
         });
     
         var new_btn = dom.byId("new_button"), save_btn = dom.byId("save_button"), about_btn = dom.byId("about_button");
+        var export_btn = dom.byId("export_button");
         on(new_btn, "click", newFile);
     
         on(save_btn, "click", saveFile);
@@ -674,6 +667,10 @@ define(["app/mml_compiler", "app/sequencer", "app/utils", "dojo/dom-class", "doj
             openFile(location, file_name, target);
 
             open_dialog.hide();
+        });
+
+        on(export_button, "click", function(){
+            location.href = "http://native/export";
         });
     
         /*var save_as = registry.byId("save_as");

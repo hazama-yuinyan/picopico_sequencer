@@ -11,6 +11,7 @@ define({
     "open_btn_text" : "開く",
     "file_btn_text" : "ファイル",
     "jump_btn_text" : "ジャンプ",
+    "export_btn_text" : "エクスポート",
     "open_label_text" : "保存元：",
     "open_explanation" : "保存元を選択してください",
     "type_LOCAL" : "ローカルストレージ",

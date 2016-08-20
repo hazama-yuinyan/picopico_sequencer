@@ -26,6 +26,7 @@
                         <button id="new_button" type="button" data-dojo-type="dijit.form.Button" data-dojo-props="label:this.new_btn_text"></button>
                         <button id="open_button" data-dojo-type="dijit.form.Button" data-dojo-props="label:this.open_btn_text"></button>
                         <button id="save_button" data-dojo-type="dijit.form.Button" data-dojo-props="label:this.save_btn_text"></button>
+                        <button id="export_button" data-dojo-type="dijit/form/Button" data-dojo-props="label:this.export_btn_text"></button>
                     </div>
                 </div>
                 
@@ -68,8 +69,9 @@
                 <div id="piano_roll" data-dojo-type="myCustomWidgets.PianoRoll"
                                   data-dojo-props="title: this.piano_roll_pane_title">
                 </div>
-                <div id="editor" data-dojo-type="dijit.Editor"
-                     data-dojo-props="title: this.editor_pane_title, plugins:['undo', 'redo', '|', 'cut', 'copy', 'paste']">
+                <div id="editor_pane" data-dojo-type="dijit/layout/ContentPane"
+                     data-dojo-props="title: this.editor_pane_title">
+                    <textarea id="editor" data-dojo-type="dijit/form/SimpleTextarea"></textarea>
                 </div>
                 <div id="AST_visualization" data-dojo-type="dijit.layout.ContentPane"
                      data-dojo-props="title: this.AST_pane_title">

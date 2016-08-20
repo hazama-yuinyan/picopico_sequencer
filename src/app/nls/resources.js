@@ -11,6 +11,7 @@ define({
         "new_btn_text" : "New",
         "open_btn_text" : "Open",
         "file_btn_text" : "File",
+        "export_btn_text" : "Export",
         "jump_btn_text" : "Jump",
         "open_label_text" : "Open from :",
         "open_explanation" : "Choose a desired location",
