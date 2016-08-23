@@ -50,7 +50,7 @@ define(["app/mml_compiler", "app/sequencer", "app/utils", "dojo/dom-class", "doj
         return result;
     },
     
-    compile = function(){
+    compile = function(sound_producer_callback, sound_finished_callback){
         if(compiling)
             return;
 
@@ -75,6 +75,7 @@ define(["app/mml_compiler", "app/sequencer", "app/utils", "dojo/dom-class", "doj
         if(!sequencer)
             sequencer = new Sequencer({stop : stop, play : play, hold : hold});
 
+        sequencer.setOnSoundProducedCallbacks(sound_producer_callback, sound_finished_callback);
         sequencer.setASTTree(data_store.tree);
         sequencer.prepareToPlay();
         elapsed_time = 0;
@@ -97,6 +98,7 @@ define(["app/mml_compiler", "app/sequencer", "app/utils", "dojo/dom-class", "doj
             alert(resources.msg_prompt_compiling);
             return;
         }
+
         var controller = registry.byId("controller"), music_info = registry.byId("music_info");
         switchController(controller, "hold");
         sequencer.play();
@@ -140,6 +142,28 @@ define(["app/mml_compiler", "app/sequencer", "app/utils", "dojo/dom-class", "doj
         switchController(controller, "resume");
         sequencer.hold();
         timer.stop();
+    },
+
+    exportSong = function(){
+        if(!sequencer){
+            compile(function(){
+                sequencer.exportSong(function(xhr){
+                    if(200 <= xhr.status && xhr.status < 300){
+                        setMsgOnStatusBar(resources.msg_export_succeeded);
+                    }else if(300 < xhr.status){
+                        setMsgOnStatusBar(resources.msg_export_failed);
+                    }
+                })
+            }, function(){});
+        }else{
+            sequencer.exportSong(function(xhr){
+                if(200 <= xhr.status && xhr.status < 300){
+                    setMsgOnStatusBar(resources.msg_export_succeeded);
+                }else if(300 < xhr.status){
+                    setMsgOnStatusBar(resources.msg_export_failed);
+                }
+            });
+        }
     },
     
     playFromHalfWay = function(e){
@@ -565,7 +589,7 @@ define(["app/mml_compiler", "app/sequencer", "app/utils", "dojo/dom-class", "doj
         var compile_btn = dom.byId("compile_button"), stop_btn = dom.byId("stop_button");
         on(compile_btn, "click", function(e){
             e.stopImmediatePropagation();
-            compile();
+            compile(play, stop);
         });
     
         var controller = registry.byId("controller");
@@ -669,8 +693,9 @@ define(["app/mml_compiler", "app/sequencer", "app/utils", "dojo/dom-class", "doj
             open_dialog.hide();
         });
 
-        on(export_button, "click", function(){
-            location.href = "http://native/export";
+        on(export_button, "click", function(e){
+            e.stopImmediatePropagation();
+            exportSong();
         });
     
         /*var save_as = registry.byId("save_as");

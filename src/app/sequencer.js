@@ -1,4 +1,5 @@
-define(["app/utils", "dojo/_base/declare", "dojo/_base/lang", "dijit/registry"], function(util, declare, lang, registry){
+define(["app/utils", "dojo/_base/declare", "dojo/_base/lang", "dijit/registry", "dojo/i18n!app/nls/resources"],
+    function(util, declare, lang, registry, resources){
 
 return declare(null, {
     constructor : function(main){
@@ -32,6 +33,8 @@ return declare(null, {
         this.can_play = true;
         this.hold_btn_pressed = false;
         this.func_definition = null;                        //波形生成スレッドに送る関数の定義
+        this.sound_producer_callback = null;                //波形生成完了時に呼ばれるコールバック関数
+        this.sound_finished_callback = null;
         
         var _self = this;
         this.processAudio = function(e){
@@ -74,6 +77,11 @@ return declare(null, {
             
             }}
         ]);
+    },
+
+    setOnSoundProducedCallbacks : function(sound_producer_callback, sound_finished_callback){
+        this.sound_producer_callback = sound_producer_callback;
+        this.sound_finished_callback = sound_finished_callback
     },
     
     setASTTree : function(tree_root){
@@ -119,6 +127,7 @@ return declare(null, {
         this.gain_nodes[0].connect(this.compressor);
         //一番目のノートを演奏する準備をする
         var progress_dialog = registry.byId("progress");
+        progress_dialog.set("title", resources.progress_bar_dialog_title);
         progress_dialog.show();
         this.prepareToProcessNextNode(this.getNextNode(this.cur_ast_node, false));
         this.can_play = true;
@@ -283,7 +292,8 @@ return declare(null, {
             var progress_dialog = registry.byId("progress");
             progress_dialog.hide();
             this.sound_producer.terminate();
-            this.main.play();
+            //this.main.play();
+            this.sound_producer_callback();
             return;
         }
         
@@ -389,7 +399,8 @@ return declare(null, {
     
     processAudioCallback : function(data_length, buffer, track_num){
         if(!this.can_play && this.actual_end_frame !== 0 && this.cur_frame >= this.actual_end_frame){
-            this.main.stop();
+            //this.main.stop();
+            this.sound_finished_callback();
             return;
         }
         var track_info = this.track_infos[track_num], tag = this.proceedToNextNoteForTrack(track_num), i;
@@ -465,6 +476,68 @@ return declare(null, {
         this.reinitialize();
         this.compressor.connect(this.context.destination);
         this.can_play = true;
+    },
+
+    exportSong : function(onfinished_callback){
+        this.reinitialize();
+        var dummy_source = this.context.createBufferSource();
+        var buffer = this.context.createBuffer(2, this.calculateTotalFrames(0), this.context.sampleRate);
+        //ダミーの入力バッファを生成する
+        for(var channel = 0; channel < buffer.numberOfChannels; ++channel){
+            var now_buffering = buffer.getChannelData(channel);
+            for(var i = 0; i < buffer.length; ++i)
+                now_buffering[i] = 0.0;
+        }
+
+        dummy_source.buffer = buffer;
+        this.nodes.forEach(function(node){
+            dummy_source.connect(node);
+        });
+
+        var dummy_output = this.context.createScriptProcessor(this.buffer_size, 1, 1);
+        this.compressor.connect(dummy_output);
+        dummy_output.connect(this.context.destination);
+
+        var output_buffer = new Float32Array(buffer.length);
+        var j = 0;
+        var _self = this;
+        dummy_output.onaudioprocess = function(e){
+            var cur_progress = j * 100.0 / output_buffer.length;
+            _self.progress_bar.set("value", cur_progress);
+
+            var channel_buffer = e.inputBuffer.getChannelData(0);
+            for(var k = 0; k < channel_buffer.length; ++k, ++j)
+                output_buffer[j] = channel_buffer[k];
+        };
+
+        var progress_dialog = registry.byId("progress");
+        dummy_source.onended = function(){
+            progress_dialog.hide();
+
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = onfinished_callback.bind(xhr);
+            xhr.open("POST", "http://native/export", false);
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            //xhr.setRequestHeader("Content-Length", output_buffer.length);
+            xhr.setRequestHeader("Sample-Rate", _self.context.sampleRate);
+            xhr.send(output_buffer);
+
+            dummy_source.disconnect();
+            _self.compressor.disconnect();
+            dummy_output.disconnect();
+        };
+
+        progress_dialog.set("title", resources.now_exporting_dialog_title);
+        progress_dialog.show();
+        dummy_source.start(0);
+    },
+
+    calculateTotalFrames : function(track_num){
+        var track = this.queues[track_num];
+        var total_frames = track.reduce(function(prev, current){
+            return prev + current.length;
+        }, 0);
+        return total_frames;
     }
 });
 
