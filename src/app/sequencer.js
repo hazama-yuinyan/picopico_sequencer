@@ -514,6 +514,10 @@ return declare(null, {
         dummy_source.onended = function(){
             progress_dialog.hide();
 
+            dummy_source.disconnect();
+            _self.compressor.disconnect();
+            dummy_output.disconnect();
+
             var xhr = new XMLHttpRequest();
             xhr.onreadystatechange = onfinished_callback.bind(xhr);
             xhr.open("POST", "http://native/export", false);
@@ -521,10 +525,6 @@ return declare(null, {
             //xhr.setRequestHeader("Content-Length", output_buffer.length);
             xhr.setRequestHeader("Sample-Rate", _self.context.sampleRate);
             xhr.send(output_buffer);
-
-            dummy_source.disconnect();
-            _self.compressor.disconnect();
-            dummy_output.disconnect();
         };
 
         progress_dialog.set("title", resources.now_exporting_dialog_title);

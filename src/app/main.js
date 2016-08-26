@@ -144,7 +144,7 @@ define(["app/mml_compiler", "app/sequencer", "app/utils", "dojo/dom-class", "doj
         timer.stop();
     },
 
-    exportSong = function(){
+    /*exportSong = function(){
         if(!sequencer){
             compile(function(){
                 sequencer.exportSong(function(xhr){
@@ -164,7 +164,7 @@ define(["app/mml_compiler", "app/sequencer", "app/utils", "dojo/dom-class", "doj
                 }
             });
         }
-    },
+    },*/
     
     playFromHalfWay = function(e){
         if(!sequencer){
@@ -601,7 +601,7 @@ define(["app/mml_compiler", "app/sequencer", "app/utils", "dojo/dom-class", "doj
         });
     
         var new_btn = dom.byId("new_button"), save_btn = dom.byId("save_button"), about_btn = dom.byId("about_button");
-        var export_btn = dom.byId("export_button");
+        //var export_btn = dom.byId("export_button");
         on(new_btn, "click", newFile);
     
         on(save_btn, "click", saveFile);
@@ -693,10 +693,10 @@ define(["app/mml_compiler", "app/sequencer", "app/utils", "dojo/dom-class", "doj
             open_dialog.hide();
         });
 
-        on(export_button, "click", function(e){
+        /*on(export_button, "click", function(e){
             e.stopImmediatePropagation();
             exportSong();
-        });
+        });*/
     
         /*var save_as = registry.byId("save_as");
         resource_names = (typeof fs !== "undefined") ? ["save_explanation", "type_LOCAL", "type_SERVER", "type_FILE"]
@@ -764,8 +764,18 @@ define(["app/mml_compiler", "app/sequencer", "app/utils", "dojo/dom-class", "doj
     
         var editor = registry.byId("editor"), jump_btn = registry.byId("jump_button");
         newFile();
-            
-        aspect.after(editor, "onKeyUp", function(){ //ソース画面で入力するたびに変更されたことが検知できるようにする
+        
+        on(editor, "keyup", function(){ //ソース画面で入力するたびに変更されたことが検知できるようにする
+            var new_val = editor.get("value");
+            if(old_value != new_val){
+                contents_changed.source = true;
+                dom_class.toggle("save_button_label", "not_saved", true);
+            }else{
+                contents_changed.source = false;
+                dom_class.toggle("save_button_label", "not_saved", false);
+            }
+        });
+        on(editor, "change", function(e){   //コピペされた時に変更されたことが検知できるようにする
             var new_val = editor.get("value");
             if(old_value != new_val){
                 contents_changed.source = true;
