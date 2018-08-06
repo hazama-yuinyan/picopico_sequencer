@@ -42,7 +42,7 @@ I'd like to say a big "Thank you" to all developers and contributors of these pr
 
 [dojo]: http://dojotoolkit.org/
 [treehugger]: http://github.com/ajaxorg/treehugger
-[jasmine]: http://pivotal.github.com/jasmine/
+[jasmine]: https://jasmine.github.io/
 
 ## License
 The program is published under the MIT license. The text of MIT license is reprodued below.
